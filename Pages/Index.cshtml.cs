@@ -1,0 +1,20 @@
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using SistemaEscolar.Data;
+
+namespace SistemaEscolar.Pages;
+
+public class IndexModel : PageModel
+{
+    private readonly EscolaContext _db;
+    public IndexModel(EscolaContext db) => _db = db;
+
+    public int Total { get; set; }
+    public int Pendentes { get; set; }
+
+    public async Task OnGetAsync()
+    {
+        Total = await _db.Matriculas.CountAsync();
+        Pendentes = await _db.Matriculas.CountAsync(m => m.Status == StatusMatricula.Pendente);
+    }
+}

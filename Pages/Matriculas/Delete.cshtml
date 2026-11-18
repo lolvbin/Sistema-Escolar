@@ -1,0 +1,12 @@
+@page "{id:int}"
+@model SistemaEscolar.Pages.Matriculas.DeleteModel
+@{ ViewData["Title"] = "Excluir matrícula"; }
+
+<h1>Excluir matrícula</h1>
+<form method="post" class="card">
+    <p>Excluir a matrícula de <strong>@Model.Matricula.AlunoNome</strong> (@Html.DisplayFor(_ => Model.Matricula.Serie), @Model.Matricula.AnoLetivo)? Isso não pode ser desfeito.</p>
+    <div class="rodape-form">
+        <button class="btn btn-perigo">Excluir</button>
+        <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+    </div>
+</form>

@@ -1,0 +1,79 @@
+@using SistemaEscolar.Data
+@model Matricula
+@{ var edicao = ViewData["Edicao"] as bool? == true; }
+
+<h2>Aluno</h2>
+<div class="grade">
+    <div class="campo largo">
+        <label asp-for="AlunoNome"></label>
+        <input asp-for="AlunoNome" data-mask="nome" maxlength="120" autocomplete="off" />
+        <span asp-validation-for="AlunoNome" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="DataNascimento"></label>
+        <input asp-for="DataNascimento" asp-format="{0:dd/MM/yyyy}" type="text" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+        <span asp-validation-for="DataNascimento" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="Cpf"></label>
+        <input asp-for="Cpf" data-mask="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" autocomplete="off" />
+        <span asp-validation-for="Cpf" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="Serie"></label>
+        <select asp-for="Serie" asp-items="Html.GetEnumSelectList<Serie>()">
+            <option value="">Selecione</option>
+        </select>
+        <span asp-validation-for="Serie" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="Turno"></label>
+        <select asp-for="Turno" asp-items="Html.GetEnumSelectList<Turno>()">
+            <option value="">Selecione</option>
+        </select>
+        <span asp-validation-for="Turno" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="AnoLetivo"></label>
+        <select asp-for="AnoLetivo">
+            @foreach (var ano in Matricula.AnosPermitidos)
+            {
+                <option value="@ano" selected="@(ano == Model.AnoLetivo)">@ano</option>
+            }
+        </select>
+        <span asp-validation-for="AnoLetivo" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="Status"></label>
+        @if (edicao)
+        {
+            <select asp-for="Status" asp-items="Html.GetEnumSelectList<StatusMatricula>()"></select>
+        }
+        else
+        {
+            <input value="Pendente" disabled />
+        }
+    </div>
+</div>
+
+<h2>Responsável acadêmico</h2>
+<partial name="_Responsavel" for="Academico" />
+
+<h2>Responsável financeiro</h2>
+<label class="check">
+    <input asp-for="MesmoResponsavel" /> @Html.DisplayNameFor(m => m.MesmoResponsavel)
+</label>
+<div id="financeiro">
+    <partial name="_Responsavel" for="Financeiro" />
+</div>
+
+<h2>Outras informações</h2>
+<div class="campo">
+    <label asp-for="Observacoes"></label>
+    <textarea asp-for="Observacoes" rows="3"></textarea>
+</div>
+
+<div class="rodape-form">
+    <button class="btn">Salvar</button>
+    <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+</div>

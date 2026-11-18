@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Sistema Escolar</title>
+    <script>
+        // Aplica o tema antes de renderizar (evita piscar)
+        (function () {
+            var t = null;
+            try { t = localStorage.getItem("tema"); } catch (e) { }
+            if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            document.documentElement.setAttribute("data-tema", t);
+        })();
+    </script>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topo">
+        <div class="wrap topo-in">
+            <a class="marca" asp-page="/Index">Sistema Escolar</a>
+            <nav class="menu">
+                <a asp-page="/Matriculas/Index">Matrículas</a>
+            </nav>
+            <button type="button" id="tema-btn" class="btn btn-sec" aria-label="Alternar tema">Tema</button>
+        </div>
+    </header>
+    <main class="wrap">
+        @RenderBody()
+    </main>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.getElementById("tema-btn").onclick = function () {
+            var h = document.documentElement;
+            var t = h.getAttribute("data-tema") === "dark" ? "light" : "dark";
+            h.setAttribute("data-tema", t);
+            try { localStorage.setItem("tema", t); } catch (e) { }
+        };
+    </script>
+</body>
+</html>

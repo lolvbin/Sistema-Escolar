@@ -1,0 +1,11 @@
+@page "{id:int}"
+@model SistemaEscolar.Pages.Matriculas.EditModel
+@{
+    ViewData["Title"] = "Editar matrícula";
+    ViewData["Edicao"] = true;
+}
+
+<h1>Editar matrícula</h1>
+<form method="post" class="card" novalidate>
+    <partial name="_Form" model="Model.Matricula" view-data="ViewData" />
+</form>
