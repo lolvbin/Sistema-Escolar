@@ -20,8 +20,29 @@
         <div class="wrap topo-in">
             <a class="marca" asp-page="/Index">Sistema Escolar</a>
             <nav class="menu">
-                <a asp-page="/Matriculas/Index">Matrículas</a>
+                @if (User.IsInRole("Funcionario"))
+                {
+                    <a asp-page="/Matriculas/Index">Matrículas</a>
+                }
+                @if (User.IsInRole("Professor") || User.IsInRole("Aluno"))
+                {
+                    <a asp-page="/SalaDeAula">Sala de aula</a>
+                }
+                @if (User.Identity?.IsAuthenticated != true)
+                {
+                    <a asp-page="/Previa">Prévia dos perfis</a>
+                }
             </nav>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form method="post" asp-page="/Logout" class="sair">
+                    <button type="submit" class="btn btn-sec">Sair</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn btn-sec" asp-page="/Login">Entrar</a>
+            }
             <button type="button" id="tema-btn" class="btn btn-sec" aria-label="Alternar tema">Tema</button>
         </div>
     </header>

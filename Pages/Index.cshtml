@@ -1,11 +1,13 @@
 @page
+@using SistemaEscolar.Data
 @model SistemaEscolar.Pages.IndexModel
-@{ ViewData["Title"] = "Início"; }
+@{
+    ViewData["Title"] = "Início";
+    if (Model.Perfil == Perfil.Funcionario)
+    {
+        ViewData["MatInfo"] = $"{Model.Total} cadastradas · {Model.Pendentes} pendentes";
+    }
+}
 
-<h1>Sistema Escolar</h1>
-<div class="grade">
-    <a class="card" asp-page="/Matriculas/Index" style="text-decoration:none;color:inherit">
-        <strong>Matrículas</strong><br />
-        <span class="vazio" style="padding:0">@Model.Total cadastradas · @Model.Pendentes pendentes</span>
-    </a>
-</div>
+<h1>Olá, @User.Identity?.Name <span class="badge">@Model.Perfil.Nome()</span></h1>
+<partial name="_Painel" model="Model.Perfil" />

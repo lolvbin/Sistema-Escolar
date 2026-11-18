@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SistemaEscolar.Data;
@@ -9,12 +10,19 @@ public class IndexModel : PageModel
     private readonly EscolaContext _db;
     public IndexModel(EscolaContext db) => _db = db;
 
+    public Perfil Perfil { get; set; }
     public int Total { get; set; }
     public int Pendentes { get; set; }
 
     public async Task OnGetAsync()
     {
-        Total = await _db.Matriculas.CountAsync();
-        Pendentes = await _db.Matriculas.CountAsync(m => m.Status == StatusMatricula.Pendente);
+        Perfil = Enum.TryParse<Perfil>(User.FindFirstValue(ClaimTypes.Role), out var p) ? p : Perfil.Aluno;
+
+        // Números reais só para quem pode ver matrículas
+        if (Perfil == Perfil.Funcionario)
+        {
+            Total = await _db.Matriculas.CountAsync();
+            Pendentes = await _db.Matriculas.CountAsync(m => m.Status == StatusMatricula.Pendente);
+        }
     }
 }

@@ -161,9 +161,11 @@ public class EscolaContext : DbContext
     public EscolaContext(DbContextOptions<EscolaContext> options) : base(options) { }
 
     public DbSet<Matricula> Matriculas => Set<Matricula>();
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        b.Entity<Usuario>().HasIndex(u => u.Email).IsUnique();
         b.Entity<Matricula>().Property(m => m.DataNascimento).HasColumnType("date");
         b.Entity<Matricula>().Property(m => m.DataMatricula).HasColumnType("date");
         b.Entity<Matricula>().OwnsOne(m => m.Academico);

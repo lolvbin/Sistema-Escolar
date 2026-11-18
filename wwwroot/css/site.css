@@ -90,3 +90,13 @@ h2:first-child { margin-top: 0; }
 .check { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: .95rem; color: var(--texto); }
 .check input { width: auto; }
 [hidden] { display: none !important; }
+
+.login { max-width: 380px; margin: 40px auto; }
+.sair { margin: 0; }
+.suave { color: var(--suave); }
+a.atalho { text-decoration: none; color: inherit; }
+a.atalho:hover { border-color: var(--primaria); }
+.aviso-previa { background: var(--card); border: 1px dashed var(--aviso); color: var(--aviso); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; font-size: .9rem; }
+.abas { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.abas a { padding: 6px 12px; border: 1px solid var(--borda); border-radius: 6px; text-decoration: none; color: var(--suave); }
+.abas a.ativa { background: var(--primaria); border-color: var(--primaria); color: var(--primaria-texto); }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace SistemaEscolar.Pages;
 
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 [IgnoreAntiforgeryToken]
 public class ErrorModel : PageModel

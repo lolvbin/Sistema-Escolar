@@ -1,0 +1,22 @@
+@page
+@model SistemaEscolar.Pages.LoginModel
+@{ ViewData["Title"] = "Entrar"; }
+
+<div class="login">
+    <h1>Entrar</h1>
+    <form method="post" class="card">
+        <input type="hidden" asp-for="ReturnUrl" />
+        @if (Model.Erro != null) { <p class="erro">@Model.Erro</p> }
+        <div class="campo">
+            <label asp-for="Email">E-mail</label>
+            <input asp-for="Email" type="email" autocomplete="username" autofocus />
+        </div>
+        <div class="campo" style="margin-top:12px">
+            <label asp-for="Senha">Senha</label>
+            <input asp-for="Senha" type="password" autocomplete="current-password" />
+        </div>
+        <div class="rodape-form"><button class="btn" type="submit">Entrar</button></div>
+    </form>
+
+    <p class="vazio">Ainda sem acesso? Veja uma <a asp-page="/Previa">prévia do que cada perfil enxerga</a>.</p>
+</div>

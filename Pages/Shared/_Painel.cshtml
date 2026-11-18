@@ -1,0 +1,74 @@
+@using SistemaEscolar.Data
+@model Perfil
+@* Painel de cada perfil. Dados FICTÍCIOS e estáticos: serve de prévia até os módulos existirem. *@
+@{ var matInfo = ViewData["MatInfo"] as string ?? "128 cadastradas · 12 pendentes (exemplo)"; }
+
+@if (Model == Perfil.Funcionario)
+{
+    <div class="grade">
+        <a class="card atalho" asp-page="/Matriculas/Index"><strong>Matrículas</strong><br /><span class="suave">@matInfo</span></a>
+        <div class="card"><strong>Alunos</strong><br /><span class="suave">Cadastro e situação (em breve)</span></div>
+        <div class="card"><strong>Professores</strong><br /><span class="suave">Cadastro e turmas (em breve)</span></div>
+        <div class="card"><strong>Financeiro</strong><br /><span class="suave">Mensalidades e contratos (em breve)</span></div>
+        <div class="card"><strong>Calendário</strong><br /><span class="suave">Eventos e feriados (em breve)</span></div>
+    </div>
+    <h2>Pendências do dia (exemplo)</h2>
+    <div class="tabela"><table>
+        <tr><th>Aluno</th><th>Série</th><th>Situação</th></tr>
+        <tr><td>Maria Souza</td><td>3º ano</td><td><span class="badge st-Pendente">Pagamento pendente</span></td></tr>
+        <tr><td>João Pereira</td><td>6º ano</td><td><span class="badge st-Pendente">Contrato não assinado</span></td></tr>
+        <tr><td>Ana Lima</td><td>Pré II</td><td><span class="badge st-Pendente">Documentos faltando</span></td></tr>
+    </table></div>
+}
+else if (Model == Perfil.Responsavel)
+{
+    <h2>Meus filhos (exemplo)</h2>
+    <div class="grade">
+        <div class="card"><strong>Maria Souza</strong><br /><span class="suave">3º ano · Matrícula </span><span class="badge st-Ativa">Ativa</span></div>
+        <div class="card"><strong>Pedro Souza</strong><br /><span class="suave">Pré II · Matrícula </span><span class="badge st-Pendente">Pendente</span></div>
+    </div>
+    <h2>Mensalidades (exemplo)</h2>
+    <div class="tabela"><table>
+        <tr><th>Mês</th><th>Valor</th><th>Situação</th></tr>
+        <tr><td>Março</td><td>R$ 850,00</td><td><span class="badge st-Ativa">Paga</span></td></tr>
+        <tr><td>Abril</td><td>R$ 850,00</td><td><span class="badge st-Pendente">Em aberto</span></td></tr>
+    </table></div>
+    <h2>Acompanhamento</h2>
+    <div class="grade">
+        <div class="card"><strong>Notas e boletim</strong><br /><span class="suave">Resumo por disciplina (em breve)</span></div>
+        <div class="card"><strong>Calendário</strong><br /><span class="suave">Reuniões e provas (em breve)</span></div>
+        <div class="card"><strong>Comunicados</strong><br /><span class="suave">Avisos da escola (em breve)</span></div>
+    </div>
+}
+else if (Model == Perfil.Professor)
+{
+    <h2>Minhas turmas (exemplo)</h2>
+    <div class="tabela"><table>
+        <tr><th>Turma</th><th>Disciplina</th><th>Alunos</th><th>Próxima aula</th></tr>
+        <tr><td>6º ano A</td><td>Matemática</td><td>28</td><td>Seg 07:30</td></tr>
+        <tr><td>7º ano B</td><td>Matemática</td><td>30</td><td>Ter 09:40</td></tr>
+        <tr><td>9º ano A</td><td>Matemática</td><td>26</td><td>Qua 07:30</td></tr>
+    </table></div>
+    <h2>Ações</h2>
+    <div class="grade">
+        <div class="card"><strong>Lançar notas</strong><br /><span class="suave">Por turma e bimestre (em breve)</span></div>
+        <div class="card"><strong>Frequência</strong><br /><span class="suave">Chamada diária (em breve)</span></div>
+        <div class="card"><strong>Calendário</strong><br /><span class="suave">Provas e eventos (em breve)</span></div>
+    </div>
+}
+else
+{
+    <h2>Minhas notas (exemplo)</h2>
+    <div class="tabela"><table>
+        <tr><th>Disciplina</th><th>1º bim.</th><th>2º bim.</th><th>Situação</th></tr>
+        <tr><td>Matemática</td><td>8,5</td><td>7,0</td><td><span class="badge st-Ativa">Aprovado</span></td></tr>
+        <tr><td>Português</td><td>6,0</td><td>6,5</td><td><span class="badge st-Ativa">Aprovado</span></td></tr>
+        <tr><td>Ciências</td><td>5,0</td><td>4,5</td><td><span class="badge st-Pendente">Em recuperação</span></td></tr>
+    </table></div>
+    <h2>Meu dia</h2>
+    <div class="grade">
+        <div class="card"><strong>Horário de aulas</strong><br /><span class="suave">Grade semanal (em breve)</span></div>
+        <div class="card"><strong>Calendário</strong><br /><span class="suave">Provas e feriados (em breve)</span></div>
+        <div class="card"><strong>Avisos</strong><br /><span class="suave">Recados da escola (em breve)</span></div>
+    </div>
+}

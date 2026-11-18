@@ -4,3 +4,5 @@ obj/
 *.db-shm
 *.db-wal
 .claude/
+.vs/
+*.user

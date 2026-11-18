@@ -44,8 +44,15 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   - Ano letivo: só o ano atual e o seguinte (padrão: o seguinte)
   - Responsável acadêmico e financeiro separados (owned types `Academico` e `Financeiro`). Se `MesmoResponsavel`, o financeiro é cópia do acadêmico, salva no servidor
 
+### Login e perfis (escrito, falta testar no navegador)
+- `Data/Usuario.cs`: entidade `Usuario`, enum `Perfil` (Responsavel, Funcionario, Professor, Aluno), hash PBKDF2 (`Senha`) e `UsuarioSeed`
+- Cookie auth em `Program.cs`; política padrão exige login. `[AllowAnonymous]` em Login, Previa, Error. Pasta `/Matriculas` só para Funcionário (política `Funcionario`)
+- A tabela `Usuarios` é criada por SQL (`CREATE TABLE IF NOT EXISTS`) no `UsuarioSeed.Preparar`, porque `EnsureCreated` não adiciona tabelas em banco existente
+- Em Development cria 4 usuários `<perfil>@escola.test` (senha de dev em `UsuarioSeed`). Não vale em produção: criar usuários reais por outro meio
+- Prévia TEMPORÁRIA e estática (dados fictícios): `/Previa/{perfil}` e `Pages/Shared/_Painel.cshtml` (usado também no `/` conforme o perfil). Remover/substituir conforme os módulos reais surgirem
+- Sem limite de tentativas de login ainda
+
 ### Pendências conhecidas
-- Sem login nem perfis de acesso (qualquer um vê tudo)
 - Dados do aluno e dos responsáveis estão dentro da matrícula. Separar quando fizer o módulo Alunos
 - Testar visualmente no navegador as máscaras de JS (cobertura até agora foi por HTTP; o usuário testou e disse que está ok)
 - Próximos módulos: login e perfis, Alunos, Professores, Calendário acadêmico, Notas, Financeiro
@@ -53,3 +60,5 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 ## Cuidados
 - Rodar servidores de teste em background: guardar o PID e encerrar com `kill <pid>`. Não usar `pkill -f` com o nome da DLL, pois mata o próprio shell
 - Dados de teste criados no banco compartilhado devem ser apagados ao final
+- Fim do dia: quando o usuário rodar `git commit` e `git push` dizendo que finalizamos por hoje, apagar do banco os dados de exemplo (matrículas de teste e usuários `@escola.test`). Em Development os usuários de teste são recriados na próxima execução
+- Cada perfil só vê o que lhe cabe no menu (Funcionário: Matrículas; Professor/Aluno: Sala de aula). Página fora do perfil: Acesso negado
