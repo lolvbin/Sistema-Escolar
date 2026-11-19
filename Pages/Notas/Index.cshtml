@@ -1,0 +1,41 @@
+@page
+@model SistemaEscolar.Pages.Notas.IndexModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Notas"; }
+
+<div class="barra"><h1>Notas</h1></div>
+
+@if (!Model.TemCadastro)
+{
+    <div class="card vazio">Seu login não está ligado a um cadastro de professor.</div>
+}
+else if (Model.Itens.Count == 0)
+{
+    <div class="card vazio">Você ainda não foi atribuído a nenhuma disciplina em turmas ativas.</div>
+}
+else
+{
+    <div class="card tabela">
+        <table>
+            <thead><tr><th>Turma</th><th>Ano</th><th>Turno</th><th>Disciplina</th><th>Alunos</th><th>Lançar</th></tr></thead>
+            <tbody>
+            @foreach (var i in Model.Itens)
+            {
+                <tr>
+                    <td>@i.Turma</td>
+                    <td>@i.Ano</td>
+                    <td>@i.Turno</td>
+                    <td>@i.Disciplina</td>
+                    <td>@i.Alunos</td>
+                    <td class="acoes">
+                        @for (int b = 1; b <= TabelaNotas.Bimestres; b++)
+                        {
+                            <a asp-page="Lancar" asp-route-turmaId="@i.TurmaId" asp-route-disciplinaId="@i.DisciplinaId" asp-route-bim="@b">@(b)º bim.</a>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

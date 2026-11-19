@@ -81,10 +81,16 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Turma pode ser inativada; só exclui turma sem alunos (professores atribuídos saem junto)
 - Sempre mapear tabela de entidade sem DbSet com `ToTable("...")` (o EF usa o nome da classe no singular, e a tabela criada por SQL é plural)
 
+### Módulo Notas (testado no navegador)
+- `Data/Nota.cs` (chave composta MatriculaId + DisciplinaId + Bimestre, valor 0 a 10 com 1 casa) e `TabelaNotas.Preparar` (SQL, depois de Turmas). 4 bimestres fixos (`TabelaNotas.Bimestres`)
+- `Pages/Notas/` só Professor (política `Professor`): Index lista as disciplinas/turmas ativas atribuídas a ele (`TurmaDisciplina.ProfessorId`, ligado pelo `Professor.UsuarioId` = claim NameIdentifier); `Lancar` = notas de uma turma/disciplina/bimestre, só alunos com matrícula Ativa na turma
+- Aceita vírgula ou ponto, arredonda para 1 casa; campo vazio apaga a nota; se um valor for inválido nada é salvo. Professor que não é o da disciplina: Acesso negado
+- Falta: aluno/responsável verem o boletim (precisa ligar `Usuario` ao aluno/responsável), visão do funcionário, média/situação
+
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
 - Senha: por decisão do usuário, continua só o funcionário gerando a provisória (trocar a própria senha fica para depois). Falta limite de tentativas de login
-- Ordem combinada dos próximos módulos: Notas (por turma/disciplina) (4 bimestres) → Calendário → Financeiro (libera a matrícula Pendente)
+- Ordem combinada dos próximos módulos: Boletim para aluno/responsável → Calendário → Financeiro (libera a matrícula Pendente)
 
 ## Cuidados
 - `psql` instalado. Para rodar SQL com a conexão do user-secrets sem expor a senha: ler `dotnet user-secrets list` e passar Host/Port/Username/Database por parâmetro e a senha por `PGPASSWORD`

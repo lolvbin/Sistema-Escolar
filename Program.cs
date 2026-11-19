@@ -11,6 +11,8 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Professores", "Funcionario");
     o.Conventions.AuthorizeFolder("/Disciplinas", "Funcionario");
     o.Conventions.AuthorizeFolder("/Turmas", "Funcionario");
+    // Notas: lançamento só pelo professor
+    o.Conventions.AuthorizeFolder("/Notas", "Professor");
     // Sala de aula: professor e aluno
     o.Conventions.AuthorizePage("/SalaDeAula", "SalaDeAula");
 });
@@ -30,6 +32,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
     .AddPolicy("Funcionario", p => p.RequireRole(nameof(Perfil.Funcionario)))
+    .AddPolicy("Professor", p => p.RequireRole(nameof(Perfil.Professor)))
     .AddPolicy("SalaDeAula", p => p.RequireRole(nameof(Perfil.Professor), nameof(Perfil.Aluno)));
 // Connection string vem do user-secrets (dev) ou de variável de ambiente (ConnectionStrings__Escola).
 var cs = builder.Configuration.GetConnectionString("Escola")
@@ -57,6 +60,7 @@ using (var scope = app.Services.CreateScope())
     TabelaProfessores.Preparar(db); // depois de Usuarios (FK)
     TabelasDisciplinas.Preparar(db);
     TabelasTurmas.Preparar(db); // depois de Matriculas, Professores e Disciplinas
+    TabelaNotas.Preparar(db); // depois de Matriculas e Disciplinas
 }
 
 if (!app.Environment.IsDevelopment())

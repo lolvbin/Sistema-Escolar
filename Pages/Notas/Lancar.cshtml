@@ -1,0 +1,50 @@
+@page
+@model SistemaEscolar.Pages.Notas.LancarModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Lançar notas"; }
+
+<div class="barra">
+    <h1>@Model.Disciplina.Nome - @Model.Turma.Nome (@Model.Turma.AnoLetivo)</h1>
+    <a class="btn btn-sec" asp-page="Index">Voltar</a>
+</div>
+
+<div class="abas">
+    @for (int b = 1; b <= TabelaNotas.Bimestres; b++)
+    {
+        <a class="@(b == Model.Bim ? "ativa" : "")" asp-page="Lancar" asp-route-turmaId="@Model.TurmaId" asp-route-disciplinaId="@Model.DisciplinaId" asp-route-bim="@b">@(b)º bimestre</a>
+    }
+</div>
+
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+@if (Model.Erros.Count > 0) { <div class="card erro-card">Corrija os valores marcados. Nada foi salvo.</div> }
+
+@if (Model.Alunos.Count == 0)
+{
+    <div class="card vazio">Esta turma não tem alunos com matrícula ativa.</div>
+}
+else
+{
+    <form method="post">
+        <input type="hidden" name="TurmaId" value="@Model.TurmaId" />
+        <input type="hidden" name="DisciplinaId" value="@Model.DisciplinaId" />
+        <input type="hidden" name="Bim" value="@Model.Bim" />
+        <div class="card tabela">
+            <table>
+                <thead><tr><th>Aluno</th><th style="width:140px">Nota (0 a 10)</th></tr></thead>
+                <tbody>
+                @foreach (var m in Model.Alunos)
+                {
+                    <tr>
+                        <td>@m.Aluno!.Nome</td>
+                        <td>
+                            <input name="Valores[@m.Id]" value="@Model.Valores.GetValueOrDefault(m.Id)" inputmode="decimal" autocomplete="off" />
+                            @if (Model.Erros.TryGetValue(m.Id, out var e)) { <span class="erro">@e</span> }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <div class="rodape-form"><button class="btn" type="submit">Salvar notas</button></div>
+    </form>
+}
