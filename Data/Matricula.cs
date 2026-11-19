@@ -110,6 +110,12 @@ public class Matricula
     [Display(Name = "Observações")]
     public string? Observacoes { get; set; }
 
+    // Turma em que o aluno está enturmado (definida pela tela de Turmas, nunca pelo formulário)
+    public int? TurmaId { get; set; }
+
+    [ValidateNever]
+    public Turma? Turma { get; set; }
+
     public static int[] AnosPermitidos => new[] { DateTime.Today.Year, DateTime.Today.Year + 1 };
 
     /// <summary>Regras que dependem de mais de um campo ou da data de hoje.</summary>
@@ -130,6 +136,7 @@ public class EscolaContext : DbContext
     public DbSet<Aluno> Alunos => Set<Aluno>();
     public DbSet<Professor> Professores => Set<Professor>();
     public DbSet<Disciplina> Disciplinas => Set<Disciplina>();
+    public DbSet<Turma> Turmas => Set<Turma>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -137,6 +144,12 @@ public class EscolaContext : DbContext
         b.Entity<Aluno>().HasIndex(a => a.Cpf).IsUnique();
         b.Entity<Aluno>().OwnsOne(a => a.Academico);
         b.Entity<Aluno>().OwnsOne(a => a.Financeiro);
+        b.Entity<Turma>().HasIndex(t => new { t.AnoLetivo, t.Serie, t.Letra }).IsUnique();
+        b.Entity<TurmaDisciplina>().ToTable("TurmaDisciplinas").HasKey(x => new { x.TurmaId, x.DisciplinaId });
+        b.Entity<TurmaDisciplina>().HasOne(x => x.Turma).WithMany(t => t.Disciplinas).HasForeignKey(x => x.TurmaId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<TurmaDisciplina>().HasOne(x => x.Disciplina).WithMany().HasForeignKey(x => x.DisciplinaId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<TurmaDisciplina>().HasOne(x => x.Professor).WithMany().HasForeignKey(x => x.ProfessorId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<Matricula>().HasOne(m => m.Turma).WithMany().HasForeignKey(m => m.TurmaId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<Disciplina>().HasIndex(d => d.Nome).IsUnique();
         b.Entity<DisciplinaSerie>().ToTable("DisciplinaSeries").HasKey(x => new { x.DisciplinaId, x.Serie });
         b.Entity<Disciplina>().HasMany(d => d.Series).WithOne().HasForeignKey(x => x.DisciplinaId).OnDelete(DeleteBehavior.Cascade);

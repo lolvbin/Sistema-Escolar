@@ -72,13 +72,22 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Cada disciplina marca as séries em que é oferecida (pelo menos uma). Não há exclusão, só inativar. Nome único, só letras
 - Botão "Carregar disciplinas padrão" (só aparece com a lista vazia) cria um catálogo inicial (`TabelasDisciplinas.Padrao()`), editável. O banco de dev já tem as 16 padrão
 
+### Módulo Turmas (testado no navegador)
+- `Data/Turma.cs` + `Pages/Turmas/` (lista com filtro por ano/série, nova, detalhes), só Funcionário. Tabelas `Turmas` e `TurmaDisciplinas` (+ coluna `Matriculas.TurmaId`) criadas por SQL em `TabelasTurmas.Preparar`
+- Turma = série + ano letivo + letra (A, B...) com um turno. Única por ano+série+letra. Nome exibido: "5º ano A"
+- Enturmação pela matrícula (`Matricula.TurmaId`): só entra aluno com matrícula **Ativa**, mesma série, ano e turno, ainda sem turma. Remover tira o aluno da turma
+- Cada disciplina ativa da série ganha um professor ativo (`TurmaDisciplina`); salvar em lote na tela de detalhes
+- Regras ligadas à matrícula: matrícula que deixa de ser Ativa sai da turma sozinha; mudar série/ano/turno de aluno enturmado é bloqueado (remover da turma antes)
+- Turma pode ser inativada; só exclui turma sem alunos (professores atribuídos saem junto)
+- Sempre mapear tabela de entidade sem DbSet com `ToTable("...")` (o EF usa o nome da classe no singular, e a tabela criada por SQL é plural)
+
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
 - Senha: por decisão do usuário, continua só o funcionário gerando a provisória (trocar a própria senha fica para depois). Falta limite de tentativas de login
-- Ordem combinada dos próximos módulos: Turmas (série+ano+turno, enturmação dos alunos com matrícula Ativa, professor por disciplina) → Notas (4 bimestres) → Calendário → Financeiro (libera a matrícula Pendente)
+- Ordem combinada dos próximos módulos: Notas (por turma/disciplina) (4 bimestres) → Calendário → Financeiro (libera a matrícula Pendente)
 
 ## Cuidados
-- Sem `psql` neste PC. Para rodar SQL (limpar dados de teste): projeto console temporário com Npgsql no scratchpad, lendo a conexão de `dotnet user-secrets list`. Ou instalar `postgresql-client`
+- `psql` instalado. Para rodar SQL com a conexão do user-secrets sem expor a senha: ler `dotnet user-secrets list` e passar Host/Port/Username/Database por parâmetro e a senha por `PGPASSWORD`
 - Rodar servidores de teste em background: guardar o PID e encerrar com `kill <pid>`. Não usar `pkill -f` com o nome da DLL, pois mata o próprio shell
 - Dados de teste criados no banco compartilhado devem ser apagados ao final
 - Fim do dia: quando o usuário rodar `git commit` e `git push` dizendo que finalizamos por hoje, apagar do banco os dados de exemplo (matrículas de teste e usuários `@escola.test`). Em Development os usuários de teste são recriados na próxima execução

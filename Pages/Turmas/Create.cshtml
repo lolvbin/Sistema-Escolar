@@ -1,0 +1,43 @@
+@page
+@using SistemaEscolar.Data
+@model SistemaEscolar.Pages.Turmas.CreateModel
+@{ ViewData["Title"] = "Nova turma"; }
+
+<h1>Nova turma</h1>
+<form method="post" class="card" novalidate>
+    <div class="grade">
+        <div class="campo">
+            <label asp-for="Turma.Serie"></label>
+            <select asp-for="Turma.Serie" asp-items="Html.GetEnumSelectList<Serie>()">
+                <option value="">Selecione</option>
+            </select>
+            <span asp-validation-for="Turma.Serie" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="Turma.Letra"></label>
+            <input asp-for="Turma.Letra" maxlength="2" placeholder="A" autocomplete="off" />
+            <span asp-validation-for="Turma.Letra" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="Turma.Turno"></label>
+            <select asp-for="Turma.Turno" asp-items="Html.GetEnumSelectList<Turno>()">
+                <option value="">Selecione</option>
+            </select>
+            <span asp-validation-for="Turma.Turno" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="Turma.AnoLetivo"></label>
+            <select asp-for="Turma.AnoLetivo">
+                @foreach (var ano in Matricula.AnosPermitidos)
+                {
+                    <option value="@ano" selected="@(ano == Model.Turma.AnoLetivo)">@ano</option>
+                }
+            </select>
+            <span asp-validation-for="Turma.AnoLetivo" class="erro"></span>
+        </div>
+    </div>
+    <div class="rodape-form">
+        <button class="btn">Criar turma</button>
+        <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+    </div>
+</form>

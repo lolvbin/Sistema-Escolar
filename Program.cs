@@ -10,6 +10,7 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Alunos", "Funcionario");
     o.Conventions.AuthorizeFolder("/Professores", "Funcionario");
     o.Conventions.AuthorizeFolder("/Disciplinas", "Funcionario");
+    o.Conventions.AuthorizeFolder("/Turmas", "Funcionario");
     // Sala de aula: professor e aluno
     o.Conventions.AuthorizePage("/SalaDeAula", "SalaDeAula");
 });
@@ -55,6 +56,7 @@ using (var scope = app.Services.CreateScope())
     UsuarioSeed.Preparar(db, app.Environment.IsDevelopment());
     TabelaProfessores.Preparar(db); // depois de Usuarios (FK)
     TabelasDisciplinas.Preparar(db);
+    TabelasTurmas.Preparar(db); // depois de Matriculas, Professores e Disciplinas
 }
 
 if (!app.Environment.IsDevelopment())

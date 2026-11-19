@@ -1,0 +1,116 @@
+@page "{id:int}"
+@using SistemaEscolar.Data
+@model SistemaEscolar.Pages.Turmas.DetailsModel
+@{ ViewData["Title"] = Model.Turma.Nome; }
+
+<div class="barra">
+    <h1>@Model.Turma.Nome <small class="suave">@Model.Turma.AnoLetivo · @Html.DisplayFor(_ => Model.Turma.Turno)</small></h1>
+    <a class="btn btn-sec" asp-page="Index">Voltar</a>
+</div>
+
+@if (TempData["Aviso"] is string aviso)
+{
+    <div class="card aviso">@aviso</div>
+}
+@if (TempData["Erro"] is string erro)
+{
+    <div class="card erro-card">@erro</div>
+}
+
+<h2>Alunos (@Model.Alunos.Count)</h2>
+<div class="card tabela">
+    @if (Model.Alunos.Count == 0)
+    {
+        <div class="vazio">Nenhum aluno enturmado.</div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Aluno</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var m in Model.Alunos)
+            {
+                <tr>
+                    <td>@m.Aluno!.Nome</td>
+                    <td class="acoes">
+                        <form method="post" asp-page-handler="Remover" asp-route-id="@Model.Turma.Id" class="inline">
+                            <input type="hidden" name="matriculaId" value="@m.Id" />
+                            <button class="link">Remover</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+
+<h2>Adicionar alunos</h2>
+<div class="card">
+    @if (!Model.Turma.Ativa)
+    {
+        <div class="vazio">Turma inativa: reative para enturmar alunos.</div>
+    }
+    else if (Model.Candidatos.Count == 0)
+    {
+        <div class="vazio">Nenhum aluno disponível: precisa ter matrícula <strong>Ativa</strong> nesta série, ano e turno, e ainda sem turma.</div>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="Adicionar" asp-route-id="@Model.Turma.Id">
+            <div class="series">
+                @foreach (var m in Model.Candidatos)
+                {
+                    <label class="check"><input type="checkbox" name="matriculaIds" value="@m.Id" /> @m.Aluno!.Nome</label>
+                }
+            </div>
+            <div class="rodape-form"><button class="btn">Adicionar selecionados</button></div>
+        </form>
+    }
+</div>
+
+<h2>Disciplinas e professores</h2>
+<div class="card tabela">
+    @if (Model.Linhas.Count == 0)
+    {
+        <div class="vazio">Nenhuma disciplina ativa cadastrada para esta série. Veja em Disciplinas.</div>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="Professores" asp-route-id="@Model.Turma.Id">
+            <table>
+                <thead><tr><th>Disciplina</th><th>Professor</th></tr></thead>
+                <tbody>
+                @foreach (var l in Model.Linhas)
+                {
+                    <tr>
+                        <td>@l.Disciplina.Nome</td>
+                        <td>
+                            <select name="Professores[@l.Disciplina.Id]">
+                                <option value="">—</option>
+                                @foreach (var p in Model.ProfessoresAtivos)
+                                {
+                                    <option value="@p.Id" selected="@(l.ProfessorId == p.Id)">@p.Nome</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            <div class="rodape-form"><button class="btn">Salvar professores</button></div>
+        </form>
+    }
+</div>
+
+<div class="rodape-form">
+    <form method="post" asp-page-handler="Alternar" asp-route-id="@Model.Turma.Id">
+        <button class="btn btn-sec">@(Model.Turma.Ativa ? "Inativar turma" : "Reativar turma")</button>
+    </form>
+    @if (Model.Alunos.Count == 0)
+    {
+        <form method="post" asp-page-handler="Excluir" asp-route-id="@Model.Turma.Id">
+            <button class="btn btn-perigo">Excluir turma</button>
+        </form>
+    }
+</div>

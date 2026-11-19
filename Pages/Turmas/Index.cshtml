@@ -1,0 +1,52 @@
+@page
+@using SistemaEscolar.Data
+@model SistemaEscolar.Pages.Turmas.IndexModel
+@{ ViewData["Title"] = "Turmas"; }
+
+<div class="barra">
+    <h1>Turmas</h1>
+    <a class="btn" asp-page="Create">Nova turma</a>
+</div>
+
+@if (TempData["Aviso"] is string aviso)
+{
+    <div class="card aviso">@aviso</div>
+}
+
+<form method="get" class="filtro">
+    <select asp-for="Ano">
+        <option value="">Todos os anos</option>
+        @foreach (var a in Matricula.AnosPermitidos) { <option value="@a" selected="@(Model.Ano == a)">@a</option> }
+    </select>
+    <select asp-for="Serie" asp-items="Html.GetEnumSelectList<Serie>()">
+        <option value="">Todas as séries</option>
+    </select>
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="card tabela">
+    @if (Model.Itens.Count == 0)
+    {
+        <div class="vazio">Nenhuma turma encontrada.</div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Turma</th><th>Ano</th><th>Turno</th><th>Alunos</th><th>Professores</th><th>Situação</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var i in Model.Itens)
+            {
+                <tr>
+                    <td>@i.Turma.Nome</td>
+                    <td>@i.Turma.AnoLetivo</td>
+                    <td>@Html.DisplayFor(_ => i.Turma.Turno)</td>
+                    <td>@i.Alunos</td>
+                    <td>@i.ComProfessor / @i.TotalDisciplinas</td>
+                    <td><span class="badge @(i.Turma.Ativa ? "st-Ativa" : "st-Cancelada")">@(i.Turma.Ativa ? "Ativa" : "Inativa")</span></td>
+                    <td class="acoes"><a asp-page="Details" asp-route-id="@i.Turma.Id">Abrir</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

@@ -23,11 +23,17 @@ public class EditModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(int id)
     {
-        var m = await _db.Matriculas.Include(x => x.Aluno).FirstOrDefaultAsync(x => x.Id == id);
+        var m = await _db.Matriculas.Include(x => x.Aluno).Include(x => x.Turma).FirstOrDefaultAsync(x => x.Id == id);
         if (m == null) return NotFound();
         ViewData["AlunoNome"] = m.Aluno?.Nome;
 
         Matricula.Validar(ModelState);
+
+        // Enturmado: mudar série, ano ou turno deixaria o aluno na turma errada
+        if (m.TurmaId != null && Matricula.Status == StatusMatricula.Ativa
+            && (Matricula.Serie != m.Serie || Matricula.AnoLetivo != m.AnoLetivo || Matricula.Turno != m.Turno))
+            ModelState.AddModelError("Serie", $"O aluno está na turma {m.Turma?.Nome}. Remova-o da turma antes de mudar série, ano ou turno");
+
         if (ModelState.IsValid
             && await _db.Matriculas.AnyAsync(x => x.Id != id && x.AlunoId == m.AlunoId && x.AnoLetivo == Matricula.AnoLetivo))
             ModelState.AddModelError("AnoLetivo", $"Este aluno já tem matrícula em {Matricula.AnoLetivo}");
@@ -39,6 +45,9 @@ public class EditModel : PageModel
         m.AnoLetivo = Matricula.AnoLetivo;
         m.Status = Matricula.Status;
         m.Observacoes = Matricula.Observacoes?.Trim();
+
+        // Matrícula que deixa de ser Ativa sai da turma
+        if (m.Status != StatusMatricula.Ativa) m.TurmaId = null;
 
         await _db.SaveChangesAsync();
         return RedirectToPage("Index");

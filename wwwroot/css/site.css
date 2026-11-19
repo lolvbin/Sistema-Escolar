@@ -108,3 +108,5 @@ button.link { background: none; border: 0; padding: 0; margin-right: 10px; font:
 .grupo { margin: 10px 0 4px; font-size: .85rem; color: var(--suave); font-weight: 600; }
 .series { display: flex; flex-wrap: wrap; gap: 4px 18px; }
 .series .check { margin-bottom: 4px; }
+
+.erro-card { border-color: var(--perigo); color: var(--perigo); margin-bottom: 14px; }
