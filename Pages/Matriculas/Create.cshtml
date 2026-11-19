@@ -4,5 +4,11 @@
 
 <h1>Nova matrícula</h1>
 <form method="post" class="card" novalidate>
-    <partial name="_Form" model="Model.Matricula" view-data="ViewData" />
+    <partial name="_DadosAluno" for="Aluno" />
+    <partial name="_Form" for="Matricula" />
+
+    <div class="rodape-form">
+        <button class="btn">Matricular</button>
+        <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+    </div>
 </form>

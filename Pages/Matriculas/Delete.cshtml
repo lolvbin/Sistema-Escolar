@@ -5,6 +5,7 @@
 <h1>Excluir matrícula</h1>
 <form method="post" class="card">
     <p>Excluir a matrícula de <strong>@Model.Matricula.Aluno?.Nome</strong> (@Html.DisplayFor(_ => Model.Matricula.Serie), @Model.Matricula.AnoLetivo)? Isso não pode ser desfeito.</p>
+    <p class="suave">Se for a única matrícula do aluno, o cadastro dele também será excluído.</p>
     <div class="rodape-form">
         <button class="btn btn-perigo">Excluir</button>
         <a class="btn btn-sec" asp-page="Index">Cancelar</a>

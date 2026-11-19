@@ -84,8 +84,7 @@ public class Matricula
 {
     public int Id { get; set; }
 
-    [Required(ErrorMessage = "Selecione o aluno")]
-    [Display(Name = "Aluno")]
+    // Definido pelo sistema: o aluno é criado (ou reaproveitado) junto com a matrícula.
     public int? AlunoId { get; set; }
 
     [ValidateNever]
@@ -114,10 +113,11 @@ public class Matricula
     public static int[] AnosPermitidos => new[] { DateTime.Today.Year, DateTime.Today.Year + 1 };
 
     /// <summary>Regras que dependem de mais de um campo ou da data de hoje.</summary>
-    public void Validar(ModelStateDictionary ms)
+    public void Validar(ModelStateDictionary ms, string prefixo = "")
     {
+        var pre = prefixo == "" ? "" : prefixo + ".";
         if (!AnosPermitidos.Contains(AnoLetivo))
-            ms.AddModelError("AnoLetivo", $"Ano letivo deve ser {AnosPermitidos[0]} ou {AnosPermitidos[1]}");
+            ms.AddModelError(pre + "AnoLetivo", $"Ano letivo deve ser {AnosPermitidos[0]} ou {AnosPermitidos[1]}");
     }
 }
 

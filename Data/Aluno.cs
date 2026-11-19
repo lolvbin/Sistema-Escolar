@@ -36,8 +36,9 @@ public class Aluno
     public Responsavel Academico { get; set; } = new();
     public Responsavel Financeiro { get; set; } = new();
 
-    public void Validar(ModelStateDictionary ms)
+    public void Validar(ModelStateDictionary ms, string prefixo = "")
     {
+        var pre = prefixo == "" ? "" : prefixo + ".";
         if (MesmoResponsavel)
         {
             foreach (var k in ms.Keys.Where(k => k.Contains("Financeiro")).ToList())
@@ -45,7 +46,18 @@ public class Aluno
         }
 
         if (DataNascimento is { } d && (d.Date > DateTime.Today || d.Year < DateTime.Today.Year - 30))
-            ms.AddModelError("DataNascimento", "Data de nascimento inválida");
+            ms.AddModelError(pre + "DataNascimento", "Data de nascimento inválida");
+    }
+
+    // Rematrícula: o aluno já existe, então atualiza os dados dele com o que veio do formulário.
+    public void AtualizarDe(Aluno o)
+    {
+        DataNascimento = o.DataNascimento;
+        MesmoResponsavel = o.MesmoResponsavel;
+        Academico.Nome = o.Academico.Nome; Academico.Cpf = o.Academico.Cpf;
+        Academico.Telefone = o.Academico.Telefone; Academico.Email = o.Academico.Email;
+        Financeiro.Nome = o.Financeiro.Nome; Financeiro.Cpf = o.Financeiro.Cpf;
+        Financeiro.Telefone = o.Financeiro.Telefone; Financeiro.Email = o.Financeiro.Email;
     }
 
     public void Normalizar()

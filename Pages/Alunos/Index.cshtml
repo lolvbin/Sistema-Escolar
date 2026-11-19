@@ -4,8 +4,10 @@
 
 <div class="barra">
     <h1>Alunos</h1>
-    <a class="btn" asp-page="Create">Novo aluno</a>
+    <a class="btn" asp-page="/Matriculas/Create">Nova matrícula</a>
 </div>
+
+<p class="suave">O aluno é cadastrado ao fazer a matrícula. Aqui você consulta e corrige os dados.</p>
 
 <form method="get" class="filtro">
     <input name="Busca" value="@Model.Busca" placeholder="Buscar aluno ou responsável" />
@@ -15,7 +17,7 @@
 <div class="card tabela">
     @if (Model.Itens.Count == 0)
     {
-        <div class="vazio">Nenhum aluno encontrado.</div>
+        <div class="vazio">Nenhum aluno encontrado. Os alunos aparecem aqui depois da matrícula.</div>
     }
     else
     {

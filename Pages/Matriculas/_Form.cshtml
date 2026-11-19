@@ -1,29 +1,9 @@
 @using SistemaEscolar.Data
 @model Matricula
-@using Microsoft.AspNetCore.Mvc.Rendering
-@{
-    var edicao = ViewData["Edicao"] as bool? == true;
-    var alunos = ViewData["Alunos"] as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
-}
+@{ var edicao = ViewData["Edicao"] as bool? == true; }
 
 <h2>Matrícula</h2>
 <div class="grade">
-    <div class="campo largo">
-        <label asp-for="AlunoId"></label>
-        @if (edicao)
-        {
-            <input asp-for="AlunoId" type="hidden" />
-            <input value="@ViewData["AlunoNome"]" disabled />
-        }
-        else
-        {
-            <select asp-for="AlunoId" asp-items="alunos">
-                <option value="">Selecione</option>
-            </select>
-            <span asp-validation-for="AlunoId" class="erro"></span>
-            <small><a asp-page="/Alunos/Create">Cadastrar novo aluno</a></small>
-        }
-    </div>
     <div class="campo">
         <label asp-for="Serie"></label>
         <select asp-for="Serie" asp-items="Html.GetEnumSelectList<Serie>()">
@@ -59,15 +39,8 @@
             <input value="Pendente" disabled />
         }
     </div>
-</div>
-
-<h2>Outras informações</h2>
-<div class="campo">
-    <label asp-for="Observacoes"></label>
-    <textarea asp-for="Observacoes" rows="3"></textarea>
-</div>
-
-<div class="rodape-form">
-    <button class="btn">Salvar</button>
-    <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+    <div class="campo largo">
+        <label asp-for="Observacoes"></label>
+        <textarea asp-for="Observacoes" rows="3"></textarea>
+    </div>
 </div>

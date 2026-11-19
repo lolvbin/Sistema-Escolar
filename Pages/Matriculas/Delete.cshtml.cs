@@ -27,6 +27,17 @@ public class DeleteModel : PageModel
         {
             _db.Matriculas.Remove(m);
             await _db.SaveChangesAsync();
+
+            // Aluno só existe com matrícula: se não sobrou nenhuma, remove o aluno também.
+            if (!await _db.Matriculas.AnyAsync(x => x.AlunoId == m.AlunoId))
+            {
+                var aluno = await _db.Alunos.FindAsync(m.AlunoId);
+                if (aluno != null)
+                {
+                    _db.Alunos.Remove(aluno);
+                    await _db.SaveChangesAsync();
+                }
+            }
         }
         return RedirectToPage("Index");
     }

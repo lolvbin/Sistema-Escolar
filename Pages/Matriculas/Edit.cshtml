@@ -7,5 +7,16 @@
 
 <h1>Editar matrícula</h1>
 <form method="post" class="card" novalidate>
+    <div class="campo largo">
+        <label>Aluno</label>
+        <input value="@ViewData["AlunoNome"]" disabled />
+        <small><a asp-page="/Alunos/Edit" asp-route-id="@Model.Matricula.AlunoId">Editar dados do aluno e responsáveis</a></small>
+    </div>
+
     <partial name="_Form" model="Model.Matricula" view-data="ViewData" />
+
+    <div class="rodape-form">
+        <button class="btn">Salvar</button>
+        <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+    </div>
 </form>

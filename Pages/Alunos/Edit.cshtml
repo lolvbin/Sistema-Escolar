@@ -4,5 +4,16 @@
 
 <h1>Editar aluno</h1>
 <form method="post" class="card" novalidate>
-    <partial name="_Form" model="Model.Aluno" />
+    <partial name="_DadosAluno" model="Model.Aluno" />
+
+    <h2>Outras informações</h2>
+    <div class="campo">
+        <label asp-for="Aluno.Observacoes"></label>
+        <textarea asp-for="Aluno.Observacoes" rows="3"></textarea>
+    </div>
+
+    <div class="rodape-form">
+        <button class="btn">Salvar</button>
+        <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+    </div>
 </form>

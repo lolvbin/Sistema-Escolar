@@ -44,7 +44,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   - Ano letivo: só o ano atual e o seguinte (padrão: o seguinte)
   - Responsável acadêmico e financeiro (owned types `Academico` e `Financeiro`) agora ficam no `Aluno`. Se `MesmoResponsavel`, o financeiro é cópia do acadêmico, salva no servidor
 
-### Login e perfis (escrito, falta testar no navegador)
+### Login e perfis (testado no navegador)
 - `Data/Usuario.cs`: entidade `Usuario`, enum `Perfil` (Responsavel, Funcionario, Professor, Aluno), hash PBKDF2 (`Senha`) e `UsuarioSeed`
 - Cookie auth em `Program.cs`; política padrão exige login. `[AllowAnonymous]` em Login, Previa, Error. Pasta `/Matriculas` só para Funcionário (política `Funcionario`)
 - A tabela `Usuarios` é criada por SQL (`CREATE TABLE IF NOT EXISTS`) no `UsuarioSeed.Preparar`, porque `EnsureCreated` não adiciona tabelas em banco existente
@@ -52,15 +52,18 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Prévia TEMPORÁRIA e estática (dados fictícios): `/Previa/{perfil}` e `Pages/Shared/_Painel.cshtml` (usado também no `/` conforme o perfil). Remover/substituir conforme os módulos reais surgirem
 - Sem limite de tentativas de login ainda
 
-### Módulo Alunos e ligação com Matrícula (testado por HTTP)
-- `Data/Aluno.cs`: `Aluno` (nome, nascimento, CPF único, responsáveis acadêmico/financeiro, `MesmoResponsavel`). Telas em `Pages/Alunos/` (lista com busca, novo, editar), só Funcionário. Sem exclusão por enquanto
-- `Matricula` agora só tem `AlunoId` (FK, Restrict), série, turno, ano letivo, status, data e observações. Uma matrícula por aluno por ano (índice único `AlunoId + AnoLetivo`). Nova matrícula escolhe um aluno já cadastrado; na edição o aluno não muda
-- As tabelas `Alunos` e `Matriculas` (nova) são criadas por SQL em `Tabelas.Preparar`. Se achar a matrícula no formato antigo, cria os alunos a partir dela, renomeia a antiga para `Matriculas_antiga` (backup, pode apagar depois de conferir) e copia as matrículas
-- `_Responsavel.cshtml` fica em `Pages/Shared`
+### Alunos e Matrícula (fluxo: matrícula primeiro, testado no navegador)
+- REGRA ESSENCIAL: não existe cadastrar aluno sem matrícula. O aluno é criado **junto** com a matrícula, em `Pages/Matriculas/Create` (um formulário só: dados do aluno + responsáveis + série/turno/ano). Não há mais `Alunos/Create`
+- Rematrícula: se o CPF já existe e o nome confere, reaproveita o aluno (atualiza data de nascimento e responsáveis) e cria a matrícula do novo ano. CPF de outro nome ou aluno já matriculado no ano: erro
+- Excluir a última matrícula de um aluno exclui o aluno junto (aluno só existe com matrícula)
+- `Pages/Alunos/` é só consulta (lista com busca) e correção dos dados (`Edit`), só Funcionário. Matrícula > Editar tem link para os dados do aluno; na edição da matrícula o aluno não muda
+- Modelo: `Data/Aluno.cs` (nome, nascimento, CPF único, responsáveis acadêmico/financeiro, `MesmoResponsavel`) e `Matricula` (`AlunoId` FK Restrict, série, turno, ano, status, data, observações). Índice único `AlunoId + AnoLetivo`
+- Partials compartilhados em `Pages/Shared`: `_DadosAluno` (aluno + responsáveis) e `_Responsavel`; `Pages/Matriculas/_Form` tem só os campos da matrícula. No Create os campos têm prefixo `Aluno.` e `Matricula.` (`Validar(ModelState, "prefixo")`)
+- As tabelas `Alunos` e `Matriculas` são criadas por SQL em `Tabelas.Preparar`. Se achar a matrícula no formato antigo, migra e deixa `Matriculas_antiga` (backup, pode apagar)
 
 ### Pendências conhecidas
-- Testar visualmente no navegador as máscaras de JS (cobertura até agora foi por HTTP; o usuário testou e disse que está ok)
-- Próximos módulos: login e perfis, Alunos, Professores, Calendário acadêmico, Notas, Financeiro
+- Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
+- Próximos módulos: Professores, Calendário acadêmico, Notas, Financeiro
 
 ## Cuidados
 - Rodar servidores de teste em background: guardar o PID e encerrar com `kill <pid>`. Não usar `pkill -f` com o nome da DLL, pois mata o próprio shell

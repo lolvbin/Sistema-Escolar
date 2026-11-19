@@ -34,7 +34,7 @@
     });
 
     // Mostra/esconde o responsável financeiro
-    var chk = document.getElementById("MesmoResponsavel");
+    var chk = document.querySelector('input[type=checkbox][name$="MesmoResponsavel"]');
     var fin = document.getElementById("financeiro");
     if (chk && fin) {
         var alterna = function () { fin.hidden = chk.checked; };
