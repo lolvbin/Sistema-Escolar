@@ -87,10 +87,16 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Aceita vírgula ou ponto, arredonda para 1 casa; campo vazio apaga a nota; se um valor for inválido nada é salvo. Professor que não é o da disciplina: Acesso negado
 - Falta: aluno/responsável verem o boletim (precisa ligar `Usuario` ao aluno/responsável), visão do funcionário, média/situação
 
+### Boletim e acessos (testado no navegador)
+- `Pages/Boletim` para Aluno e Responsável (política `Boletim`, menu "Boletim"): disciplinas da turma × 4 bimestres + média das notas já lançadas (sem regra de aprovação ainda). Mostra a matrícula mais recente com turma
+- Ligação: aluno por `Aluno.UsuarioId` (coluna criada em `TabelaNotas.Preparar`); responsável pelo **e-mail** (acadêmico ou financeiro) igual ao do login. Só vê os próprios alunos
+- Funcionário cria os acessos em `Alunos/Edit` ("Acessos ao sistema"): aluno (informa e-mail) e responsável (e-mail já cadastrado); senha provisória mostrada uma vez
+- Falta: visão do funcionário/professor, regra de aprovação, trocar a própria senha
+
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
 - Senha: por decisão do usuário, continua só o funcionário gerando a provisória (trocar a própria senha fica para depois). Falta limite de tentativas de login
-- Ordem combinada dos próximos módulos: Boletim para aluno/responsável → Calendário → Financeiro (libera a matrícula Pendente)
+- Ordem combinada dos próximos módulos: Calendário → Financeiro (libera a matrícula Pendente)
 
 ## Cuidados
 - `psql` instalado. Para rodar SQL com a conexão do user-secrets sem expor a senha: ler `dotnet user-secrets list` e passar Host/Port/Username/Database por parâmetro e a senha por `PGPASSWORD`

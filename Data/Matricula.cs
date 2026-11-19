@@ -143,6 +143,7 @@ public class EscolaContext : DbContext
     {
         b.Entity<Aluno>().Property(a => a.DataNascimento).HasColumnType("date");
         b.Entity<Aluno>().HasIndex(a => a.Cpf).IsUnique();
+        b.Entity<Aluno>().HasOne<Usuario>().WithMany().HasForeignKey(a => a.UsuarioId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<Aluno>().OwnsOne(a => a.Academico);
         b.Entity<Aluno>().OwnsOne(a => a.Financeiro);
         b.Entity<Turma>().HasIndex(t => new { t.AnoLetivo, t.Serie, t.Letra }).IsUnique();

@@ -31,6 +31,9 @@ public class Aluno
     public string? Observacoes { get; set; }
 
     [Display(Name = "O responsável financeiro é o mesmo responsável acadêmico")]
+    // Login do próprio aluno (criado pelo funcionário); responsáveis são ligados pelo e-mail
+    public int? UsuarioId { get; set; }
+
     public bool MesmoResponsavel { get; set; } = true;
 
     public Responsavel Academico { get; set; } = new();

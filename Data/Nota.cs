@@ -30,6 +30,7 @@ public static class TabelaNotas
                 PRIMARY KEY ("MatriculaId", "DisciplinaId", "Bimestre")
             );
             CREATE INDEX IF NOT EXISTS "IX_Notas_DisciplinaId" ON "Notas" ("DisciplinaId");
+            ALTER TABLE "Alunos" ADD COLUMN IF NOT EXISTS "UsuarioId" integer NULL REFERENCES "Usuarios" ("Id") ON DELETE RESTRICT;
             """);
     }
 }

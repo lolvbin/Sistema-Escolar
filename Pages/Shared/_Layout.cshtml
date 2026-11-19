@@ -28,6 +28,10 @@
                     <a asp-page="/Disciplinas/Index">Disciplinas</a>
                     <a asp-page="/Turmas/Index">Turmas</a>
                 }
+                @if (User.IsInRole("Aluno") || User.IsInRole("Responsavel"))
+                {
+                    <a asp-page="/Boletim">Boletim</a>
+                }
                 @if (User.IsInRole("Professor"))
                 {
                     <a asp-page="/Notas/Index">Notas</a>

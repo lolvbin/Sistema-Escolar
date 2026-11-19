@@ -3,6 +3,8 @@
 @{ ViewData["Title"] = "Editar aluno"; }
 
 <h1>Editar aluno</h1>
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+@if (Model.Erro != null) { <div class="card erro-card">@Model.Erro</div> }
 <form method="post" class="card" novalidate>
     <partial name="_DadosAluno" model="Model.Aluno" />
 
@@ -17,3 +19,32 @@
         <a class="btn btn-sec" asp-page="Index">Cancelar</a>
     </div>
 </form>
+
+<div class="card" style="margin-top:16px">
+    <h2>Acessos ao sistema</h2>
+    <p><strong>Aluno:</strong>
+    @if (Model.AcessoAluno != null) { <span>@Model.AcessoAluno</span> }
+    else
+    {
+        <form method="post" asp-page-handler="Acesso" asp-route-id="@Model.Aluno.Id" class="filtro">
+            <input type="hidden" name="tipo" value="aluno" />
+            <input type="email" name="email" placeholder="e-mail do aluno" />
+            <button class="btn btn-sec">Criar acesso</button>
+        </form>
+    }
+    </p>
+    @foreach (var (e, tem) in Model.AcessoResp)
+    {
+        <p><strong>Responsável</strong> @e:
+        @if (tem) { <span class="suave">já tem acesso</span> }
+        else
+        {
+            <form method="post" asp-page-handler="Acesso" asp-route-id="@Model.Aluno.Id" class="inline">
+                <input type="hidden" name="tipo" value="resp" />
+                <input type="hidden" name="email" value="@e" />
+                <button class="link">Criar acesso</button>
+            </form>
+        }
+        </p>
+    }
+</div>

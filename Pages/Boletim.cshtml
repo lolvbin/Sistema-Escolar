@@ -1,0 +1,63 @@
+@page
+@model SistemaEscolar.Pages.BoletimModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Boletim"; }
+
+<div class="barra"><h1>Boletim</h1></div>
+
+@if (Model.Aluno == null)
+{
+    <div class="card vazio">Nenhum aluno ligado ao seu acesso. Fale com a secretaria.</div>
+}
+else
+{
+    @if (Model.Alunos.Count > 1)
+    {
+        <div class="abas">
+            @foreach (var a in Model.Alunos)
+            {
+                <a class="@(a.Id == Model.Aluno.Id ? "ativa" : "")" asp-page="Boletim" asp-route-alunoId="@a.Id">@a.Nome</a>
+            }
+        </div>
+    }
+    <p><strong>@Model.Aluno.Nome</strong>
+        @if (Model.Matricula?.Turma != null)
+        {
+            <span class="suave"> - @Model.Matricula.Turma.Nome, @Model.Matricula.AnoLetivo</span>
+        }
+    </p>
+
+    @if (Model.Matricula == null)
+    {
+        <div class="card vazio">O aluno ainda não está em uma turma.</div>
+    }
+    else if (Model.Linhas.Count == 0)
+    {
+        <div class="card vazio">A turma ainda não tem disciplinas definidas.</div>
+    }
+    else
+    {
+        <div class="card tabela">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Disciplina</th>
+                        @for (int b = 1; b <= TabelaNotas.Bimestres; b++) { <th>@(b)º bim.</th> }
+                        <th>Média</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var l in Model.Linhas)
+                {
+                    <tr>
+                        <td>@l.Disciplina</td>
+                        @foreach (var n in l.Notas) { <td>@(n?.ToString("0.0") ?? "-")</td> }
+                        <td><strong>@(l.Media?.ToString("0.0") ?? "-")</strong></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <p class="suave">A média considera só os bimestres já lançados.</p>
+    }
+}
