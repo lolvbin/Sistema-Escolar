@@ -1,0 +1,8 @@
+@page
+@model SistemaEscolar.Pages.Disciplinas.CreateModel
+@{ ViewData["Title"] = "Nova disciplina"; }
+
+<h1>Nova disciplina</h1>
+<form method="post" class="card" novalidate>
+    <partial name="_Form" model="Model.Disciplina" view-data="ViewData" />
+</form>

@@ -1,0 +1,61 @@
+@page
+@using SistemaEscolar.Data
+@model SistemaEscolar.Pages.Disciplinas.IndexModel
+@{ ViewData["Title"] = "Disciplinas"; }
+
+<div class="barra">
+    <h1>Disciplinas</h1>
+    <a class="btn" asp-page="Create">Nova disciplina</a>
+</div>
+
+@if (TempData["Aviso"] is string aviso)
+{
+    <div class="card aviso">@aviso</div>
+}
+
+<form method="get" class="filtro">
+    <input name="Busca" value="@Model.Busca" placeholder="Buscar disciplina" />
+    <select name="Situacao">
+        <option value="" selected="@(Model.Situacao == "")">Todas</option>
+        <option value="ativas" selected="@(Model.Situacao == "ativas")">Ativas</option>
+        <option value="inativas" selected="@(Model.Situacao == "inativas")">Inativas</option>
+    </select>
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="card tabela">
+    @if (Model.Itens.Count == 0)
+    {
+        <div class="vazio">
+            Nenhuma disciplina encontrada.
+            @if (Model.SemNenhuma)
+            {
+                <form method="post" asp-page-handler="CarregarPadrao" style="margin-top:12px">
+                    <button class="btn">Carregar disciplinas padrão</button>
+                </form>
+            }
+        </div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Disciplina</th><th>Séries</th><th>Situação</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var d in Model.Itens)
+            {
+                <tr>
+                    <td>@d.Nome</td>
+                    <td><small>@SerieExt.Resumo(d.Series.Select(s => s.Serie))</small></td>
+                    <td><span class="badge @(d.Ativa ? "st-Ativa" : "st-Cancelada")">@(d.Ativa ? "Ativa" : "Inativa")</span></td>
+                    <td class="acoes">
+                        <a asp-page="Edit" asp-route-id="@d.Id">Editar</a>
+                        <form method="post" asp-page-handler="Alternar" asp-route-id="@d.Id" class="inline">
+                            <button class="link">@(d.Ativa ? "Inativar" : "Reativar")</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

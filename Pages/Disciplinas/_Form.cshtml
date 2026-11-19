@@ -1,0 +1,32 @@
+@using SistemaEscolar.Data
+@model Disciplina
+@{
+    var marcadas = ViewData["Marcadas"] as HashSet<int> ?? new HashSet<int>();
+    var grupos = Html.GetEnumSelectList<Serie>().GroupBy(i => i.Group?.Name);
+}
+
+<div class="grade">
+    <div class="campo largo">
+        <label asp-for="Nome"></label>
+        <input asp-for="Nome" data-mask="nome" maxlength="80" autocomplete="off" />
+        <span asp-validation-for="Nome" class="erro"></span>
+    </div>
+</div>
+
+<h2>Séries em que é oferecida</h2>
+@foreach (var g in grupos)
+{
+    <p class="grupo">@g.Key</p>
+    <div class="series">
+        @foreach (var item in g)
+        {
+            <label class="check"><input type="checkbox" name="SeriesIds" value="@item.Value" checked="@marcadas.Contains(int.Parse(item.Value))" /> @item.Text</label>
+        }
+    </div>
+}
+<span class="erro">@ViewData["ErroSeries"]</span>
+
+<div class="rodape-form">
+    <button class="btn">Salvar</button>
+    <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+</div>

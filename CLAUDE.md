@@ -67,12 +67,18 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Professor não é excluído: **Inativar** bloqueia também o login; **Nova senha** gera outra provisória. Não existe ainda tela para o usuário trocar a própria senha
 - Todos os campos obrigatórios (nome, nascimento 18+, CPF único, telefone, e-mail único, formação)
 
+### Módulo Disciplinas (testado no navegador)
+- `Data/Disciplina.cs` + `Pages/Disciplinas/` (lista com busca e filtro, nova, editar, inativar), só Funcionário. Tabelas `Disciplinas` e `DisciplinaSeries` (disciplina × série, por enum `Serie`) criadas por SQL em `TabelasDisciplinas.Preparar`
+- Cada disciplina marca as séries em que é oferecida (pelo menos uma). Não há exclusão, só inativar. Nome único, só letras
+- Botão "Carregar disciplinas padrão" (só aparece com a lista vazia) cria um catálogo inicial (`TabelasDisciplinas.Padrao()`), editável. O banco de dev já tem as 16 padrão
+
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
-- Trocar a própria senha (hoje só o funcionário gera provisória) e limite de tentativas de login
-- Ordem combinada dos próximos módulos: Disciplinas (lista por série) → Turmas (série+ano+turno, enturmação dos alunos com matrícula Ativa, professor por disciplina) → Notas (4 bimestres) → Calendário → Financeiro (libera a matrícula Pendente)
+- Senha: por decisão do usuário, continua só o funcionário gerando a provisória (trocar a própria senha fica para depois). Falta limite de tentativas de login
+- Ordem combinada dos próximos módulos: Turmas (série+ano+turno, enturmação dos alunos com matrícula Ativa, professor por disciplina) → Notas (4 bimestres) → Calendário → Financeiro (libera a matrícula Pendente)
 
 ## Cuidados
+- Sem `psql` neste PC. Para rodar SQL (limpar dados de teste): projeto console temporário com Npgsql no scratchpad, lendo a conexão de `dotnet user-secrets list`. Ou instalar `postgresql-client`
 - Rodar servidores de teste em background: guardar o PID e encerrar com `kill <pid>`. Não usar `pkill -f` com o nome da DLL, pois mata o próprio shell
 - Dados de teste criados no banco compartilhado devem ser apagados ao final
 - Fim do dia: quando o usuário rodar `git commit` e `git push` dizendo que finalizamos por hoje, apagar do banco os dados de exemplo (matrículas de teste e usuários `@escola.test`). Em Development os usuários de teste são recriados na próxima execução
