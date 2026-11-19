@@ -100,3 +100,7 @@ a.atalho:hover { border-color: var(--primaria); }
 .abas { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
 .abas a { padding: 6px 12px; border: 1px solid var(--borda); border-radius: 6px; text-decoration: none; color: var(--suave); }
 .abas a.ativa { background: var(--primaria); border-color: var(--primaria); color: var(--primaria-texto); }
+
+.aviso { border-color: var(--ok); margin-bottom: 14px; }
+form.inline { display: inline; }
+button.link { background: none; border: 0; padding: 0; margin-right: 10px; font: inherit; color: var(--primaria); cursor: pointer; text-decoration: underline; }

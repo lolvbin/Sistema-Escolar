@@ -1,0 +1,58 @@
+@page
+@model SistemaEscolar.Pages.Professores.IndexModel
+@{ ViewData["Title"] = "Professores"; }
+
+<div class="barra">
+    <h1>Professores</h1>
+    <a class="btn" asp-page="Create">Novo professor</a>
+</div>
+
+@if (TempData["Aviso"] is string aviso)
+{
+    <div class="card aviso">@aviso</div>
+}
+
+<form method="get" class="filtro">
+    <input name="Busca" value="@Model.Busca" placeholder="Buscar por nome, CPF ou e-mail" />
+    <select name="Situacao">
+        <option value="" selected="@(Model.Situacao == "")">Todos</option>
+        <option value="ativos" selected="@(Model.Situacao == "ativos")">Ativos</option>
+        <option value="inativos" selected="@(Model.Situacao == "inativos")">Inativos</option>
+    </select>
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="card tabela">
+    @if (Model.Itens.Count == 0)
+    {
+        <div class="vazio">Nenhum professor encontrado.</div>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Professor</th><th>Contato</th><th>Formação</th><th>Situação</th><th></th></tr>
+            </thead>
+            <tbody>
+            @foreach (var p in Model.Itens)
+            {
+                <tr>
+                    <td>@p.Nome<br /><small>@p.Cpf</small></td>
+                    <td>@p.Email<br /><small>@p.Telefone</small></td>
+                    <td>@p.Formacao</td>
+                    <td><span class="badge @(p.Ativo ? "st-Ativa" : "st-Cancelada")">@(p.Ativo ? "Ativo" : "Inativo")</span></td>
+                    <td class="acoes">
+                        <a asp-page="Edit" asp-route-id="@p.Id">Editar</a>
+                        <form method="post" asp-page-handler="Alternar" asp-route-id="@p.Id" class="inline">
+                            <button class="link">@(p.Ativo ? "Inativar" : "Reativar")</button>
+                        </form>
+                        <form method="post" asp-page-handler="NovaSenha" asp-route-id="@p.Id" class="inline">
+                            <button class="link">Nova senha</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

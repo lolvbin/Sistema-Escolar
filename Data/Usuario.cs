@@ -48,6 +48,10 @@ public static class Senha
         return CryptographicOperations.FixedTimeEquals(hash, esperado);
     }
 
+    // Senha provisória legível (sem 0/O/1/l/I) para o primeiro acesso
+    public static string Provisoria() =>
+        RandomNumberGenerator.GetString("ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789", 10);
+
     // Hash falso, usado quando o e-mail não existe (mantém o tempo de resposta parecido)
     public static readonly string Falso = Gerar("nao-existe");
 }

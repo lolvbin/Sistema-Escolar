@@ -24,6 +24,7 @@
                 {
                     <a asp-page="/Matriculas/Index">Matrículas</a>
                     <a asp-page="/Alunos/Index">Alunos</a>
+                    <a asp-page="/Professores/Index">Professores</a>
                 }
                 @if (User.IsInRole("Professor") || User.IsInRole("Aluno"))
                 {

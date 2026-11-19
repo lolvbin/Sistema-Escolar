@@ -61,9 +61,16 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Partials compartilhados em `Pages/Shared`: `_DadosAluno` (aluno + responsáveis) e `_Responsavel`; `Pages/Matriculas/_Form` tem só os campos da matrícula. No Create os campos têm prefixo `Aluno.` e `Matricula.` (`Validar(ModelState, "prefixo")`)
 - As tabelas `Alunos` e `Matriculas` são criadas por SQL em `Tabelas.Preparar`. Se achar a matrícula no formato antigo, migra e deixa `Matriculas_antiga` (backup, pode apagar)
 
+### Módulo Professores (testado no navegador)
+- `Data/Professor.cs` + `Pages/Professores/` (lista com busca e filtro ativo/inativo, novo, editar), só Funcionário. Tabela `Professores` criada por SQL em `TabelaProfessores.Preparar` (depois de `Usuarios`)
+- Ao cadastrar, cria também o login (`Usuario`, perfil Professor) com o mesmo e-mail e uma **senha provisória** mostrada uma única vez (TempData). Editar nome/e-mail do professor atualiza o login
+- Professor não é excluído: **Inativar** bloqueia também o login; **Nova senha** gera outra provisória. Não existe ainda tela para o usuário trocar a própria senha
+- Todos os campos obrigatórios (nome, nascimento 18+, CPF único, telefone, e-mail único, formação)
+
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
-- Próximos módulos: Professores, Calendário acadêmico, Notas, Financeiro
+- Trocar a própria senha (hoje só o funcionário gera provisória) e limite de tentativas de login
+- Ordem combinada dos próximos módulos: Disciplinas (lista por série) → Turmas (série+ano+turno, enturmação dos alunos com matrícula Ativa, professor por disciplina) → Notas (4 bimestres) → Calendário → Financeiro (libera a matrícula Pendente)
 
 ## Cuidados
 - Rodar servidores de teste em background: guardar o PID e encerrar com `kill <pid>`. Não usar `pkill -f` com o nome da DLL, pois mata o próprio shell

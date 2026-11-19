@@ -8,6 +8,7 @@ builder.Services.AddRazorPages(o =>
     // Matrículas: só funcionário
     o.Conventions.AuthorizeFolder("/Matriculas", "Funcionario");
     o.Conventions.AuthorizeFolder("/Alunos", "Funcionario");
+    o.Conventions.AuthorizeFolder("/Professores", "Funcionario");
     // Sala de aula: professor e aluno
     o.Conventions.AuthorizePage("/SalaDeAula", "SalaDeAula");
 });
@@ -51,6 +52,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
     Tabelas.Preparar(db);
     UsuarioSeed.Preparar(db, app.Environment.IsDevelopment());
+    TabelaProfessores.Preparar(db); // depois de Usuarios (FK)
 }
 
 if (!app.Environment.IsDevelopment())

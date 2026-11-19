@@ -1,0 +1,39 @@
+@using SistemaEscolar.Data
+@model Professor
+
+<div class="grade">
+    <div class="campo largo">
+        <label asp-for="Nome"></label>
+        <input asp-for="Nome" data-mask="nome" maxlength="120" autocomplete="off" />
+        <span asp-validation-for="Nome" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="DataNascimento"></label>
+        <input asp-for="DataNascimento" asp-format="{0:dd/MM/yyyy}" type="text" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+        <span asp-validation-for="DataNascimento" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="Cpf"></label>
+        <input asp-for="Cpf" data-mask="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" autocomplete="off" />
+        <span asp-validation-for="Cpf" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="Telefone"></label>
+        <input asp-for="Telefone" type="tel" data-mask="tel" inputmode="numeric" maxlength="14" placeholder="(31)9xxxx-xxxx" autocomplete="off" />
+        <span asp-validation-for="Telefone" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" type="email" maxlength="120" />
+        <span asp-validation-for="Email" class="erro"></span>
+    </div>
+    <div class="campo largo">
+        <label asp-for="Formacao"></label>
+        <input asp-for="Formacao" maxlength="120" placeholder="Ex.: Licenciatura em Matemática" />
+        <span asp-validation-for="Formacao" class="erro"></span>
+    </div>
+</div>
+<div class="rodape-form">
+    <button class="btn">Salvar</button>
+    <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+</div>

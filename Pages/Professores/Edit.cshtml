@@ -1,0 +1,8 @@
+@page "{id:int}"
+@model SistemaEscolar.Pages.Professores.EditModel
+@{ ViewData["Title"] = "Editar professor"; }
+
+<h1>Editar professor</h1>
+<form method="post" class="card" novalidate>
+    <partial name="_Form" model="Model.Professor" />
+</form>

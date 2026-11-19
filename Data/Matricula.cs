@@ -128,6 +128,7 @@ public class EscolaContext : DbContext
     public DbSet<Matricula> Matriculas => Set<Matricula>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Aluno> Alunos => Set<Aluno>();
+    public DbSet<Professor> Professores => Set<Professor>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -135,6 +136,9 @@ public class EscolaContext : DbContext
         b.Entity<Aluno>().HasIndex(a => a.Cpf).IsUnique();
         b.Entity<Aluno>().OwnsOne(a => a.Academico);
         b.Entity<Aluno>().OwnsOne(a => a.Financeiro);
+        b.Entity<Professor>().Property(p => p.DataNascimento).HasColumnType("date");
+        b.Entity<Professor>().HasIndex(p => p.Cpf).IsUnique();
+        b.Entity<Professor>().HasOne(p => p.Usuario).WithMany().HasForeignKey(p => p.UsuarioId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<Usuario>().HasIndex(u => u.Email).IsUnique();
         b.Entity<Matricula>().Property(m => m.DataMatricula).HasColumnType("date");
         b.Entity<Matricula>().HasOne(m => m.Aluno).WithMany().HasForeignKey(m => m.AlunoId).OnDelete(DeleteBehavior.Restrict);

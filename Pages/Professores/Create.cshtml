@@ -1,0 +1,9 @@
+@page
+@model SistemaEscolar.Pages.Professores.CreateModel
+@{ ViewData["Title"] = "Novo professor"; }
+
+<h1>Novo professor</h1>
+<form method="post" class="card" novalidate>
+    <partial name="_Form" model="Model.Professor" />
+</form>
+<p class="suave">Ao salvar, o professor ganha um login com este e-mail e uma senha provisória, mostrada uma única vez.</p>
