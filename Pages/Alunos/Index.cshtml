@@ -1,0 +1,39 @@
+@page
+@model SistemaEscolar.Pages.Alunos.IndexModel
+@{ ViewData["Title"] = "Alunos"; }
+
+<div class="barra">
+    <h1>Alunos</h1>
+    <a class="btn" asp-page="Create">Novo aluno</a>
+</div>
+
+<form method="get" class="filtro">
+    <input name="Busca" value="@Model.Busca" placeholder="Buscar aluno ou responsável" />
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="card tabela">
+    @if (Model.Itens.Count == 0)
+    {
+        <div class="vazio">Nenhum aluno encontrado.</div>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Aluno</th><th>Nascimento</th><th>Responsável</th><th></th></tr>
+            </thead>
+            <tbody>
+            @foreach (var a in Model.Itens)
+            {
+                <tr>
+                    <td>@a.Nome<br /><small>@a.Cpf</small></td>
+                    <td>@a.DataNascimento?.ToString("dd/MM/yyyy")</td>
+                    <td>@a.Academico.Nome<br /><small>@a.Academico.Telefone</small></td>
+                    <td class="acoes"><a asp-page="Edit" asp-route-id="@a.Id">Editar</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

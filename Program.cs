@@ -7,6 +7,7 @@ builder.Services.AddRazorPages(o =>
 {
     // Matrículas: só funcionário
     o.Conventions.AuthorizeFolder("/Matriculas", "Funcionario");
+    o.Conventions.AuthorizeFolder("/Alunos", "Funcionario");
     // Sala de aula: professor e aluno
     o.Conventions.AuthorizePage("/SalaDeAula", "SalaDeAula");
 });
@@ -48,6 +49,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<EscolaContext>();
     db.Database.EnsureCreated();
+    Tabelas.Preparar(db);
     UsuarioSeed.Preparar(db, app.Environment.IsDevelopment());
 }
 

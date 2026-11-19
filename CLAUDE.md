@@ -42,7 +42,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   - Data no formato dd/MM/yyyy (cultura pt-BR). CPF `000.000.000-00` (11 dígitos válidos). Telefone `(31)9xxxx-xxxx` (celular, 11 dígitos). Nomes só com letras
   - Série em lista fixa (enum `Serie`: Maternal, Pré I/II, 1º–9º ano, 1ª–3ª série do médio), para padronizar relatórios
   - Ano letivo: só o ano atual e o seguinte (padrão: o seguinte)
-  - Responsável acadêmico e financeiro separados (owned types `Academico` e `Financeiro`). Se `MesmoResponsavel`, o financeiro é cópia do acadêmico, salva no servidor
+  - Responsável acadêmico e financeiro (owned types `Academico` e `Financeiro`) agora ficam no `Aluno`. Se `MesmoResponsavel`, o financeiro é cópia do acadêmico, salva no servidor
 
 ### Login e perfis (escrito, falta testar no navegador)
 - `Data/Usuario.cs`: entidade `Usuario`, enum `Perfil` (Responsavel, Funcionario, Professor, Aluno), hash PBKDF2 (`Senha`) e `UsuarioSeed`
@@ -52,8 +52,13 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Prévia TEMPORÁRIA e estática (dados fictícios): `/Previa/{perfil}` e `Pages/Shared/_Painel.cshtml` (usado também no `/` conforme o perfil). Remover/substituir conforme os módulos reais surgirem
 - Sem limite de tentativas de login ainda
 
+### Módulo Alunos e ligação com Matrícula (testado por HTTP)
+- `Data/Aluno.cs`: `Aluno` (nome, nascimento, CPF único, responsáveis acadêmico/financeiro, `MesmoResponsavel`). Telas em `Pages/Alunos/` (lista com busca, novo, editar), só Funcionário. Sem exclusão por enquanto
+- `Matricula` agora só tem `AlunoId` (FK, Restrict), série, turno, ano letivo, status, data e observações. Uma matrícula por aluno por ano (índice único `AlunoId + AnoLetivo`). Nova matrícula escolhe um aluno já cadastrado; na edição o aluno não muda
+- As tabelas `Alunos` e `Matriculas` (nova) são criadas por SQL em `Tabelas.Preparar`. Se achar a matrícula no formato antigo, cria os alunos a partir dela, renomeia a antiga para `Matriculas_antiga` (backup, pode apagar depois de conferir) e copia as matrículas
+- `_Responsavel.cshtml` fica em `Pages/Shared`
+
 ### Pendências conhecidas
-- Dados do aluno e dos responsáveis estão dentro da matrícula. Separar quando fizer o módulo Alunos
 - Testar visualmente no navegador as máscaras de JS (cobertura até agora foi por HTTP; o usuário testou e disse que está ok)
 - Próximos módulos: login e perfis, Alunos, Professores, Calendário acadêmico, Notas, Financeiro
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using SistemaEscolar.Data;
 
 namespace SistemaEscolar.Pages.Matriculas;
@@ -13,7 +14,7 @@ public class DeleteModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
-        var m = await _db.Matriculas.FindAsync(id);
+        var m = await _db.Matriculas.Include(x => x.Aluno).FirstOrDefaultAsync(x => x.Id == id);
         if (m == null) return NotFound();
         Matricula = m;
         return Page();

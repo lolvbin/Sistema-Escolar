@@ -23,6 +23,7 @@
                 @if (User.IsInRole("Funcionario"))
                 {
                     <a asp-page="/Matriculas/Index">Matrículas</a>
+                    <a asp-page="/Alunos/Index">Alunos</a>
                 }
                 @if (User.IsInRole("Professor") || User.IsInRole("Aluno"))
                 {

@@ -30,8 +30,8 @@
             @foreach (var m in Model.Itens)
             {
                 <tr>
-                    <td>@m.AlunoNome</td>
-                    <td>@m.Academico.Nome<br /><small>@m.Academico.Telefone</small></td>
+                    <td>@m.Aluno?.Nome</td>
+                    <td>@m.Aluno?.Academico.Nome<br /><small>@m.Aluno?.Academico.Telefone</small></td>
                     <td>@Html.DisplayFor(_ => m.Serie) (@Html.DisplayFor(_ => m.Turno))</td>
                     <td>@m.AnoLetivo</td>
                     <td><span class="badge st-@m.Status">@Html.DisplayFor(_ => m.Status)</span></td>

@@ -17,10 +17,10 @@ public class IndexModel : PageModel
 
     public async Task OnGetAsync()
     {
-        var q = _db.Matriculas.AsNoTracking();
+        IQueryable<Matricula> q = _db.Matriculas.AsNoTracking().Include(m => m.Aluno);
         if (!string.IsNullOrWhiteSpace(Busca))
-            q = q.Where(m => EF.Functions.ILike(m.AlunoNome, $"%{Busca}%")
-                          || EF.Functions.ILike(m.Academico.Nome, $"%{Busca}%"));
+            q = q.Where(m => EF.Functions.ILike(m.Aluno!.Nome, $"%{Busca}%")
+                          || EF.Functions.ILike(m.Aluno!.Academico.Nome, $"%{Busca}%"));
         if (Status != null)
             q = q.Where(m => m.Status == Status);
 

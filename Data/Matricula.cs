@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace SistemaEscolar.Data;
@@ -83,22 +84,12 @@ public class Matricula
 {
     public int Id { get; set; }
 
-    [Required(ErrorMessage = "Informe o nome do aluno")]
-    [StringLength(120)]
-    [Nome]
-    [Display(Name = "Nome do aluno")]
-    public string AlunoNome { get; set; } = "";
+    [Required(ErrorMessage = "Selecione o aluno")]
+    [Display(Name = "Aluno")]
+    public int? AlunoId { get; set; }
 
-    [Required(ErrorMessage = "Informe a data de nascimento (dd/mm/aaaa)")]
-    [DataType(DataType.Date)]
-    [Display(Name = "Data de nascimento")]
-    public DateTime? DataNascimento { get; set; }
-
-    [Required(ErrorMessage = "Informe o CPF do aluno")]
-    [StringLength(14)]
-    [Cpf]
-    [Display(Name = "CPF do aluno")]
-    public string Cpf { get; set; } = "";
+    [ValidateNever]
+    public Aluno? Aluno { get; set; }
 
     [Required(ErrorMessage = "Selecione a série")]
     [Display(Name = "Série")]
@@ -120,39 +111,13 @@ public class Matricula
     [Display(Name = "Observações")]
     public string? Observacoes { get; set; }
 
-    // Responsável acadêmico e financeiro. Se for o mesmo, o financeiro é uma cópia do acadêmico.
-    [Display(Name = "O responsável financeiro é o mesmo responsável acadêmico")]
-    public bool MesmoResponsavel { get; set; } = true;
-
-    public Responsavel Academico { get; set; } = new();
-    public Responsavel Financeiro { get; set; } = new();
-
     public static int[] AnosPermitidos => new[] { DateTime.Today.Year, DateTime.Today.Year + 1 };
 
     /// <summary>Regras que dependem de mais de um campo ou da data de hoje.</summary>
     public void Validar(ModelStateDictionary ms)
     {
-        if (MesmoResponsavel)
-        {
-            // Financeiro não vem do formulário: ignora os erros dele.
-            foreach (var k in ms.Keys.Where(k => k.Contains("Financeiro")).ToList())
-                ms.Remove(k);
-        }
-
-        if (DataNascimento is { } d && (d.Date > DateTime.Today || d.Year < DateTime.Today.Year - 30))
-            ms.AddModelError("DataNascimento", "Data de nascimento inválida");
-
         if (!AnosPermitidos.Contains(AnoLetivo))
             ms.AddModelError("AnoLetivo", $"Ano letivo deve ser {AnosPermitidos[0]} ou {AnosPermitidos[1]}");
-    }
-
-    public void Normalizar()
-    {
-        AlunoNome = AlunoNome.Trim();
-        Cpf = Texto.FormatarCpf(Cpf);
-        Academico.Normalizar();
-        if (MesmoResponsavel) Financeiro = Academico.Copia();
-        else Financeiro.Normalizar();
     }
 }
 
@@ -162,13 +127,17 @@ public class EscolaContext : DbContext
 
     public DbSet<Matricula> Matriculas => Set<Matricula>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
+    public DbSet<Aluno> Alunos => Set<Aluno>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        b.Entity<Aluno>().Property(a => a.DataNascimento).HasColumnType("date");
+        b.Entity<Aluno>().HasIndex(a => a.Cpf).IsUnique();
+        b.Entity<Aluno>().OwnsOne(a => a.Academico);
+        b.Entity<Aluno>().OwnsOne(a => a.Financeiro);
         b.Entity<Usuario>().HasIndex(u => u.Email).IsUnique();
-        b.Entity<Matricula>().Property(m => m.DataNascimento).HasColumnType("date");
         b.Entity<Matricula>().Property(m => m.DataMatricula).HasColumnType("date");
-        b.Entity<Matricula>().OwnsOne(m => m.Academico);
-        b.Entity<Matricula>().OwnsOne(m => m.Financeiro);
+        b.Entity<Matricula>().HasOne(m => m.Aluno).WithMany().HasForeignKey(m => m.AlunoId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<Matricula>().HasIndex(m => new { m.AlunoId, m.AnoLetivo }).IsUnique();
     }
 }

@@ -1,23 +1,28 @@
 @using SistemaEscolar.Data
 @model Matricula
-@{ var edicao = ViewData["Edicao"] as bool? == true; }
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    var edicao = ViewData["Edicao"] as bool? == true;
+    var alunos = ViewData["Alunos"] as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+}
 
-<h2>Aluno</h2>
+<h2>Matrícula</h2>
 <div class="grade">
     <div class="campo largo">
-        <label asp-for="AlunoNome"></label>
-        <input asp-for="AlunoNome" data-mask="nome" maxlength="120" autocomplete="off" />
-        <span asp-validation-for="AlunoNome" class="erro"></span>
-    </div>
-    <div class="campo">
-        <label asp-for="DataNascimento"></label>
-        <input asp-for="DataNascimento" asp-format="{0:dd/MM/yyyy}" type="text" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
-        <span asp-validation-for="DataNascimento" class="erro"></span>
-    </div>
-    <div class="campo">
-        <label asp-for="Cpf"></label>
-        <input asp-for="Cpf" data-mask="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" autocomplete="off" />
-        <span asp-validation-for="Cpf" class="erro"></span>
+        <label asp-for="AlunoId"></label>
+        @if (edicao)
+        {
+            <input asp-for="AlunoId" type="hidden" />
+            <input value="@ViewData["AlunoNome"]" disabled />
+        }
+        else
+        {
+            <select asp-for="AlunoId" asp-items="alunos">
+                <option value="">Selecione</option>
+            </select>
+            <span asp-validation-for="AlunoId" class="erro"></span>
+            <small><a asp-page="/Alunos/Create">Cadastrar novo aluno</a></small>
+        }
     </div>
     <div class="campo">
         <label asp-for="Serie"></label>
@@ -54,17 +59,6 @@
             <input value="Pendente" disabled />
         }
     </div>
-</div>
-
-<h2>Responsável acadêmico</h2>
-<partial name="_Responsavel" for="Academico" />
-
-<h2>Responsável financeiro</h2>
-<label class="check">
-    <input asp-for="MesmoResponsavel" /> @Html.DisplayNameFor(m => m.MesmoResponsavel)
-</label>
-<div id="financeiro">
-    <partial name="_Responsavel" for="Financeiro" />
 </div>
 
 <h2>Outras informações</h2>
