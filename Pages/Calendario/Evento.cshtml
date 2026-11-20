@@ -1,0 +1,50 @@
+@page "{id:int?}"
+@model SistemaEscolar.Pages.Calendario.EventoModel
+@using SistemaEscolar.Data
+@{
+    var novo = Model.Evento.Id == 0;
+    ViewData["Title"] = novo ? "Novo evento" : "Editar evento";
+}
+
+<h1>@ViewData["Title"]</h1>
+<form method="post" class="card" novalidate>
+    <div class="grade">
+        <div class="campo largo">
+            <label asp-for="Evento.Titulo"></label>
+            <input asp-for="Evento.Titulo" maxlength="100" autocomplete="off" />
+            <span asp-validation-for="Evento.Titulo" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="Evento.Tipo"></label>
+            <select asp-for="Evento.Tipo" asp-items="Html.GetEnumSelectList<TipoEvento>()"><option value="">Selecione</option></select>
+            <span asp-validation-for="Evento.Tipo" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="Evento.Inicio"></label>
+            <input asp-for="Evento.Inicio" asp-format="{0:dd/MM/yyyy}" type="text" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+            <span asp-validation-for="Evento.Inicio" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="Evento.Fim"></label>
+            <input asp-for="Evento.Fim" asp-format="{0:dd/MM/yyyy}" type="text" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+            <span asp-validation-for="Evento.Fim" class="erro"></span>
+        </div>
+        <div class="campo largo">
+            <label asp-for="Evento.Descricao"></label>
+            <textarea asp-for="Evento.Descricao" rows="3" maxlength="300"></textarea>
+            <span asp-validation-for="Evento.Descricao" class="erro"></span>
+        </div>
+    </div>
+    <div class="rodape-form">
+        <button class="btn">Salvar</button>
+        <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+    </div>
+</form>
+
+@if (!novo)
+{
+    <form method="post" asp-page-handler="Excluir" asp-route-id="@Model.Evento.Id" style="margin-top:12px"
+          onsubmit="return confirm('Excluir este evento?')">
+        <button class="btn btn-perigo">Excluir evento</button>
+    </form>
+}

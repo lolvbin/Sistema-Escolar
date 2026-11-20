@@ -138,6 +138,7 @@ public class EscolaContext : DbContext
     public DbSet<Disciplina> Disciplinas => Set<Disciplina>();
     public DbSet<Turma> Turmas => Set<Turma>();
     public DbSet<Nota> Notas => Set<Nota>();
+    public DbSet<Evento> Eventos => Set<Evento>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -152,6 +153,8 @@ public class EscolaContext : DbContext
         b.Entity<TurmaDisciplina>().HasOne(x => x.Disciplina).WithMany().HasForeignKey(x => x.DisciplinaId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<TurmaDisciplina>().HasOne(x => x.Professor).WithMany().HasForeignKey(x => x.ProfessorId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<Matricula>().HasOne(m => m.Turma).WithMany().HasForeignKey(m => m.TurmaId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<Evento>().Property(e => e.Inicio).HasColumnType("date");
+        b.Entity<Evento>().Property(e => e.Fim).HasColumnType("date");
         b.Entity<Nota>().ToTable("Notas").HasKey(n => new { n.MatriculaId, n.DisciplinaId, n.Bimestre });
         b.Entity<Nota>().Property(n => n.Valor).HasPrecision(4, 1);
         b.Entity<Nota>().HasOne(n => n.Matricula).WithMany().HasForeignKey(n => n.MatriculaId).OnDelete(DeleteBehavior.Cascade);

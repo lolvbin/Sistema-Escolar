@@ -1,0 +1,69 @@
+@page
+@model SistemaEscolar.Pages.Calendario.IndexModel
+@using System.Globalization
+@using SistemaEscolar.Data
+@{
+    ViewData["Title"] = "Calendário";
+    var pt = new CultureInfo("pt-BR");
+    var ant = Model.Primeiro.AddMonths(-1);
+    var prox = Model.Primeiro.AddMonths(1);
+    var inicioGrade = Model.Primeiro.AddDays(-(int)Model.Primeiro.DayOfWeek);
+    var dias = (int)Math.Ceiling(((int)Model.Primeiro.DayOfWeek + DateTime.DaysInMonth(Model.Primeiro.Year, Model.Primeiro.Month)) / 7.0) * 7;
+    var func = User.IsInRole("Funcionario");
+    var nomeMes = pt.TextInfo.ToTitleCase(Model.Primeiro.ToString("MMMM", pt)) + " de " + Model.Primeiro.Year;
+}
+
+<div class="barra">
+    <h1>Calendário acadêmico</h1>
+    @if (func) { <a class="btn" asp-page="Evento">Novo evento</a> }
+</div>
+
+<div class="barra">
+    <a class="btn btn-sec" asp-page="Index" asp-route-ano="@ant.Year" asp-route-mes="@ant.Month">&laquo; Anterior</a>
+    <strong>@nomeMes</strong>
+    <a class="btn btn-sec" asp-page="Index" asp-route-ano="@prox.Year" asp-route-mes="@prox.Month">Próximo &raquo;</a>
+</div>
+
+<div class="card cal">
+    @foreach (var n in new[] { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb" }) { <div class="cal-cab">@n</div> }
+    @for (int i = 0; i < dias; i++)
+    {
+        var d = inicioGrade.AddDays(i);
+        var fora = d.Month != Model.Primeiro.Month;
+        var doDia = Model.Eventos.Where(e => e.Inicio!.Value.Date <= d && e.UltimoDia >= d).ToList();
+        <div class="cal-dia@(fora ? " fora" : "")@(d == DateTime.Today ? " hoje" : "")">
+            <span class="cal-num">@d.Day</span>
+            @foreach (var e in doDia)
+            {
+                @if (func) { <a class="ev tipo-@e.Tipo" asp-page="Evento" asp-route-id="@e.Id" title="@e.Titulo">@e.Titulo</a> }
+                else { <span class="ev tipo-@e.Tipo" title="@e.Titulo">@e.Titulo</span> }
+            }
+        </div>
+    }
+</div>
+
+<h2>Eventos do mês</h2>
+@if (Model.Eventos.Count == 0)
+{
+    <div class="vazio">Nenhum evento neste mês.</div>
+}
+else
+{
+    <div class="card tabela">
+        <table>
+            <thead><tr><th>Data</th><th>Evento</th><th>Tipo</th><th>Descrição</th>@if (func) { <th></th> }</tr></thead>
+            <tbody>
+            @foreach (var e in Model.Eventos)
+            {
+                <tr>
+                    <td>@e.Inicio!.Value.ToString("dd/MM")@(e.Fim != null ? " a " + e.Fim.Value.ToString("dd/MM") : "")</td>
+                    <td>@e.Titulo</td>
+                    <td><span class="badge tipo-@e.Tipo">@e.Tipo!.Value.ToString().Replace("Reuniao", "Reunião")</span></td>
+                    <td class="suave">@e.Descricao</td>
+                    @if (func) { <td class="acoes"><a asp-page="Evento" asp-route-id="@e.Id">Editar</a></td> }
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

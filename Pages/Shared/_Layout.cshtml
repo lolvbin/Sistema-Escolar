@@ -20,6 +20,10 @@
         <div class="wrap topo-in">
             <a class="marca" asp-page="/Index">Sistema Escolar</a>
             <nav class="menu">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-page="/Calendario/Index">Calendário</a>
+                }
                 @if (User.IsInRole("Funcionario"))
                 {
                     <a asp-page="/Matriculas/Index">Matrículas</a>

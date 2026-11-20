@@ -93,6 +93,12 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Funcionário cria os acessos em `Alunos/Edit` ("Acessos ao sistema"): aluno (informa e-mail) e responsável (e-mail já cadastrado); senha provisória mostrada uma vez
 - Falta: visão do funcionário/professor, regra de aprovação, trocar a própria senha
 
+### Módulo Calendário (testado no navegador)
+- `Data/Evento.cs` (título, tipo, início, fim opcional, descrição; vale para a escola toda) e `TabelaEventos.Preparar` (SQL). Tipos: Evento, Feriado, Recesso, Prova, Reunião
+- `Pages/Calendario/Index`: grade mensal (domingo a sábado) + lista do mês, navegação anterior/próximo, visível a todos os perfis logados (menu "Calendário"). `Pages/Calendario/Evento` (novo/editar/excluir) só Funcionário
+- Erros de validação em `[BindProperty] Evento` precisam da chave com prefixo (`"Evento.Fim"`). Propriedades calculadas do modelo levam `[NotMapped, ValidateNever]` (senão o validador as lê e quebra com nulo)
+- Falta: eventos por turma/série, ligar provas às turmas, início/fim dos bimestres
+
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
 - Senha: por decisão do usuário, continua só o funcionário gerando a provisória (trocar a própria senha fica para depois). Falta limite de tentativas de login
