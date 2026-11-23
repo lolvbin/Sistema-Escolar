@@ -100,10 +100,12 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Falta: eventos por turma/série, ligar provas às turmas, início/fim dos bimestres
 
 ### Aprovação e média (testado no navegador)
-- `Data/Aprovacao.cs`: regra fixa em constantes. Média anual das 4 notas (arredonda 1 casa): **>= 6,0 Aprovado; 4,0 a 5,9 Recuperação; < 4,0 Reprovado**. Faltando nota em algum bimestre: "Em andamento"
+- `Data/Aprovacao.cs`: limites **configuráveis** em `Pages/Configuracoes` (só Funcionário, menu "Configurações"). Ficam na tabela `Configuracoes` (linha única Id=1, criada por `TabelaConfiguracoes.Preparar`) e em propriedades estáticas carregadas na partida e atualizadas ao salvar (app de uma instância só). Média anual das 4 notas (arredonda 1 casa): **>= 6,0 Aprovado; 4,0 a 5,9 Recuperação; < 4,0 Reprovado**. Faltando nota em algum bimestre: "Em andamento"
 - Situação geral do aluno: Em andamento se alguma disciplina está em andamento; senão Reprovado > Recuperação > Aprovado
 - Aparece no `Boletim` (por disciplina e geral) e na tela `Notas/Lancar` (média anual e situação por aluno). Estilo `.sit-*` no CSS
-- Falta: configurar a média mínima pela tela, nota de recuperação, frequência/faltas
+- Recuperação deve ser menor que a aprovação (0 a 10, vírgula ou ponto). Mudar vale na hora para todos os boletins
+- Falta: nota de recuperação, frequência/faltas
+- Cuidado nos testes: se `dotnet run` falhar em silêncio, pode haver servidor antigo na porta 5006 (`ss -ltnp | grep 5006`): encerrar pelo PID
 
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco

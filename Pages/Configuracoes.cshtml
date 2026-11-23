@@ -1,0 +1,24 @@
+@page
+@model SistemaEscolar.Pages.ConfiguracoesModel
+@{ ViewData["Title"] = "Configurações"; }
+
+<h1>Configurações</h1>
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+
+<form method="post" class="card" novalidate>
+    <h2>Aprovação</h2>
+    <div class="grade">
+        <div class="campo">
+            <label for="Minima">Média para aprovação (0 a 10)</label>
+            <input id="Minima" name="Minima" value="@Model.Minima" inputmode="decimal" maxlength="4" autocomplete="off" />
+            @if (Model.ErroMinima != null) { <span class="erro">@Model.ErroMinima</span> }
+        </div>
+        <div class="campo">
+            <label for="Recuperacao">Média mínima para recuperação (0 a 10)</label>
+            <input id="Recuperacao" name="Recuperacao" value="@Model.Recuperacao" inputmode="decimal" maxlength="4" autocomplete="off" />
+            @if (Model.ErroRecuperacao != null) { <span class="erro">@Model.ErroRecuperacao</span> }
+        </div>
+    </div>
+    <p class="suave">Média anual igual ou maior que a de aprovação: aprovado. Entre as duas: recuperação. Abaixo da de recuperação: reprovado. A situação só é definida depois dos 4 bimestres.</p>
+    <div class="rodape-form"><button class="btn">Salvar</button></div>
+</form>

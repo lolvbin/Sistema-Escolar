@@ -13,6 +13,7 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Turmas", "Funcionario");
     // Calendário: todos veem; só o funcionário cadastra
     o.Conventions.AuthorizePage("/Calendario/Evento", "Funcionario");
+    o.Conventions.AuthorizePage("/Configuracoes", "Funcionario");
     // Notas: lançamento só pelo professor
     o.Conventions.AuthorizeFolder("/Notas", "Professor");
     // Boletim: aluno e responsável
@@ -66,7 +67,8 @@ using (var scope = app.Services.CreateScope())
     TabelasDisciplinas.Preparar(db);
     TabelasTurmas.Preparar(db); // depois de Matriculas, Professores e Disciplinas
     TabelaEventos.Preparar(db);
-    TabelaNotas.Preparar(db); // depois de Matriculas e Disciplinas
+    TabelaNotas.Preparar(db);
+    TabelaConfiguracoes.Preparar(db); // depois de Matriculas e Disciplinas
 }
 
 if (!app.Environment.IsDevelopment())
