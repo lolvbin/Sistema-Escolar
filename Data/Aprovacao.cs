@@ -2,6 +2,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SistemaEscolar.Data;
 
+// Como a nota de recuperação entra na média final (escolha da escola, em Configurações)
+public enum ModoRecuperacao
+{
+    MediaDasDuas = 0,   // (média anual + recuperação) / 2
+    MaiorDasDuas = 1,   // vale a maior entre a média anual e a recuperação
+    SubstituiMedia = 2  // a recuperação vira a média final, mesmo se menor
+}
+
 public enum Situacao { EmAndamento, Aprovado, Recuperacao, Reprovado }
 
 // Regra de aprovação: média anual das 4 notas. Os limites vêm da tabela Configuracoes
@@ -12,6 +20,7 @@ public static class Aprovacao
     public static decimal MediaMinima { get; set; } = 6.0m;
     public static decimal MediaRecuperacao { get; set; } = 4.0m;
     public static decimal FrequenciaMinima { get; set; } = 75.0m; // % de presença
+    public static ModoRecuperacao Modo { get; set; } = ModoRecuperacao.MediaDasDuas;
 
     public static decimal? Media(IEnumerable<decimal?> notas)
     {
@@ -20,8 +29,8 @@ public static class Aprovacao
     }
 
     // Com as 4 notas lançadas: aprovado na média; reprovado abaixo da média de recuperação;
-    // entre as duas fica em recuperação até lançarem a nota de recuperação. Média final com
-    // recuperação = (média anual + nota de recuperação) / 2, que precisa atingir a média de aprovação.
+    // entre as duas fica em recuperação até lançarem a nota de recuperação. A média final com
+    // recuperação segue o `Modo` escolhido e precisa atingir a média de aprovação.
     public static Situacao DaDisciplina(decimal?[] notas, decimal? rec = null)
     {
         if (notas.Length < TabelaNotas.Bimestres || notas.Any(n => n == null)) return Situacao.EmAndamento;
@@ -37,7 +46,12 @@ public static class Aprovacao
     {
         var m = Media(notas);
         if (m == null || rec == null || notas.Any(n => n == null) || m >= MediaMinima || m < MediaRecuperacao) return m;
-        return Math.Round((m.Value + rec.Value) / 2, 1, MidpointRounding.AwayFromZero);
+        return Modo switch
+        {
+            ModoRecuperacao.MaiorDasDuas => Math.Max(m.Value, rec.Value),
+            ModoRecuperacao.SubstituiMedia => rec.Value,
+            _ => Math.Round((m.Value + rec.Value) / 2, 1, MidpointRounding.AwayFromZero)
+        };
     }
 
     public static decimal? Frequencia(int faltas, int aulas) =>
@@ -69,6 +83,7 @@ public class Configuracao
     public decimal MediaMinima { get; set; } = 6.0m;
     public decimal MediaRecuperacao { get; set; } = 4.0m;
     public decimal FrequenciaMinima { get; set; } = 75.0m;
+    public int ModoRecuperacao { get; set; }
 }
 
 public static class TabelaConfiguracoes
@@ -82,11 +97,13 @@ public static class TabelaConfiguracoes
                 "MediaRecuperacao" numeric(3,1) NOT NULL
             );
             ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "FrequenciaMinima" numeric(4,1) NOT NULL DEFAULT 75.0;
+            ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "ModoRecuperacao" integer NOT NULL DEFAULT 0;
             INSERT INTO "Configuracoes" ("Id","MediaMinima","MediaRecuperacao") VALUES (1, 6.0, 4.0) ON CONFLICT ("Id") DO NOTHING;
             """);
         var c = db.Configuracoes.AsNoTracking().First(x => x.Id == 1);
         Aprovacao.MediaMinima = c.MediaMinima;
         Aprovacao.MediaRecuperacao = c.MediaRecuperacao;
         Aprovacao.FrequenciaMinima = c.FrequenciaMinima;
+        Aprovacao.Modo = (ModoRecuperacao)c.ModoRecuperacao;
     }
 }

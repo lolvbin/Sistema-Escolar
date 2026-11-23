@@ -1,5 +1,6 @@
 @page
 @model SistemaEscolar.Pages.ConfiguracoesModel
+@using SistemaEscolar.Data
 @{ ViewData["Title"] = "Configurações"; }
 
 <h1>Configurações</h1>
@@ -24,6 +25,15 @@
             @if (Model.ErroFrequencia != null) { <span class="erro">@Model.ErroFrequencia</span> }
         </div>
     </div>
-    <p class="suave">Com recuperação: média final = (média anual + nota de recuperação) / 2, que precisa atingir a média de aprovação. Frequência geral abaixo do mínimo reprova o aluno. Média anual igual ou maior que a de aprovação: aprovado. Entre as duas: recuperação. Abaixo da de recuperação: reprovado. A situação só é definida depois dos 4 bimestres.</p>
+    <h2>Recuperação</h2>
+    <div class="campo">
+        <label for="Modo">Como a nota de recuperação entra na média final</label>
+        <select id="Modo" name="Modo">
+            <option value="0" selected="@(Model.Modo == 0)">Média das duas: (média anual + recuperação) / 2</option>
+            <option value="1" selected="@(Model.Modo == 1)">Maior das duas: vale a maior entre a média anual e a recuperação</option>
+            <option value="2" selected="@(Model.Modo == 2)">Substitui a média: a nota de recuperação vira a média final</option>
+        </select>
+    </div>
+    <p class="suave">Em qualquer modelo, a média final precisa atingir a média de aprovação. Frequência geral abaixo do mínimo reprova o aluno. A situação só é definida depois dos 4 bimestres.</p>
     <div class="rodape-form"><button class="btn">Salvar</button></div>
 </form>

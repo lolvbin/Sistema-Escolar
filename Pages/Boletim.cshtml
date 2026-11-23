@@ -67,6 +67,6 @@ else
                 <span class="suave"> &middot; Frequência geral: @Model.FreqGeral.Value.ToString("0.#")% (mínimo @Aprovacao.FrequenciaMinima.ToString("0.#")%)</span>
             }
         </p>
-        <p class="suave">Aprovado com média anual a partir de @Aprovacao.MediaMinima.ToString("0.0"); de @Aprovacao.MediaRecuperacao.ToString("0.0") até abaixo de @Aprovacao.MediaMinima.ToString("0.0") o aluno faz recuperação (média final = média anual e nota de recuperação, divididas por 2); abaixo de @Aprovacao.MediaRecuperacao.ToString("0.0") é reprovado. Frequência geral abaixo do mínimo também reprova. A situação só é definida depois dos 4 bimestres.</p>
+        <p class="suave">Aprovado com média anual a partir de @Aprovacao.MediaMinima.ToString("0.0"); de @Aprovacao.MediaRecuperacao.ToString("0.0") até abaixo de @Aprovacao.MediaMinima.ToString("0.0") o aluno faz recuperação (média final: @(Aprovacao.Modo switch { ModoRecuperacao.MaiorDasDuas => "a maior entre a média anual e a recuperação", ModoRecuperacao.SubstituiMedia => "a nota de recuperação", _ => "média anual e recuperação, divididas por 2" })); abaixo de @Aprovacao.MediaRecuperacao.ToString("0.0") é reprovado. Frequência geral abaixo do mínimo também reprova. A situação só é definida depois dos 4 bimestres.</p>
     }
 }

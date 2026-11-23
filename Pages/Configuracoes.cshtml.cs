@@ -14,6 +14,7 @@ public class ConfiguracoesModel : PageModel
     // Texto digitado (aceita vírgula ou ponto)
     [BindProperty] public string? Minima { get; set; }
     [BindProperty] public string? Recuperacao { get; set; }
+    [BindProperty] public int Modo { get; set; }
     [BindProperty] public string? Frequencia { get; set; }
     public string? ErroFrequencia { get; set; }
     public string? ErroMinima { get; set; }
@@ -25,6 +26,7 @@ public class ConfiguracoesModel : PageModel
         Minima = Aprovacao.MediaMinima.ToString("0.0", CultureInfo.CurrentCulture);
         Recuperacao = Aprovacao.MediaRecuperacao.ToString("0.0", CultureInfo.CurrentCulture);
         Frequencia = Aprovacao.FrequenciaMinima.ToString("0.0", CultureInfo.CurrentCulture);
+        Modo = (int)Aprovacao.Modo;
     }
 
     static bool Ler(string? txt, out decimal v, decimal max = 10) =>
@@ -34,6 +36,7 @@ public class ConfiguracoesModel : PageModel
     {
         var okMin = Ler(Minima, out var min);
         var okRec = Ler(Recuperacao, out var rec);
+        if (!Enum.IsDefined(typeof(ModoRecuperacao), Modo)) Modo = 0;
         var okFreq = Ler(Frequencia, out var freq, 100);
         if (!okFreq) ErroFrequencia = "Use um número de 0 a 100";
         if (!okMin) ErroMinima = "Use um número de 0 a 10";
@@ -51,10 +54,12 @@ public class ConfiguracoesModel : PageModel
         c.MediaMinima = min;
         c.MediaRecuperacao = rec;
         c.FrequenciaMinima = freq;
+        c.ModoRecuperacao = Modo;
         await _db.SaveChangesAsync();
         Aprovacao.MediaMinima = min;
         Aprovacao.MediaRecuperacao = rec;
         Aprovacao.FrequenciaMinima = freq;
+        Aprovacao.Modo = (ModoRecuperacao)Modo;
 
         Aviso = "Configurações salvas. A nova regra vale para todos os boletins.";
         return RedirectToPage();
