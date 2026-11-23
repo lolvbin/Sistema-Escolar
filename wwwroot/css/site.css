@@ -135,3 +135,7 @@ button.link { background: none; border: 0; padding: 0; margin-right: 10px; font:
 .cb-Atrasada { color: var(--perigo); border-color: var(--perigo); }
 .inline-form { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 0; }
 .inline-form input, .inline-form select { width: auto; padding: 4px 6px; }
+
+/* Topo: marca (com logo opcional), espaço e botões */
+.marca { display: flex; align-items: center; gap: 8px; }
+.marca img { height: 30px; width: auto; display: block; }

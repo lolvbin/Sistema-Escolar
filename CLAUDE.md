@@ -1,6 +1,6 @@
 # Sistema Escolar
 
-Sistema web para escolas. Módulos: matrícula, alunos, professores, calendário acadêmico e notas.
+Sistema web para escolas. Módulos: matrícula, alunos, professores, disciplinas, turmas, notas e frequência, calendário, financeiro e configurações.
 Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cada perfil vê só o necessário.
 
 ## Stack
@@ -52,7 +52,8 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Cookie auth em `Program.cs`; política padrão exige login. `[AllowAnonymous]` em Login, Previa, Error. Pasta `/Matriculas` só para Funcionário (política `Funcionario`)
 - A tabela `Usuarios` vem das migrations; `UsuarioSeed.Semear` só cria as contas de teste
 - Em Development cria 4 usuários `<perfil>@escola.test` (senha de dev em `UsuarioSeed`). Não vale em produção: criar usuários reais por outro meio
-- Prévia TEMPORÁRIA e estática (dados fictícios): `/Previa/{perfil}` e `Pages/Shared/_Painel.cshtml` (usado também no `/` conforme o perfil). Remover/substituir conforme os módulos reais surgirem
+- **Navegação**: o topo só tem marca (com logo opcional), Sair e Tema. O único menu são os cartões da tela inicial (`Pages/Shared/_Painel.cshtml`), um conjunto por perfil, com as telas que ele pode acessar + "Alterar senha". Página nova = adicionar o cartão no perfil certo. A prévia estática (`/Previa`) foi removida
+- **Logo**: coloque `wwwroot/img/logo.svg` (ou `logo.png`); aparece sozinha ao lado do nome no topo (altura 30px)
 - **Limite de tentativas** (`Data/Autenticacao.cs`, `LimiteLogin`): 5 falhas por e-mail ou 30 por IP bloqueiam por 15 min (mensagem com o tempo restante, nem confere a senha). Fica em memória: reiniciar o servidor zera. Vale também para errar a senha atual na troca
 - **Trocar a própria senha**: `Pages/Conta/Senha` (menu "Alterar senha"; mínimo 8 caracteres com letra e número, diferente da atual). Senha provisória (professor novo, "Nova senha", acessos de aluno/responsável) marca `Usuario.DeveTrocarSenha`: no login o claim `trocar-senha` redireciona (middleware em `Program.cs`) para a troca até ela ser feita. Usuários de dev (`@escola.test`) não são forçados
 - Cookie/claims criados por `Autenticacao.CriarPrincipal`
@@ -133,4 +134,5 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Rodar servidores de teste em background: guardar o PID e encerrar com `kill <pid>`. Não usar `pkill -f` com o nome da DLL, pois mata o próprio shell
 - Dados de teste criados no banco compartilhado devem ser apagados ao final
 - Fim do dia: quando o usuário rodar `git commit` e `git push` dizendo que finalizamos por hoje, apagar do banco os dados de exemplo (matrículas de teste e usuários `@escola.test`). Em Development os usuários de teste são recriados na próxima execução
-- Cada perfil só vê o que lhe cabe no menu (Funcionário: Matrículas; Professor/Aluno: Sala de aula). Página fora do perfil: Acesso negado
+- Cada perfil só vê na tela inicial os cartões do que lhe cabe. Página fora do perfil: Acesso negado
+- Matar o servidor de teste: `dotnet run` deixa um processo filho; se `kill $(cat pid)` não liberar a porta, ache o PID real com `ss -ltnp | grep 5006`
