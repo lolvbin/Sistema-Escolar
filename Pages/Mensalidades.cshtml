@@ -1,0 +1,43 @@
+@page
+@model SistemaEscolar.Pages.MensalidadesModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Mensalidades"; }
+
+<div class="barra"><h1>Mensalidades</h1></div>
+
+@if (Model.Blocos.Count == 0)
+{
+    <div class="card vazio">Nenhuma matrícula ligada ao seu acesso. Fale com a secretaria.</div>
+}
+@foreach (var b in Model.Blocos)
+{
+    <h2>@b.Aluno <span class="suave">- @b.Serie, @b.Ano</span></h2>
+    <p class="suave">Contrato: @(b.Contrato != null ? "assinado em " + b.Contrato.Value.ToString("dd/MM/yyyy") : "ainda não assinado")</p>
+    @if (b.Cobrancas.Count == 0)
+    {
+        <div class="card vazio">Ainda não há cobranças geradas.</div>
+    }
+    else
+    {
+        <div class="card tabela">
+            <table>
+                <thead><tr><th>Cobrança</th><th>Vencimento</th><th>Valor</th><th>Situação</th></tr></thead>
+                <tbody>
+                @foreach (var c in b.Cobrancas)
+                {
+                    <tr>
+                        <td>@c.Descricao</td>
+                        <td>@c.Vencimento.ToString("dd/MM/yyyy")</td>
+                        <td>@c.Valor.ToString("C")</td>
+                        <td>
+                            @if (c.Paga) { <span class="badge cb-Paga">Paga em @c.PagoEm!.Value.ToString("dd/MM/yyyy")</span> }
+                            else if (c.Atrasada) { <span class="badge cb-Atrasada">Em atraso</span> }
+                            else { <span class="badge">A vencer</span> }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+}

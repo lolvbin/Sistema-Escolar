@@ -11,6 +11,7 @@ public class DeleteModel : PageModel
     public DeleteModel(EscolaContext db) => _db = db;
 
     public Matricula Matricula { get; set; } = new();
+    public string? Erro { get; set; }
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -22,7 +23,13 @@ public class DeleteModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(int id)
     {
-        var m = await _db.Matriculas.FindAsync(id);
+        var m = await _db.Matriculas.Include(x => x.Aluno).FirstOrDefaultAsync(x => x.Id == id);
+        if (m != null && await _db.Cobrancas.AnyAsync(c => c.MatriculaId == id && c.PagoEm != null))
+        {
+            Matricula = m;
+            Erro = "Esta matrícula tem pagamentos registrados e não pode ser excluída. Cancele a matrícula (status Cancelada) em vez disso.";
+            return Page();
+        }
         if (m != null)
         {
             _db.Matriculas.Remove(m);

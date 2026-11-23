@@ -31,11 +31,16 @@
                     <a asp-page="/Professores/Index">Professores</a>
                     <a asp-page="/Disciplinas/Index">Disciplinas</a>
                     <a asp-page="/Turmas/Index">Turmas</a>
+                    <a asp-page="/Financeiro/Index">Financeiro</a>
                     <a asp-page="/Configuracoes">Configurações</a>
                 }
                 @if (User.IsInRole("Aluno") || User.IsInRole("Responsavel"))
                 {
                     <a asp-page="/Boletim">Boletim</a>
+                }
+                @if (User.IsInRole("Responsavel"))
+                {
+                    <a asp-page="/Mensalidades">Mensalidades</a>
                 }
                 @if (User.IsInRole("Professor"))
                 {

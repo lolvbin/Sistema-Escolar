@@ -110,6 +110,9 @@ public class Matricula
     [Display(Name = "Observações")]
     public string? Observacoes { get; set; }
 
+    // Data em que o contrato foi assinado (informada pelo funcionário na tela Financeiro)
+    public DateTime? ContratoAssinadoEm { get; set; }
+
     // Turma em que o aluno está enturmado (definida pela tela de Turmas, nunca pelo formulário)
     public int? TurmaId { get; set; }
 
@@ -141,6 +144,7 @@ public class EscolaContext : DbContext
     public DbSet<Evento> Eventos => Set<Evento>();
     public DbSet<Frequencia> Frequencias => Set<Frequencia>();
     public DbSet<AulasDadas> Aulas => Set<AulasDadas>();
+    public DbSet<Cobranca> Cobrancas => Set<Cobranca>();
     public DbSet<Configuracao> Configuracoes => Set<Configuracao>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -164,6 +168,12 @@ public class EscolaContext : DbContext
         b.Entity<Configuracao>().Property(c => c.FrequenciaMinima).HasPrecision(4, 1);
         b.Entity<Frequencia>().ToTable("Frequencias").HasKey(f => new { f.MatriculaId, f.DisciplinaId, f.Bimestre });
         b.Entity<AulasDadas>().ToTable("AulasDadas").HasKey(a => new { a.TurmaId, a.DisciplinaId, a.Bimestre });
+        b.Entity<Cobranca>().ToTable("Cobrancas");
+        b.Entity<Cobranca>().Property(c => c.Valor).HasPrecision(10, 2);
+        b.Entity<Cobranca>().Property(c => c.Vencimento).HasColumnType("date");
+        b.Entity<Cobranca>().Property(c => c.PagoEm).HasColumnType("date");
+        b.Entity<Cobranca>().HasOne(c => c.Matricula).WithMany().HasForeignKey(c => c.MatriculaId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<Matricula>().Property(m => m.ContratoAssinadoEm).HasColumnType("date");
         b.Entity<Nota>().ToTable("Notas").HasKey(n => new { n.MatriculaId, n.DisciplinaId, n.Bimestre });
         b.Entity<Nota>().Property(n => n.Valor).HasPrecision(4, 1);
         b.Entity<Nota>().HasOne(n => n.Matricula).WithMany().HasForeignKey(n => n.MatriculaId).OnDelete(DeleteBehavior.Cascade);

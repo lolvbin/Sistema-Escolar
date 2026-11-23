@@ -109,10 +109,19 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Falta: abono/justificativa de faltas, frequência diária (chamada), regra de recuperação por bimestre
 - Cuidado nos testes: se `dotnet run` falhar em silêncio, pode haver servidor antigo na porta 5006 (`ss -ltnp | grep 5006`): encerrar pelo PID
 
+### Módulo Financeiro (testado no navegador)
+- `Data/Financeiro.cs`: `Cobranca` (tipo Matrícula/Mensalidade, número, vencimento, valor, `PagoEm`, forma), `TabelaFinanceiro.Preparar` (SQL; também cria `Matriculas.ContratoAssinadoEm`) e `RegrasFinanceiro` (ler valor "1.250,50", ler data dd/MM/yyyy, `TentarLiberar`). A classe de regras NÃO pode se chamar `Financeiro`: o namespace `Pages.Financeiro` a esconde
+- `Pages/Financeiro/` só Funcionário: `Index` (lista com busca e filtros: em atraso, pendente, sem contrato, sem cobranças; mostra em aberto e atrasado) e `Detalhe/{matrículaId}`: registrar contrato assinado, gerar cobranças (taxa opcional + 1 a 12 mensalidades, vencimento mensal a partir da 1ª), dar baixa (data não futura + forma: Pix, Dinheiro, Cartão, Boleto, Transferência), desfazer pagamento, apagar cobranças em aberto
+- **Liberação da matrícula**: Pendente vira Ativa sozinha quando o contrato está assinado **e** a taxa de matrícula está paga (`TentarLiberar`, chamada após baixa e após registrar contrato). Também há "Liberar manualmente". Desfazer pagamento não volta o status
+- Matrícula com pagamento registrado não pode ser excluída (cancelar em vez disso); sem pagamento, excluir leva as cobranças junto
+- `Pages/Mensalidades` (política `Responsavel`, menu "Mensalidades"): responsável vê as cobranças dos alunos ligados ao e-mail dele (acadêmico ou financeiro), só leitura
+- Atrasada = não paga e vencida antes de hoje. Sem multa/juros, sem desconto, sem boleto/Pix real (baixa é manual)
+- Falta: multa e juros, descontos/bolsas, recibo para imprimir, relatório de inadimplência, integração com pagamento online
+
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
 - Senha: por decisão do usuário, continua só o funcionário gerando a provisória (trocar a própria senha fica para depois). Falta limite de tentativas de login
-- Ordem combinada dos próximos módulos: Financeiro (libera a matrícula Pendente)
+- Próximos passos possíveis: Sala de aula real (professor/aluno), trocar a própria senha, limite de tentativas de login, migrations
 
 ## Cuidados
 - `psql` instalado. Para rodar SQL com a conexão do user-secrets sem expor a senha: ler `dotnet user-secrets list` e passar Host/Port/Username/Database por parâmetro e a senha por `PGPASSWORD`

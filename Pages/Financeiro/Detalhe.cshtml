@@ -1,0 +1,130 @@
+@page "{id:int}"
+@model SistemaEscolar.Pages.Financeiro.DetalheModel
+@using SistemaEscolar.Data
+@{
+    ViewData["Title"] = "Financeiro da matrícula";
+    var m = Model.Matricula;
+    var temAberta = Model.Cobrancas.Any(c => !c.Paga);
+    var hoje = DateTime.Today.ToString("dd/MM/yyyy");
+}
+
+<div class="barra">
+    <h1>Financeiro: @m.Aluno?.Nome</h1>
+    <a class="btn btn-sec" asp-page="Index">Voltar</a>
+</div>
+<p class="suave">@Html.DisplayFor(_ => m.Serie), @m.AnoLetivo &middot; Responsável financeiro: @m.Aluno?.Financeiro.Nome (@m.Aluno?.Financeiro.Telefone)</p>
+
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+@if (Model.Erro != null) { <div class="card erro-card">@Model.Erro</div> }
+
+<div class="card" style="margin-bottom:14px">
+    <h2>Situação da matrícula</h2>
+    <p>Status: <span class="badge st-@m.Status">@Html.DisplayFor(_ => m.Status)</span>
+        &middot; Contrato:
+        @if (m.ContratoAssinadoEm != null) { <strong>assinado em @m.ContratoAssinadoEm.Value.ToString("dd/MM/yyyy")</strong> }
+        else { <strong>não assinado</strong> }
+    </p>
+    <form method="post" asp-page-handler="Contrato" asp-route-id="@m.Id" class="filtro">
+        <input name="assinadoEm" value="@(m.ContratoAssinadoEm?.ToString("dd/MM/yyyy") ?? hoje)" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+        <button class="btn btn-sec">@(m.ContratoAssinadoEm == null ? "Registrar contrato assinado" : "Alterar data")</button>
+    </form>
+    @if (m.ContratoAssinadoEm != null)
+    {
+        <form method="post" asp-page-handler="Contrato" asp-route-id="@m.Id" class="inline"><input type="hidden" name="assinadoEm" value="" /><button class="link">Remover assinatura</button></form>
+    }
+    @if (m.Status == StatusMatricula.Pendente)
+    {
+        <p class="suave">A matrícula vira <strong>Ativa</strong> sozinha quando o contrato está assinado e a taxa de matrícula paga.</p>
+        <form method="post" asp-page-handler="Liberar" asp-route-id="@m.Id" onsubmit="return confirm('Liberar sem contrato e pagamento?')">
+            <button class="btn btn-sec">Liberar manualmente</button>
+        </form>
+    }
+</div>
+
+@if (Model.Cobrancas.Count == 0)
+{
+    <form method="post" asp-page-handler="Gerar" asp-route-id="@m.Id" class="card" novalidate>
+        <h2>Gerar cobranças</h2>
+        <div class="grade">
+            <div class="campo">
+                <label for="Taxa">Taxa de matrícula (opcional)</label>
+                <input id="Taxa" name="Taxa" value="@Model.Taxa" inputmode="decimal" placeholder="300,00" autocomplete="off" />
+                @if (Model.Erros.TryGetValue("Taxa", out var e1)) { <span class="erro">@e1</span> }
+            </div>
+            <div class="campo">
+                <label for="VencTaxa">Vencimento da taxa</label>
+                <input id="VencTaxa" name="VencTaxa" value="@Model.VencTaxa" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+                @if (Model.Erros.TryGetValue("VencTaxa", out var e2)) { <span class="erro">@e2</span> }
+            </div>
+            <div class="campo">
+                <label for="Mensalidade">Valor da mensalidade</label>
+                <input id="Mensalidade" name="Mensalidade" value="@Model.Mensalidade" inputmode="decimal" placeholder="850,00" autocomplete="off" />
+                @if (Model.Erros.TryGetValue("Mensalidade", out var e3)) { <span class="erro">@e3</span> }
+            </div>
+            <div class="campo">
+                <label for="Parcelas">Número de mensalidades (1 a 12)</label>
+                <input id="Parcelas" name="Parcelas" value="@Model.Parcelas" inputmode="numeric" maxlength="2" autocomplete="off" />
+                @if (Model.Erros.TryGetValue("Parcelas", out var e4)) { <span class="erro">@e4</span> }
+            </div>
+            <div class="campo">
+                <label for="VencPrimeira">Vencimento da 1ª mensalidade</label>
+                <input id="VencPrimeira" name="VencPrimeira" value="@Model.VencPrimeira" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+                @if (Model.Erros.TryGetValue("VencPrimeira", out var e5)) { <span class="erro">@e5</span> }
+            </div>
+        </div>
+        <p class="suave">As demais mensalidades vencem no mesmo dia dos meses seguintes.</p>
+        <div class="rodape-form"><button class="btn">Gerar cobranças</button></div>
+    </form>
+}
+else
+{
+    var total = Model.Cobrancas.Sum(c => c.Valor);
+    var pago = Model.Cobrancas.Where(c => c.Paga).Sum(c => c.Valor);
+    var atraso = Model.Cobrancas.Where(c => c.Atrasada).Sum(c => c.Valor);
+    <p>Total: <strong>@total.ToString("C")</strong> &middot; Pago: <strong>@pago.ToString("C")</strong> &middot; Em aberto: <strong>@((total - pago).ToString("C"))</strong>
+        @if (atraso > 0) { <span> &middot; <span class="badge cb-Atrasada">Em atraso: @atraso.ToString("C")</span></span> }
+    </p>
+    <div class="card tabela">
+        <table>
+            <thead><tr><th>Cobrança</th><th>Vencimento</th><th>Valor</th><th>Situação</th><th>Pagamento</th></tr></thead>
+            <tbody>
+            @foreach (var c in Model.Cobrancas)
+            {
+                <tr>
+                    <td>@c.Descricao</td>
+                    <td>@c.Vencimento.ToString("dd/MM/yyyy")</td>
+                    <td>@c.Valor.ToString("C")</td>
+                    <td>
+                        @if (c.Paga) { <span class="badge cb-Paga">Paga em @c.PagoEm!.Value.ToString("dd/MM/yyyy") (@Html.DisplayFor(_ => c.Forma))</span> }
+                        else if (c.Atrasada) { <span class="badge cb-Atrasada">Em atraso</span> }
+                        else { <span class="badge">A vencer</span> }
+                    </td>
+                    <td>
+                        @if (c.Paga)
+                        {
+                            <form method="post" asp-page-handler="Estornar" asp-route-id="@m.Id" asp-route-cobId="@c.Id" class="inline" onsubmit="return confirm('Desfazer este pagamento?')"><button class="link">Desfazer</button></form>
+                        }
+                        else
+                        {
+                            <form method="post" asp-page-handler="Baixa" asp-route-id="@m.Id" asp-route-cobId="@c.Id" class="inline-form">
+                                <input name="pagoEm" value="@hoje" data-mask="data" inputmode="numeric" maxlength="10" size="10" style="width:110px" autocomplete="off" />
+                                <select name="forma" style="width:auto">
+                                    <option value="">Forma</option>
+                                    @foreach (var f in Enum.GetValues<FormaPagamento>()) { <option value="@f">@f.ToString().Replace("Cartao", "Cartão").Replace("Transferencia", "Transferência")</option> }
+                                </select>
+                                <button class="btn btn-sec">Dar baixa</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    @if (temAberta)
+    {
+        <form method="post" asp-page-handler="ApagarAbertas" asp-route-id="@m.Id" style="margin-top:12px" onsubmit="return confirm('Apagar todas as cobranças em aberto?')">
+            <button class="btn btn-perigo">Apagar cobranças em aberto</button>
+        </form>
+    }
+}

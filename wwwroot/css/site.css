@@ -129,3 +129,9 @@ button.link { background: none; border: 0; padding: 0; margin-right: 10px; font:
 .sit-Aprovado { color: var(--ok); border-color: var(--ok); }
 .sit-Recuperacao { color: var(--aviso); border-color: var(--aviso); }
 .sit-Reprovado { color: var(--perigo); border-color: var(--perigo); }
+
+/* Financeiro */
+.cb-Paga { color: var(--ok); border-color: var(--ok); }
+.cb-Atrasada { color: var(--perigo); border-color: var(--perigo); }
+.inline-form { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 0; }
+.inline-form input, .inline-form select { width: auto; padding: 4px 6px; }

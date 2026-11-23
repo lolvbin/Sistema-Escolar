@@ -3,6 +3,7 @@
 @{ ViewData["Title"] = "Excluir matrícula"; }
 
 <h1>Excluir matrícula</h1>
+@if (Model.Erro != null) { <div class="card erro-card">@Model.Erro</div> }
 <form method="post" class="card">
     <p>Excluir a matrícula de <strong>@Model.Matricula.Aluno?.Nome</strong> (@Html.DisplayFor(_ => Model.Matricula.Serie), @Model.Matricula.AnoLetivo)? Isso não pode ser desfeito.</p>
     <p class="suave">Se for a única matrícula do aluno, o cadastro dele também será excluído.</p>

@@ -14,6 +14,8 @@ builder.Services.AddRazorPages(o =>
     // Calendário: todos veem; só o funcionário cadastra
     o.Conventions.AuthorizePage("/Calendario/Evento", "Funcionario");
     o.Conventions.AuthorizePage("/Configuracoes", "Funcionario");
+    o.Conventions.AuthorizeFolder("/Financeiro", "Funcionario");
+    o.Conventions.AuthorizePage("/Mensalidades", "Responsavel");
     // Notas: lançamento só pelo professor
     o.Conventions.AuthorizeFolder("/Notas", "Professor");
     // Boletim: aluno e responsável
@@ -37,6 +39,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
     .AddPolicy("Funcionario", p => p.RequireRole(nameof(Perfil.Funcionario)))
+    .AddPolicy("Responsavel", p => p.RequireRole(nameof(Perfil.Responsavel)))
     .AddPolicy("Professor", p => p.RequireRole(nameof(Perfil.Professor)))
     .AddPolicy("Boletim", p => p.RequireRole(nameof(Perfil.Aluno), nameof(Perfil.Responsavel)))
     .AddPolicy("SalaDeAula", p => p.RequireRole(nameof(Perfil.Professor), nameof(Perfil.Aluno)));
@@ -67,6 +70,7 @@ using (var scope = app.Services.CreateScope())
     TabelasDisciplinas.Preparar(db);
     TabelasTurmas.Preparar(db); // depois de Matriculas, Professores e Disciplinas
     TabelaEventos.Preparar(db);
+    TabelaFinanceiro.Preparar(db); // depois de Matriculas
     TabelaNotas.Preparar(db);
     TabelaConfiguracoes.Preparar(db); // depois de Matriculas e Disciplinas
 }

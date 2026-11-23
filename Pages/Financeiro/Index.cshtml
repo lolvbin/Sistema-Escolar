@@ -1,0 +1,52 @@
+@page
+@model SistemaEscolar.Pages.Financeiro.IndexModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Financeiro"; }
+
+<div class="barra"><h1>Financeiro</h1></div>
+
+<form method="get" class="filtro">
+    <input name="Busca" value="@Model.Busca" placeholder="Buscar aluno ou responsável financeiro" />
+    <select name="Filtro">
+        <option value="">Todas as matrículas</option>
+        <option value="atraso" selected="@(Model.Filtro == "atraso")">Com parcelas em atraso</option>
+        <option value="pendente" selected="@(Model.Filtro == "pendente")">Matrícula pendente</option>
+        <option value="semcontrato" selected="@(Model.Filtro == "semcontrato")">Contrato não assinado</option>
+        <option value="semcobranca" selected="@(Model.Filtro == "semcobranca")">Sem cobranças geradas</option>
+    </select>
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="card tabela">
+    @if (Model.Itens.Count == 0)
+    {
+        <div class="vazio">Nenhuma matrícula encontrada.</div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Aluno</th><th>Responsável financeiro</th><th>Série / ano</th><th>Status</th><th>Contrato</th><th>Em aberto</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var i in Model.Itens)
+            {
+                <tr>
+                    <td>@i.Aluno</td>
+                    <td>@i.Responsavel</td>
+                    <td>@i.Serie, @i.Ano</td>
+                    <td><span class="badge st-@i.Status">@i.Status</span></td>
+                    <td>@(i.Contrato ? "Assinado" : "Não assinado")</td>
+                    <td>
+                        @if (i.Cobrancas == 0) { <span class="suave">sem cobranças</span> }
+                        else
+                        {
+                            @i.EmAberto.ToString("C")
+                            @if (i.Atrasadas > 0) { <br /><span class="badge cb-Atrasada">@i.Atrasadas em atraso (@i.ValorAtrasado.ToString("C"))</span> }
+                        }
+                    </td>
+                    <td class="acoes"><a asp-page="Detalhe" asp-route-id="@i.Id">Abrir</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
