@@ -49,7 +49,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 
 ### Login e perfis (testado no navegador)
 - `Data/Usuario.cs`: entidade `Usuario`, enum `Perfil` (Responsavel, Funcionario, Professor, Aluno), hash PBKDF2 (`Senha`) e `UsuarioSeed`
-- Cookie auth em `Program.cs`; política padrão exige login. `[AllowAnonymous]` em Login, Previa, Error. Pasta `/Matriculas` só para Funcionário (política `Funcionario`)
+- Cookie auth em `Program.cs`; política padrão exige login. `[AllowAnonymous]` em Login, Error. Pasta `/Matriculas` só para Funcionário (política `Funcionario`)
 - A tabela `Usuarios` vem das migrations; `UsuarioSeed.Semear` só cria as contas de teste
 - Em Development cria 4 usuários `<perfil>@escola.test` (senha de dev em `UsuarioSeed`). Não vale em produção: criar usuários reais por outro meio
 - **Navegação**: o topo só tem marca (com logo opcional), Sair e Tema. O único menu são os cartões da tela inicial (`Pages/Shared/_Painel.cshtml`), um conjunto por perfil, com as telas que ele pode acessar + "Alterar senha". Página nova = adicionar o cartão no perfil certo. A prévia estática (`/Previa`) foi removida
