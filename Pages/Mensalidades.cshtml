@@ -28,7 +28,10 @@
                     <tr>
                         <td>@c.Descricao</td>
                         <td>@c.Vencimento.ToString("dd/MM/yyyy")</td>
-                        <td>@c.Valor.ToString("C")</td>
+                        <td>
+                            @if (c.Atrasada) { <strong>@c.ValorDevido.ToString("C")</strong><br /><small class="suave">com multa e juros</small> }
+                            else { @c.ValorDevido.ToString("C") }
+                        </td>
                         <td>
                             @if (c.Paga) { <span class="badge cb-Paga">Paga em @c.PagoEm!.Value.ToString("dd/MM/yyyy")</span> }
                             else if (c.Atrasada) { <span class="badge cb-Atrasada">Em atraso</span> }

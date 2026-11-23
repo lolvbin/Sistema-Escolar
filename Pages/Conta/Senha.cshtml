@@ -1,0 +1,29 @@
+@page
+@model SistemaEscolar.Pages.Conta.SenhaModel
+@{ ViewData["Title"] = "Alterar senha"; }
+
+<div class="login">
+    <h1>Alterar senha</h1>
+    @if (Model.Forcada)
+    {
+        <div class="card aviso">Você entrou com uma senha provisória. Defina uma nova senha para continuar.</div>
+    }
+    <form method="post" class="card" novalidate>
+        <div class="campo">
+            <label for="Atual">Senha atual</label>
+            <input id="Atual" name="Atual" type="password" autocomplete="current-password" autofocus />
+            @if (Model.Erros.TryGetValue("Atual", out var e1)) { <span class="erro">@e1</span> }
+        </div>
+        <div class="campo" style="margin-top:12px">
+            <label for="Nova">Nova senha (8 ou mais caracteres, com letras e números)</label>
+            <input id="Nova" name="Nova" type="password" autocomplete="new-password" />
+            @if (Model.Erros.TryGetValue("Nova", out var e2)) { <span class="erro">@e2</span> }
+        </div>
+        <div class="campo" style="margin-top:12px">
+            <label for="Confirmar">Confirmar nova senha</label>
+            <input id="Confirmar" name="Confirmar" type="password" autocomplete="new-password" />
+            @if (Model.Erros.TryGetValue("Confirmar", out var e3)) { <span class="erro">@e3</span> }
+        </div>
+        <div class="rodape-form"><button class="btn" type="submit">Salvar nova senha</button></div>
+    </form>
+</div>

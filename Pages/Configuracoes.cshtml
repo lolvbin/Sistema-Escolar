@@ -36,4 +36,19 @@
     </div>
     <p class="suave">Em qualquer modelo, a média final precisa atingir a média de aprovação. Frequência geral abaixo do mínimo reprova o aluno. A situação só é definida depois dos 4 bimestres.</p>
     <div class="rodape-form"><button class="btn">Salvar</button></div>
+
+    <h2>Atraso nas mensalidades</h2>
+    <div class="grade">
+        <div class="campo">
+            <label for="Multa">Multa por atraso, % do valor (0 a 20)</label>
+            <input id="Multa" name="Multa" value="@Model.Multa" inputmode="decimal" maxlength="5" autocomplete="off" />
+            @if (Model.ErroMulta != null) { <span class="erro">@Model.ErroMulta</span> }
+        </div>
+        <div class="campo">
+            <label for="Juros">Juros ao mês, % (0 a 10)</label>
+            <input id="Juros" name="Juros" value="@Model.Juros" inputmode="decimal" maxlength="5" autocomplete="off" />
+            @if (Model.ErroJuros != null) { <span class="erro">@Model.ErroJuros</span> }
+        </div>
+    </div>
+    <p class="suave">A multa é cobrada uma vez, a partir do dia seguinte ao vencimento. Os juros são simples e proporcionais aos dias de atraso (% ao mês ÷ 30 por dia). Vale para as cobranças ainda não pagas; o que já foi pago mantém o valor recebido. Na baixa, o funcionário pode isentar a multa e os juros.</p>
 </form>

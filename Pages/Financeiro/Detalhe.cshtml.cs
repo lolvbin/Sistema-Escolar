@@ -78,7 +78,7 @@ public class DetalheModel : PageModel
         return RedirectToPage(new { id });
     }
 
-    public async Task<IActionResult> OnPostBaixaAsync(int id, int cobId, string? pagoEm, FormaPagamento? forma)
+    public async Task<IActionResult> OnPostBaixaAsync(int id, int cobId, string? pagoEm, FormaPagamento? forma, bool isentar)
     {
         var c = await _db.Cobrancas.FirstOrDefaultAsync(x => x.Id == cobId && x.MatriculaId == id);
         if (c == null) return NotFound();
@@ -89,8 +89,9 @@ public class DetalheModel : PageModel
 
         c.PagoEm = data.Date;
         c.Forma = forma;
+        c.ValorPago = isentar ? c.Valor : c.ValorAtualizado(data);
         await _db.SaveChangesAsync();
-        Aviso = $"Pagamento registrado: {c.Descricao}.";
+        Aviso = $"Pagamento registrado: {c.Descricao}, recebido {c.ValorPago:C}.";
         await Liberar(id);
         return RedirectToPage(new { id });
     }
@@ -101,6 +102,7 @@ public class DetalheModel : PageModel
         if (c == null) return NotFound();
         c.PagoEm = null;
         c.Forma = null;
+        c.ValorPago = null;
         await _db.SaveChangesAsync();
         Aviso = "Pagamento desfeito. (Se a matrícula já tinha sido liberada, o status não volta sozinho.)";
         return RedirectToPage(new { id });

@@ -35,14 +35,21 @@ public class IndexModel : PageModel
             {
                 m.Id, Aluno = m.Aluno!.Nome, Resp = m.Aluno.Financeiro.Nome, m.Serie, m.AnoLetivo, m.Status,
                 Contrato = m.ContratoAssinadoEm != null,
-                Cobrancas = _db.Cobrancas.Count(c => c.MatriculaId == m.Id),
-                EmAberto = _db.Cobrancas.Where(c => c.MatriculaId == m.Id && c.PagoEm == null).Sum(c => (decimal?)c.Valor) ?? 0,
-                Atrasadas = _db.Cobrancas.Count(c => c.MatriculaId == m.Id && c.PagoEm == null && c.Vencimento < hoje),
-                ValorAtrasado = _db.Cobrancas.Where(c => c.MatriculaId == m.Id && c.PagoEm == null && c.Vencimento < hoje).Sum(c => (decimal?)c.Valor) ?? 0
+                Cobrancas = _db.Cobrancas.Count(c => c.MatriculaId == m.Id)
             }).ToListAsync();
 
-        Itens = lista.Select(x => new Linha(x.Id, x.Aluno, x.Resp, x.Serie?.Nome() ?? "", x.AnoLetivo, x.Status,
-            x.Contrato, x.Cobrancas, x.EmAberto, x.Atrasadas, x.ValorAtrasado)).ToList();
+        // Valores em aberto com multa e juros de hoje (calculados em C#)
+        var ids = lista.Select(x => x.Id).ToList();
+        var abertas = (await _db.Cobrancas.AsNoTracking().Where(c => c.PagoEm == null && ids.Contains(c.MatriculaId)).ToListAsync())
+            .GroupBy(c => c.MatriculaId).ToDictionary(g => g.Key, g => g.ToList());
+
+        Itens = lista.Select(x =>
+        {
+            var ab = abertas.GetValueOrDefault(x.Id) ?? new List<Cobranca>();
+            var atr = ab.Where(c => c.Atrasada).ToList();
+            return new Linha(x.Id, x.Aluno, x.Resp, x.Serie?.Nome() ?? "", x.AnoLetivo, x.Status, x.Contrato, x.Cobrancas,
+                ab.Sum(c => c.ValorDevido), atr.Count, atr.Sum(c => c.ValorDevido));
+        }).ToList();
         if (Filtro == "atraso") Itens = Itens.Where(i => i.Atrasadas > 0).ToList();
         if (Filtro == "semcobranca") Itens = Itens.Where(i => i.Cobrancas == 0).ToList();
     }

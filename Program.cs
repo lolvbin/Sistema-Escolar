@@ -84,6 +84,21 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Senha provisória: enquanto não trocar, só pode abrir a tela de troca (e sair)
+app.Use(async (ctx, next) =>
+{
+    if (ctx.User.HasClaim(Autenticacao.ClaimTrocarSenha, "1"))
+    {
+        var p = ctx.Request.Path;
+        if (!p.StartsWithSegments("/Conta/Senha") && !p.StartsWithSegments("/Logout") && !(p.Value ?? "").Contains('.'))
+        {
+            ctx.Response.Redirect("/Conta/Senha");
+            return;
+        }
+    }
+    await next();
+});
+
 app.MapStaticAssets().AllowAnonymous(); // css/js precisam carregar na tela de login
 app.MapRazorPages().WithStaticAssets();
 

@@ -19,11 +19,11 @@ Feito para ser **leve**: HTML renderizado no servidor, quase nenhum JavaScript e
 | **Turmas** | Série + ano + letra, enturmação de alunos ativos e professor por disciplina | Funcionário |
 | **Notas e frequência** | Notas por bimestre, recuperação, aulas dadas e faltas | Professor |
 | **Configurações** | Média de aprovação, de recuperação e frequência mínima | Funcionário |
-| **Financeiro** | Contrato, taxa e mensalidades, baixa de pagamentos; libera a matrícula pendente | Funcionário (responsável consulta) |
+| **Financeiro** | Contrato, taxa e mensalidades, multa e juros, baixa de pagamentos; libera a matrícula pendente | Funcionário (responsável consulta) |
 | **Calendário** | Grade mensal com feriados, recessos, provas e reuniões | Todos veem, funcionário cadastra |
 | **Boletim** | Notas, recuperação, frequência e situação (aprovado, recuperação, reprovado) | Aluno e responsável |
 
-**Em breve:** sala de aula, multa e juros, recibos e relatório de inadimplência.
+**Em breve:** sala de aula, recibos e relatório de inadimplência.
 
 ## 👥 Perfis de acesso
 
@@ -33,7 +33,7 @@ Responsável, Funcionário, Professor e Aluno. Cada perfil vê só o menu e as t
 
 - C# / ASP.NET Core (.NET 10), Razor Pages
 - Entity Framework Core + PostgreSQL (Npgsql 10.x)
-- Autenticação por cookie, senhas com PBKDF2
+- Autenticação por cookie, senhas com PBKDF2, limite de tentativas de login e troca da própria senha
 - Tema claro/escuro por variáveis CSS, sem Bootstrap, jQuery ou frameworks de JS
 - Validação feita no servidor; máscaras de CPF, telefone e data em um único `site.js`
 

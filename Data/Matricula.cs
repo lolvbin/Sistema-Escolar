@@ -166,6 +166,9 @@ public class EscolaContext : DbContext
         b.Entity<Configuracao>().Property(c => c.MediaMinima).HasPrecision(3, 1);
         b.Entity<Configuracao>().Property(c => c.MediaRecuperacao).HasPrecision(3, 1);
         b.Entity<Configuracao>().Property(c => c.FrequenciaMinima).HasPrecision(4, 1);
+        b.Entity<Configuracao>().Property(c => c.MultaPercentual).HasPrecision(5, 2);
+        b.Entity<Configuracao>().Property(c => c.JurosMensal).HasPrecision(5, 2);
+        b.Entity<Cobranca>().Property(c => c.ValorPago).HasPrecision(10, 2);
         b.Entity<Frequencia>().ToTable("Frequencias").HasKey(f => new { f.MatriculaId, f.DisciplinaId, f.Bimestre });
         b.Entity<AulasDadas>().ToTable("AulasDadas").HasKey(a => new { a.TurmaId, a.DisciplinaId, a.Bimestre });
         b.Entity<Cobranca>().ToTable("Cobrancas");

@@ -29,26 +29,33 @@ public class LoginModel : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         var email = (Email ?? "").Trim().ToLowerInvariant();
+        var kEmail = "login:" + email;
+        var kIp = "ip:" + HttpContext.Connection.RemoteIpAddress;
+
+        // Bloqueado por tentativas demais: nem confere a senha
+        var espera = LimiteLogin.Bloqueado(kEmail, LimiteLogin.MaxPorEmail) ?? LimiteLogin.Bloqueado(kIp, LimiteLogin.MaxPorIp);
+        if (espera != null)
+        {
+            Erro = $"Muitas tentativas. Tente novamente em {LimiteLogin.Minutos(espera.Value)}.";
+            return Page();
+        }
+
         var u = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(x => x.Email == email);
 
         // Sempre calcula um hash, exista o usuário ou não
         var ok = Data.Senha.Conferir(Senha ?? "", u?.SenhaHash ?? Data.Senha.Falso);
         if (u == null || !u.Ativo || !ok)
         {
+            LimiteLogin.Falhou(kEmail);
+            LimiteLogin.Falhou(kIp);
             Erro = "E-mail ou senha inválidos.";
             return Page();
         }
 
-        var id = new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, u.Id.ToString()),
-            new Claim(ClaimTypes.Name, u.Nome),
-            new Claim(ClaimTypes.Email, u.Email),
-            new Claim(ClaimTypes.Role, u.Perfil.ToString()),
-        }, CookieAuthenticationDefaults.AuthenticationScheme);
+        LimiteLogin.Limpar(kEmail);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, Autenticacao.CriarPrincipal(u));
 
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
-
+        if (u.DeveTrocarSenha) return RedirectToPage("/Conta/Senha");
         return LocalRedirect(Url.IsLocalUrl(ReturnUrl) ? ReturnUrl! : "/");
     }
 }

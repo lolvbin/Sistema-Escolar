@@ -78,10 +78,10 @@
 }
 else
 {
-    var total = Model.Cobrancas.Sum(c => c.Valor);
-    var pago = Model.Cobrancas.Where(c => c.Paga).Sum(c => c.Valor);
-    var atraso = Model.Cobrancas.Where(c => c.Atrasada).Sum(c => c.Valor);
-    <p>Total: <strong>@total.ToString("C")</strong> &middot; Pago: <strong>@pago.ToString("C")</strong> &middot; Em aberto: <strong>@((total - pago).ToString("C"))</strong>
+    var pago = Model.Cobrancas.Where(c => c.Paga).Sum(c => c.ValorDevido);
+    var aberto = Model.Cobrancas.Where(c => !c.Paga).Sum(c => c.ValorDevido);
+    var atraso = Model.Cobrancas.Where(c => c.Atrasada).Sum(c => c.ValorDevido);
+    <p>Recebido: <strong>@pago.ToString("C")</strong> &middot; Em aberto (com multa e juros): <strong>@aberto.ToString("C")</strong>
         @if (atraso > 0) { <span> &middot; <span class="badge cb-Atrasada">Em atraso: @atraso.ToString("C")</span></span> }
     </p>
     <div class="card tabela">
@@ -93,7 +93,16 @@ else
                 <tr>
                     <td>@c.Descricao</td>
                     <td>@c.Vencimento.ToString("dd/MM/yyyy")</td>
-                    <td>@c.Valor.ToString("C")</td>
+                    <td>
+                        @if (c.Paga) { @c.ValorDevido.ToString("C") @if (c.ValorDevido != c.Valor) { <br /><small class="suave">principal @c.Valor.ToString("C")</small> } }
+                        else if (c.Atrasada)
+                        {
+                            var (mu, ju) = c.Encargos(DateTime.Today);
+                            <strong>@c.ValorDevido.ToString("C")</strong>
+                            <br /><small class="suave">@c.Valor.ToString("C") + multa @mu.ToString("C") + juros @ju.ToString("C")</small>
+                        }
+                        else { @c.Valor.ToString("C") }
+                    </td>
                     <td>
                         @if (c.Paga) { <span class="badge cb-Paga">Paga em @c.PagoEm!.Value.ToString("dd/MM/yyyy") (@Html.DisplayFor(_ => c.Forma))</span> }
                         else if (c.Atrasada) { <span class="badge cb-Atrasada">Em atraso</span> }
@@ -112,6 +121,7 @@ else
                                     <option value="">Forma</option>
                                     @foreach (var f in Enum.GetValues<FormaPagamento>()) { <option value="@f">@f.ToString().Replace("Cartao", "Cartão").Replace("Transferencia", "Transferência")</option> }
                                 </select>
+                                @if (c.Atrasada) { <label class="check" style="margin:0"><input type="checkbox" name="isentar" value="true" /> Isentar multa e juros</label> }
                                 <button class="btn btn-sec">Dar baixa</button>
                             </form>
                         }

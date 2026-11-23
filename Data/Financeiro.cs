@@ -33,13 +33,33 @@ public class Cobranca
     public decimal Valor { get; set; }
     public DateTime? PagoEm { get; set; }
     public FormaPagamento? Forma { get; set; }
+    public decimal? ValorPago { get; set; }    // valor recebido (com multa e juros, se houve); fica gravado para o histórico
 
     [NotMapped] public bool Paga => PagoEm != null;
     [NotMapped] public bool Atrasada => PagoEm == null && Vencimento.Date < DateTime.Today;
+
+    /// <summary>Multa (única, % do valor) e juros (simples, % ao mês proporcional aos dias) de um pagamento feito em <paramref name="ate"/>.</summary>
+    public (decimal Multa, decimal Juros) Encargos(DateTime ate)
+    {
+        var dias = (ate.Date - Vencimento.Date).Days;
+        if (dias <= 0) return (0, 0);
+        var multa = Math.Round(Valor * RegrasFinanceiro.MultaPercentual / 100m, 2, MidpointRounding.AwayFromZero);
+        var juros = Math.Round(Valor * (RegrasFinanceiro.JurosMensalPercentual / 100m) / 30m * dias, 2, MidpointRounding.AwayFromZero);
+        return (multa, juros);
+    }
+
+    public decimal ValorAtualizado(DateTime ate) { var (m, j) = Encargos(ate); return Valor + m + j; }
+
+    /// <summary>Paga: o que foi recebido. Em aberto: o valor de hoje, com multa e juros se estiver atrasada.</summary>
+    [NotMapped] public decimal ValorDevido => PagoEm != null ? ValorPago ?? Valor : ValorAtualizado(DateTime.Today);
 }
 
 public static class RegrasFinanceiro
 {
+    // Carregados da tabela Configuracoes (tela Configurações). Padrão: multa 2% e juros 1% ao mês.
+    public static decimal MultaPercentual { get; set; } = 2.0m;
+    public static decimal JurosMensalPercentual { get; set; } = 1.0m;
+
     /// <summary>Lê dinheiro digitado: "1.250,50", "1250,5" ou "1250.50". Positivo, até 100.000,00.</summary>
     public static bool LerValor(string? txt, out decimal valor)
     {
@@ -84,8 +104,10 @@ public static class TabelaFinanceiro
                 "Vencimento" date NOT NULL,
                 "Valor" numeric(10,2) NOT NULL,
                 "PagoEm" date NULL,
-                "Forma" integer NULL
+                "Forma" integer NULL,
+                "ValorPago" numeric(10,2) NULL
             );
+            ALTER TABLE "Cobrancas" ADD COLUMN IF NOT EXISTS "ValorPago" numeric(10,2) NULL;
             CREATE INDEX IF NOT EXISTS "IX_Cobrancas_MatriculaId" ON "Cobrancas" ("MatriculaId");
             CREATE INDEX IF NOT EXISTS "IX_Cobrancas_Vencimento" ON "Cobrancas" ("Vencimento");
             """);

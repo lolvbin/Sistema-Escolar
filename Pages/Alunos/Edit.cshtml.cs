@@ -61,7 +61,7 @@ public class EditModel : PageModel
         { Erro = "Já existe um acesso com este e-mail."; return RedirectToPage(new { id }); }
 
         var senha = Senha.Provisoria();
-        var u = new Usuario { Nome = nome, Email = email, Perfil = perfil, SenhaHash = Senha.Gerar(senha) };
+        var u = new Usuario { Nome = nome, Email = email, Perfil = perfil, SenhaHash = Senha.Gerar(senha), DeveTrocarSenha = true };
         _db.Usuarios.Add(u);
         await _db.SaveChangesAsync();
         if (perfil == Perfil.Aluno) { a.UsuarioId = u.Id; await _db.SaveChangesAsync(); }

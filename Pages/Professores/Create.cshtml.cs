@@ -34,6 +34,7 @@ public class CreateModel : PageModel
             Email = Professor.Email,
             Perfil = Perfil.Professor,
             SenhaHash = Senha.Gerar(senha),
+            DeveTrocarSenha = true,
         };
 
         _db.Professores.Add(Professor);

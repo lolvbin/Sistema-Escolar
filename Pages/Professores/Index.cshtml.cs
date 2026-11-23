@@ -42,7 +42,7 @@ public class IndexModel : PageModel
         return RedirectToPage(new { Busca, Situacao });
     }
 
-    // Ainda não existe "trocar senha" pelo próprio usuário: o funcionário gera uma provisória.
+    // O funcionário gera uma senha provisória; o professor é obrigado a trocá-la no primeiro acesso.
     public async Task<IActionResult> OnPostNovaSenhaAsync(int id)
     {
         var p = await _db.Professores.Include(x => x.Usuario).FirstOrDefaultAsync(x => x.Id == id);
@@ -50,6 +50,7 @@ public class IndexModel : PageModel
 
         var senha = Senha.Provisoria();
         p.Usuario.SenhaHash = Senha.Gerar(senha);
+        p.Usuario.DeveTrocarSenha = true;
         await _db.SaveChangesAsync();
 
         TempData["Aviso"] = $"Nova senha provisória de {p.Nome}: {senha} (mostrada só agora)";

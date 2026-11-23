@@ -24,6 +24,7 @@ public class Usuario
     public string SenhaHash { get; set; } = "";
     public Perfil Perfil { get; set; }
     public bool Ativo { get; set; } = true;
+    public bool DeveTrocarSenha { get; set; }  // senha provisória: obriga a trocar no primeiro acesso
 }
 
 // Hash de senha com PBKDF2 (nativo do .NET, sem bibliotecas extras). Formato: iterações.salt.hash (base64)
@@ -74,6 +75,7 @@ public static class UsuarioSeed
                 "Ativo" boolean NOT NULL
             );
             CREATE UNIQUE INDEX IF NOT EXISTS "IX_Usuarios_Email" ON "Usuarios" ("Email");
+            ALTER TABLE "Usuarios" ADD COLUMN IF NOT EXISTS "DeveTrocarSenha" boolean NOT NULL DEFAULT false;
             """);
 
         if (!desenvolvimento) return;

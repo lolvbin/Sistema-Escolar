@@ -84,6 +84,8 @@ public class Configuracao
     public decimal MediaRecuperacao { get; set; } = 4.0m;
     public decimal FrequenciaMinima { get; set; } = 75.0m;
     public int ModoRecuperacao { get; set; }
+    public decimal MultaPercentual { get; set; } = 2.0m;
+    public decimal JurosMensal { get; set; } = 1.0m;
 }
 
 public static class TabelaConfiguracoes
@@ -98,6 +100,8 @@ public static class TabelaConfiguracoes
             );
             ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "FrequenciaMinima" numeric(4,1) NOT NULL DEFAULT 75.0;
             ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "ModoRecuperacao" integer NOT NULL DEFAULT 0;
+            ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "MultaPercentual" numeric(5,2) NOT NULL DEFAULT 2.0;
+            ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "JurosMensal" numeric(5,2) NOT NULL DEFAULT 1.0;
             INSERT INTO "Configuracoes" ("Id","MediaMinima","MediaRecuperacao") VALUES (1, 6.0, 4.0) ON CONFLICT ("Id") DO NOTHING;
             """);
         var c = db.Configuracoes.AsNoTracking().First(x => x.Id == 1);
@@ -105,5 +109,7 @@ public static class TabelaConfiguracoes
         Aprovacao.MediaRecuperacao = c.MediaRecuperacao;
         Aprovacao.FrequenciaMinima = c.FrequenciaMinima;
         Aprovacao.Modo = (ModoRecuperacao)c.ModoRecuperacao;
+        RegrasFinanceiro.MultaPercentual = c.MultaPercentual;
+        RegrasFinanceiro.JurosMensalPercentual = c.JurosMensal;
     }
 }

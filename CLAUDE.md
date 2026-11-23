@@ -50,7 +50,9 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - A tabela `Usuarios` é criada por SQL (`CREATE TABLE IF NOT EXISTS`) no `UsuarioSeed.Preparar`, porque `EnsureCreated` não adiciona tabelas em banco existente
 - Em Development cria 4 usuários `<perfil>@escola.test` (senha de dev em `UsuarioSeed`). Não vale em produção: criar usuários reais por outro meio
 - Prévia TEMPORÁRIA e estática (dados fictícios): `/Previa/{perfil}` e `Pages/Shared/_Painel.cshtml` (usado também no `/` conforme o perfil). Remover/substituir conforme os módulos reais surgirem
-- Sem limite de tentativas de login ainda
+- **Limite de tentativas** (`Data/Autenticacao.cs`, `LimiteLogin`): 5 falhas por e-mail ou 30 por IP bloqueiam por 15 min (mensagem com o tempo restante, nem confere a senha). Fica em memória: reiniciar o servidor zera. Vale também para errar a senha atual na troca
+- **Trocar a própria senha**: `Pages/Conta/Senha` (menu "Alterar senha"; mínimo 8 caracteres com letra e número, diferente da atual). Senha provisória (professor novo, "Nova senha", acessos de aluno/responsável) marca `Usuario.DeveTrocarSenha`: no login o claim `trocar-senha` redireciona (middleware em `Program.cs`) para a troca até ela ser feita. Usuários de dev (`@escola.test`) não são forçados
+- Cookie/claims criados por `Autenticacao.CriarPrincipal`
 
 ### Alunos e Matrícula (fluxo: matrícula primeiro, testado no navegador)
 - REGRA ESSENCIAL: não existe cadastrar aluno sem matrícula. O aluno é criado **junto** com a matrícula, em `Pages/Matriculas/Create` (um formulário só: dados do aluno + responsáveis + série/turno/ano). Não há mais `Alunos/Create`
@@ -115,13 +117,13 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - **Liberação da matrícula**: Pendente vira Ativa sozinha quando o contrato está assinado **e** a taxa de matrícula está paga (`TentarLiberar`, chamada após baixa e após registrar contrato). Também há "Liberar manualmente". Desfazer pagamento não volta o status
 - Matrícula com pagamento registrado não pode ser excluída (cancelar em vez disso); sem pagamento, excluir leva as cobranças junto
 - `Pages/Mensalidades` (política `Responsavel`, menu "Mensalidades"): responsável vê as cobranças dos alunos ligados ao e-mail dele (acadêmico ou financeiro), só leitura
-- Atrasada = não paga e vencida antes de hoje. Sem multa/juros, sem desconto, sem boleto/Pix real (baixa é manual)
-- Falta: multa e juros, descontos/bolsas, recibo para imprimir, relatório de inadimplência, integração com pagamento online
+- Atrasada = não paga e vencida antes de hoje. **Multa e juros** (`Cobranca.Encargos`): multa única de X% do valor + juros simples de Y% ao mês proporcionais aos dias (padrão 2% e 1%, configuráveis em Configurações, colunas `Configuracoes.MultaPercentual/JurosMensal`). Calculados na hora para cobranças em aberto; na baixa o valor recebido é gravado em `Cobranca.ValorPago` (histórico não muda se as taxas mudarem). Checkbox "Isentar multa e juros" na baixa. Sem desconto, sem boleto/Pix real (baixa é manual)
+- Falta: descontos/bolsas, recibo para imprimir, relatório de inadimplência, integração com pagamento online
 
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
-- Senha: por decisão do usuário, continua só o funcionário gerando a provisória (trocar a própria senha fica para depois). Falta limite de tentativas de login
-- Próximos passos possíveis: Sala de aula real (professor/aluno), trocar a própria senha, limite de tentativas de login, migrations
+- Senha: o funcionário gera a provisória e o usuário troca no primeiro acesso. Não há "esqueci minha senha" por e-mail (só o funcionário gera outra)
+- Próximos passos possíveis: Sala de aula real (professor/aluno), migrations, testes automatizados, publicar no GitHub
 
 ## Cuidados
 - `psql` instalado. Para rodar SQL com a conexão do user-secrets sem expor a senha: ler `dotnet user-secrets list` e passar Host/Port/Username/Database por parâmetro e a senha por `PGPASSWORD`

@@ -54,6 +54,10 @@
                 {
                     <a asp-page="/Previa">Prévia dos perfis</a>
                 }
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-page="/Conta/Senha">Alterar senha</a>
+                }
             </nav>
             @if (User.Identity?.IsAuthenticated == true)
             {
