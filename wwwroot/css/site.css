@@ -124,3 +124,8 @@ button.link { background: none; border: 0; padding: 0; margin-right: 10px; font:
 .tipo-Reuniao { color: var(--ok); border-color: var(--ok); }
 .tipo-Evento { color: var(--primaria); border-color: var(--primaria); }
 @media (max-width: 600px) { .cal-dia { min-height: 56px; } .ev { font-size: .62rem; } }
+
+/* Situação do aluno */
+.sit-Aprovado { color: var(--ok); border-color: var(--ok); }
+.sit-Recuperacao { color: var(--aviso); border-color: var(--aviso); }
+.sit-Reprovado { color: var(--perigo); border-color: var(--perigo); }

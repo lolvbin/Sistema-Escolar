@@ -19,9 +19,9 @@ Feito para ser **leve**: HTML renderizado no servidor, quase nenhum JavaScript e
 | **Turmas** | Série + ano + letra, enturmação de alunos ativos e professor por disciplina | Funcionário |
 | **Notas** | Lançamento por turma, disciplina e bimestre (4 bimestres) | Professor |
 | **Calendário** | Grade mensal com feriados, recessos, provas e reuniões | Todos veem, funcionário cadastra |
-| **Boletim** | Notas e médias por bimestre | Aluno e responsável |
+| **Boletim** | Notas, médias e situação (aprovado, recuperação, reprovado) | Aluno e responsável |
 
-**Em breve:** financeiro (libera a matrícula pendente) e regra de aprovação.
+**Em breve:** financeiro (libera a matrícula pendente).
 
 ## 👥 Perfis de acesso
 

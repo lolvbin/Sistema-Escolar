@@ -22,6 +22,7 @@ public class LancarModel : PageModel
     public Turma Turma { get; set; } = null!;
     public Disciplina Disciplina { get; set; } = null!;
     public List<Matricula> Alunos { get; set; } = new();
+    public Dictionary<int, decimal?[]> Anual { get; set; } = new(); // notas dos 4 bimestres por matrícula
     public Dictionary<int, string> Erros { get; set; } = new();
 
     [TempData] public string? Aviso { get; set; }
@@ -45,6 +46,16 @@ public class LancarModel : PageModel
         Alunos = await _db.Matriculas.AsNoTracking().Include(m => m.Aluno)
             .Where(m => m.TurmaId == TurmaId && m.Status == StatusMatricula.Ativa)
             .OrderBy(m => m.Aluno!.Nome).ToListAsync();
+
+        var ids = Alunos.Select(a => a.Id).ToList();
+        var todas = await _db.Notas.AsNoTracking()
+            .Where(n => n.DisciplinaId == DisciplinaId && ids.Contains(n.MatriculaId)).ToListAsync();
+        foreach (var m in Alunos)
+        {
+            var v = new decimal?[TabelaNotas.Bimestres];
+            foreach (var n in todas.Where(n => n.MatriculaId == m.Id && n.Bimestre >= 1 && n.Bimestre <= v.Length)) v[n.Bimestre - 1] = n.Valor;
+            Anual[m.Id] = v;
+        }
         return null;
     }
 

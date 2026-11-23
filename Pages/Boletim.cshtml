@@ -43,7 +43,7 @@ else
                     <tr>
                         <th>Disciplina</th>
                         @for (int b = 1; b <= TabelaNotas.Bimestres; b++) { <th>@(b)º bim.</th> }
-                        <th>Média</th>
+                        <th>Média</th><th>Situação</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,11 +53,13 @@ else
                         <td>@l.Disciplina</td>
                         @foreach (var n in l.Notas) { <td>@(n?.ToString("0.0") ?? "-")</td> }
                         <td><strong>@(l.Media?.ToString("0.0") ?? "-")</strong></td>
+                        <td><span class="badge sit-@l.Situacao">@l.Situacao.Nome()</span></td>
                     </tr>
                 }
                 </tbody>
             </table>
         </div>
-        <p class="suave">A média considera só os bimestres já lançados.</p>
+        <p>Situação geral: <span class="badge sit-@Model.Geral">@Model.Geral.Nome()</span></p>
+        <p class="suave">Aprovado com média anual a partir de @Aprovacao.MediaMinima.ToString("0.0"); recuperação de @Aprovacao.MediaRecuperacao.ToString("0.0") a @((Aprovacao.MediaMinima - 0.1m).ToString("0.0")); reprovado abaixo de @Aprovacao.MediaRecuperacao.ToString("0.0"). A situação só é definida depois dos 4 bimestres; a média mostrada considera os já lançados.</p>
     }
 }

@@ -17,7 +17,8 @@ public class BoletimModel : PageModel
     public Aluno? Aluno { get; set; }
     public Matricula? Matricula { get; set; }
 
-    public record Linha(string Disciplina, decimal?[] Notas, decimal? Media);
+    public record Linha(string Disciplina, decimal?[] Notas, decimal? Media, Situacao Situacao);
+    public Situacao Geral { get; set; }
     public List<Linha> Linhas { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync()
@@ -53,9 +54,9 @@ public class BoletimModel : PageModel
             var v = new decimal?[TabelaNotas.Bimestres];
             foreach (var n in notas.Where(n => n.DisciplinaId == d.DisciplinaId && n.Bimestre >= 1 && n.Bimestre <= v.Length))
                 v[n.Bimestre - 1] = n.Valor;
-            var lanc = v.Where(x => x != null).Select(x => x!.Value).ToList();
-            Linhas.Add(new Linha(d.Nome, v, lanc.Count == 0 ? null : Math.Round(lanc.Average(), 1, MidpointRounding.AwayFromZero)));
+            Linhas.Add(new Linha(d.Nome, v, Aprovacao.Media(v), Aprovacao.DaDisciplina(v)));
         }
+        Geral = Aprovacao.Geral(Linhas.Select(l => l.Situacao));
         return Page();
     }
 }

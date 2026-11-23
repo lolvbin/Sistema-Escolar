@@ -30,7 +30,7 @@ else
         <input type="hidden" name="Bim" value="@Model.Bim" />
         <div class="card tabela">
             <table>
-                <thead><tr><th>Aluno</th><th style="width:140px">Nota (0 a 10)</th></tr></thead>
+                <thead><tr><th>Aluno</th><th style="width:140px">Nota (0 a 10)</th><th>Média anual</th><th>Situação</th></tr></thead>
                 <tbody>
                 @foreach (var m in Model.Alunos)
                 {
@@ -40,6 +40,8 @@ else
                             <input name="Valores[@m.Id]" value="@Model.Valores.GetValueOrDefault(m.Id)" inputmode="decimal" autocomplete="off" />
                             @if (Model.Erros.TryGetValue(m.Id, out var e)) { <span class="erro">@e</span> }
                         </td>
+                        <td>@(Aprovacao.Media(Model.Anual[m.Id])?.ToString("0.0") ?? "-")</td>
+                        <td><span class="badge sit-@Aprovacao.DaDisciplina(Model.Anual[m.Id])">@Aprovacao.DaDisciplina(Model.Anual[m.Id]).Nome()</span></td>
                     </tr>
                 }
                 </tbody>

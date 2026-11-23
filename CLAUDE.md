@@ -85,13 +85,13 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - `Data/Nota.cs` (chave composta MatriculaId + DisciplinaId + Bimestre, valor 0 a 10 com 1 casa) e `TabelaNotas.Preparar` (SQL, depois de Turmas). 4 bimestres fixos (`TabelaNotas.Bimestres`)
 - `Pages/Notas/` só Professor (política `Professor`): Index lista as disciplinas/turmas ativas atribuídas a ele (`TurmaDisciplina.ProfessorId`, ligado pelo `Professor.UsuarioId` = claim NameIdentifier); `Lancar` = notas de uma turma/disciplina/bimestre, só alunos com matrícula Ativa na turma
 - Aceita vírgula ou ponto, arredonda para 1 casa; campo vazio apaga a nota; se um valor for inválido nada é salvo. Professor que não é o da disciplina: Acesso negado
-- Falta: aluno/responsável verem o boletim (precisa ligar `Usuario` ao aluno/responsável), visão do funcionário, média/situação
+- Falta: visão do funcionário sobre as notas
 
 ### Boletim e acessos (testado no navegador)
 - `Pages/Boletim` para Aluno e Responsável (política `Boletim`, menu "Boletim"): disciplinas da turma × 4 bimestres + média das notas já lançadas (sem regra de aprovação ainda). Mostra a matrícula mais recente com turma
 - Ligação: aluno por `Aluno.UsuarioId` (coluna criada em `TabelaNotas.Preparar`); responsável pelo **e-mail** (acadêmico ou financeiro) igual ao do login. Só vê os próprios alunos
 - Funcionário cria os acessos em `Alunos/Edit` ("Acessos ao sistema"): aluno (informa e-mail) e responsável (e-mail já cadastrado); senha provisória mostrada uma vez
-- Falta: visão do funcionário/professor, regra de aprovação, trocar a própria senha
+- Falta: visão do funcionário/professor, trocar a própria senha
 
 ### Módulo Calendário (testado no navegador)
 - `Data/Evento.cs` (título, tipo, início, fim opcional, descrição; vale para a escola toda) e `TabelaEventos.Preparar` (SQL). Tipos: Evento, Feriado, Recesso, Prova, Reunião
@@ -99,10 +99,16 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Erros de validação em `[BindProperty] Evento` precisam da chave com prefixo (`"Evento.Fim"`). Propriedades calculadas do modelo levam `[NotMapped, ValidateNever]` (senão o validador as lê e quebra com nulo)
 - Falta: eventos por turma/série, ligar provas às turmas, início/fim dos bimestres
 
+### Aprovação e média (testado no navegador)
+- `Data/Aprovacao.cs`: regra fixa em constantes. Média anual das 4 notas (arredonda 1 casa): **>= 6,0 Aprovado; 4,0 a 5,9 Recuperação; < 4,0 Reprovado**. Faltando nota em algum bimestre: "Em andamento"
+- Situação geral do aluno: Em andamento se alguma disciplina está em andamento; senão Reprovado > Recuperação > Aprovado
+- Aparece no `Boletim` (por disciplina e geral) e na tela `Notas/Lancar` (média anual e situação por aluno). Estilo `.sit-*` no CSS
+- Falta: configurar a média mínima pela tela, nota de recuperação, frequência/faltas
+
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
 - Senha: por decisão do usuário, continua só o funcionário gerando a provisória (trocar a própria senha fica para depois). Falta limite de tentativas de login
-- Ordem combinada dos próximos módulos: Calendário → Financeiro (libera a matrícula Pendente)
+- Ordem combinada dos próximos módulos: Financeiro (libera a matrícula Pendente)
 
 ## Cuidados
 - `psql` instalado. Para rodar SQL com a conexão do user-secrets sem expor a senha: ler `dotnet user-secrets list` e passar Host/Port/Username/Database por parâmetro e a senha por `PGPASSWORD`
