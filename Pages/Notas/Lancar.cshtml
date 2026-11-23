@@ -13,14 +13,15 @@
     {
         <a class="@(b == Model.Bim ? "ativa" : "")" asp-page="Lancar" asp-route-turmaId="@Model.TurmaId" asp-route-disciplinaId="@Model.DisciplinaId" asp-route-bim="@b">@(b)º bimestre</a>
     }
+    <a class="@(Model.Recup ? "ativa" : "")" asp-page="Lancar" asp-route-turmaId="@Model.TurmaId" asp-route-disciplinaId="@Model.DisciplinaId" asp-route-bim="@TabelaNotas.BimRecuperacao">Recuperação</a>
 </div>
 
 @if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
-@if (Model.Erros.Count > 0) { <div class="card erro-card">Corrija os valores marcados. Nada foi salvo.</div> }
+@if (Model.Erros.Count > 0 || Model.ErroAulas != null) { <div class="card erro-card">Corrija os valores marcados. Nada foi salvo.</div> }
 
 @if (Model.Alunos.Count == 0)
 {
-    <div class="card vazio">Esta turma não tem alunos com matrícula ativa.</div>
+    <div class="card vazio">@(Model.Recup ? "Nenhum aluno em recuperação nesta disciplina (precisa ter as 4 notas e média na faixa de recuperação)." : "Esta turma não tem alunos com matrícula ativa.")</div>
 }
 else
 {
@@ -28,25 +29,49 @@ else
         <input type="hidden" name="TurmaId" value="@Model.TurmaId" />
         <input type="hidden" name="DisciplinaId" value="@Model.DisciplinaId" />
         <input type="hidden" name="Bim" value="@Model.Bim" />
+        @if (!Model.Recup)
+        {
+            <div class="card" style="margin-bottom:14px; max-width:320px">
+                <div class="campo">
+                    <label for="Aulas">Aulas dadas neste bimestre</label>
+                    <input id="Aulas" name="Aulas" value="@Model.Aulas" inputmode="numeric" maxlength="3" autocomplete="off" />
+                    @if (Model.ErroAulas != null) { <span class="erro">@Model.ErroAulas</span> }
+                </div>
+            </div>
+        }
         <div class="card tabela">
             <table>
-                <thead><tr><th>Aluno</th><th style="width:140px">Nota (0 a 10)</th><th>Média anual</th><th>Situação</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th style="width:130px">@(Model.Recup ? "Nota de recuperação" : "Nota (0 a 10)")</th>
+                        @if (!Model.Recup) { <th style="width:90px">Faltas</th> }
+                        <th>Média @(Model.Recup ? "final" : "anual")</th>
+                        <th>Situação</th>
+                    </tr>
+                </thead>
                 <tbody>
                 @foreach (var m in Model.Alunos)
                 {
+                    var rec = Model.Rec.GetValueOrDefault(m.Id);
+                    var sit = Aprovacao.DaDisciplina(Model.Anual[m.Id], rec);
                     <tr>
                         <td>@m.Aluno!.Nome</td>
                         <td>
                             <input name="Valores[@m.Id]" value="@Model.Valores.GetValueOrDefault(m.Id)" inputmode="decimal" autocomplete="off" />
                             @if (Model.Erros.TryGetValue(m.Id, out var e)) { <span class="erro">@e</span> }
                         </td>
-                        <td>@(Aprovacao.Media(Model.Anual[m.Id])?.ToString("0.0") ?? "-")</td>
-                        <td><span class="badge sit-@Aprovacao.DaDisciplina(Model.Anual[m.Id])">@Aprovacao.DaDisciplina(Model.Anual[m.Id]).Nome()</span></td>
+                        @if (!Model.Recup)
+                        {
+                            <td><input name="Faltas[@m.Id]" value="@Model.Faltas.GetValueOrDefault(m.Id)" inputmode="numeric" maxlength="3" autocomplete="off" /></td>
+                        }
+                        <td>@(Aprovacao.MediaFinal(Model.Anual[m.Id], rec)?.ToString("0.0") ?? "-")</td>
+                        <td><span class="badge sit-@sit">@sit.Nome()</span></td>
                     </tr>
                 }
                 </tbody>
             </table>
         </div>
-        <div class="rodape-form"><button class="btn" type="submit">Salvar notas</button></div>
+        <div class="rodape-form"><button class="btn" type="submit">Salvar</button></div>
     </form>
 }

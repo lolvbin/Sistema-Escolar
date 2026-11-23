@@ -43,7 +43,7 @@ else
                     <tr>
                         <th>Disciplina</th>
                         @for (int b = 1; b <= TabelaNotas.Bimestres; b++) { <th>@(b)º bim.</th> }
-                        <th>Média</th><th>Situação</th>
+                        <th>Rec.</th><th>Média</th><th>Freq.</th><th>Situação</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,14 +52,21 @@ else
                     <tr>
                         <td>@l.Disciplina</td>
                         @foreach (var n in l.Notas) { <td>@(n?.ToString("0.0") ?? "-")</td> }
+                        <td>@(l.Rec?.ToString("0.0") ?? "-")</td>
                         <td><strong>@(l.Media?.ToString("0.0") ?? "-")</strong></td>
+                        <td>@(l.Freq?.ToString("0.#") is { } f ? f + "%" : "-")</td>
                         <td><span class="badge sit-@l.Situacao">@l.Situacao.Nome()</span></td>
                     </tr>
                 }
                 </tbody>
             </table>
         </div>
-        <p>Situação geral: <span class="badge sit-@Model.Geral">@Model.Geral.Nome()</span></p>
-        <p class="suave">Aprovado com média anual a partir de @Aprovacao.MediaMinima.ToString("0.0"); recuperação de @Aprovacao.MediaRecuperacao.ToString("0.0") a @((Aprovacao.MediaMinima - 0.1m).ToString("0.0")); reprovado abaixo de @Aprovacao.MediaRecuperacao.ToString("0.0"). A situação só é definida depois dos 4 bimestres; a média mostrada considera os já lançados.</p>
+        <p>Situação geral: <span class="badge sit-@Model.Geral">@Model.Geral.Nome()</span>
+            @if (Model.FreqGeral != null)
+            {
+                <span class="suave"> &middot; Frequência geral: @Model.FreqGeral.Value.ToString("0.#")% (mínimo @Aprovacao.FrequenciaMinima.ToString("0.#")%)</span>
+            }
+        </p>
+        <p class="suave">Aprovado com média anual a partir de @Aprovacao.MediaMinima.ToString("0.0"); de @Aprovacao.MediaRecuperacao.ToString("0.0") até abaixo de @Aprovacao.MediaMinima.ToString("0.0") o aluno faz recuperação (média final = média anual e nota de recuperação, divididas por 2); abaixo de @Aprovacao.MediaRecuperacao.ToString("0.0") é reprovado. Frequência geral abaixo do mínimo também reprova. A situação só é definida depois dos 4 bimestres.</p>
     }
 }

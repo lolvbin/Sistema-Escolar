@@ -17,9 +17,10 @@ Feito para ser **leve**: HTML renderizado no servidor, quase nenhum JavaScript e
 | **Professores** | Cadastro, login com senha provisória, inativação | Funcionário |
 | **Disciplinas** | Catálogo por série, com disciplinas padrão | Funcionário |
 | **Turmas** | Série + ano + letra, enturmação de alunos ativos e professor por disciplina | Funcionário |
-| **Notas** | Lançamento por turma, disciplina e bimestre (4 bimestres) | Professor |
+| **Notas e frequência** | Notas por bimestre, recuperação, aulas dadas e faltas | Professor |
+| **Configurações** | Média de aprovação, de recuperação e frequência mínima | Funcionário |
 | **Calendário** | Grade mensal com feriados, recessos, provas e reuniões | Todos veem, funcionário cadastra |
-| **Boletim** | Notas, médias e situação (aprovado, recuperação, reprovado) | Aluno e responsável |
+| **Boletim** | Notas, recuperação, frequência e situação (aprovado, recuperação, reprovado) | Aluno e responsável |
 
 **Em breve:** financeiro (libera a matrícula pendente).
 

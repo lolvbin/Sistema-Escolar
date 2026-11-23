@@ -18,7 +18,12 @@
             <input id="Recuperacao" name="Recuperacao" value="@Model.Recuperacao" inputmode="decimal" maxlength="4" autocomplete="off" />
             @if (Model.ErroRecuperacao != null) { <span class="erro">@Model.ErroRecuperacao</span> }
         </div>
+        <div class="campo">
+            <label for="Frequencia">Frequência mínima, em % de presença (0 a 100)</label>
+            <input id="Frequencia" name="Frequencia" value="@Model.Frequencia" inputmode="decimal" maxlength="5" autocomplete="off" />
+            @if (Model.ErroFrequencia != null) { <span class="erro">@Model.ErroFrequencia</span> }
+        </div>
     </div>
-    <p class="suave">Média anual igual ou maior que a de aprovação: aprovado. Entre as duas: recuperação. Abaixo da de recuperação: reprovado. A situação só é definida depois dos 4 bimestres.</p>
+    <p class="suave">Com recuperação: média final = (média anual + nota de recuperação) / 2, que precisa atingir a média de aprovação. Frequência geral abaixo do mínimo reprova o aluno. Média anual igual ou maior que a de aprovação: aprovado. Entre as duas: recuperação. Abaixo da de recuperação: reprovado. A situação só é definida depois dos 4 bimestres.</p>
     <div class="rodape-form"><button class="btn">Salvar</button></div>
 </form>

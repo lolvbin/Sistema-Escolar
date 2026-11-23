@@ -14,6 +14,8 @@ public class ConfiguracoesModel : PageModel
     // Texto digitado (aceita vírgula ou ponto)
     [BindProperty] public string? Minima { get; set; }
     [BindProperty] public string? Recuperacao { get; set; }
+    [BindProperty] public string? Frequencia { get; set; }
+    public string? ErroFrequencia { get; set; }
     public string? ErroMinima { get; set; }
     public string? ErroRecuperacao { get; set; }
     [TempData] public string? Aviso { get; set; }
@@ -22,15 +24,18 @@ public class ConfiguracoesModel : PageModel
     {
         Minima = Aprovacao.MediaMinima.ToString("0.0", CultureInfo.CurrentCulture);
         Recuperacao = Aprovacao.MediaRecuperacao.ToString("0.0", CultureInfo.CurrentCulture);
+        Frequencia = Aprovacao.FrequenciaMinima.ToString("0.0", CultureInfo.CurrentCulture);
     }
 
-    static bool Ler(string? txt, out decimal v) =>
-        decimal.TryParse((txt ?? "").Trim().Replace('.', ','), NumberStyles.Number, CultureInfo.CurrentCulture, out v) && v >= 0 && v <= 10;
+    static bool Ler(string? txt, out decimal v, decimal max = 10) =>
+        decimal.TryParse((txt ?? "").Trim().Replace('.', ','), NumberStyles.Number, CultureInfo.CurrentCulture, out v) && v >= 0 && v <= max;
 
     public async Task<IActionResult> OnPostAsync()
     {
         var okMin = Ler(Minima, out var min);
         var okRec = Ler(Recuperacao, out var rec);
+        var okFreq = Ler(Frequencia, out var freq, 100);
+        if (!okFreq) ErroFrequencia = "Use um número de 0 a 100";
         if (!okMin) ErroMinima = "Use um número de 0 a 10";
         if (!okRec) ErroRecuperacao = "Use um número de 0 a 10";
         if (okMin && okRec)
@@ -39,14 +44,17 @@ public class ConfiguracoesModel : PageModel
             rec = Math.Round(rec, 1, MidpointRounding.AwayFromZero);
             if (rec >= min) ErroRecuperacao = "Deve ser menor que a média de aprovação";
         }
-        if (ErroMinima != null || ErroRecuperacao != null) return Page();
+        if (ErroMinima != null || ErroRecuperacao != null || ErroFrequencia != null) return Page();
+        freq = Math.Round(freq, 1, MidpointRounding.AwayFromZero);
 
         var c = await _db.Configuracoes.FirstAsync(x => x.Id == 1);
         c.MediaMinima = min;
         c.MediaRecuperacao = rec;
+        c.FrequenciaMinima = freq;
         await _db.SaveChangesAsync();
         Aprovacao.MediaMinima = min;
         Aprovacao.MediaRecuperacao = rec;
+        Aprovacao.FrequenciaMinima = freq;
 
         Aviso = "Configurações salvas. A nova regra vale para todos os boletins.";
         return RedirectToPage();

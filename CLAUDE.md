@@ -104,7 +104,9 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Situação geral do aluno: Em andamento se alguma disciplina está em andamento; senão Reprovado > Recuperação > Aprovado
 - Aparece no `Boletim` (por disciplina e geral) e na tela `Notas/Lancar` (média anual e situação por aluno). Estilo `.sit-*` no CSS
 - Recuperação deve ser menor que a aprovação (0 a 10, vírgula ou ponto). Mudar vale na hora para todos os boletins
-- Falta: nota de recuperação, frequência/faltas
+- **Recuperação**: nota guardada em `Notas` como bimestre 5 (`TabelaNotas.BimRecuperacao`). Só quem tem as 4 notas e média entre a de recuperação e a de aprovação entra (aba "Recuperação" em `Notas/Lancar`). Média final = (média anual + nota de recuperação) / 2, precisa atingir a média de aprovação; senão Reprovado
+- **Frequência**: professor lança as **aulas dadas** por turma/disciplina/bimestre (`AulasDadas`) e as **faltas** por aluno (`Frequencias`) na mesma tela de notas. Faltas não passam das aulas dadas. Frequência % = 1 - faltas/aulas. Mínimo configurável (padrão 75%, coluna `Configuracoes.FrequenciaMinima`): frequência **geral** abaixo disso reprova o aluno (só depois de todas as disciplinas definidas). Boletim mostra Rec., Média final, Freq. por disciplina e geral
+- Falta: abono/justificativa de faltas, frequência diária (chamada), regra de recuperação por bimestre
 - Cuidado nos testes: se `dotnet run` falhar em silêncio, pode haver servidor antigo na porta 5006 (`ss -ltnp | grep 5006`): encerrar pelo PID
 
 ### Pendências conhecidas

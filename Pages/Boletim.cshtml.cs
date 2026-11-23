@@ -17,8 +17,9 @@ public class BoletimModel : PageModel
     public Aluno? Aluno { get; set; }
     public Matricula? Matricula { get; set; }
 
-    public record Linha(string Disciplina, decimal?[] Notas, decimal? Media, Situacao Situacao);
+    public record Linha(string Disciplina, decimal?[] Notas, decimal? Rec, decimal? Media, decimal? Freq, Situacao Situacao);
     public Situacao Geral { get; set; }
+    public decimal? FreqGeral { get; set; }
     public List<Linha> Linhas { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync()
@@ -48,15 +49,21 @@ public class BoletimModel : PageModel
             .Where(x => x.TurmaId == Matricula.TurmaId)
             .Select(x => new { x.DisciplinaId, x.Disciplina!.Nome }).OrderBy(x => x.Nome).ToListAsync();
         var notas = await _db.Notas.AsNoTracking().Where(n => n.MatriculaId == Matricula.Id).ToListAsync();
+        var faltas = await _db.Frequencias.AsNoTracking().Where(f => f.MatriculaId == Matricula.Id).ToListAsync();
+        var aulas = await _db.Aulas.AsNoTracking().Where(a => a.TurmaId == Matricula.TurmaId).ToListAsync();
 
         foreach (var d in discs)
         {
             var v = new decimal?[TabelaNotas.Bimestres];
             foreach (var n in notas.Where(n => n.DisciplinaId == d.DisciplinaId && n.Bimestre >= 1 && n.Bimestre <= v.Length))
                 v[n.Bimestre - 1] = n.Valor;
-            Linhas.Add(new Linha(d.Nome, v, Aprovacao.Media(v), Aprovacao.DaDisciplina(v)));
+            var rec = notas.FirstOrDefault(n => n.DisciplinaId == d.DisciplinaId && n.Bimestre == TabelaNotas.BimRecuperacao)?.Valor;
+            var nf = faltas.Where(f => f.DisciplinaId == d.DisciplinaId).Sum(f => f.Faltas);
+            var na = aulas.Where(a => a.DisciplinaId == d.DisciplinaId).Sum(a => a.Aulas);
+            Linhas.Add(new Linha(d.Nome, v, rec, Aprovacao.MediaFinal(v, rec), Aprovacao.Frequencia(nf, na), Aprovacao.DaDisciplina(v, rec)));
         }
-        Geral = Aprovacao.Geral(Linhas.Select(l => l.Situacao));
+        FreqGeral = Aprovacao.Frequencia(faltas.Sum(f => f.Faltas), aulas.Sum(a => a.Aulas));
+        Geral = Aprovacao.Geral(Linhas.Select(l => l.Situacao), FreqGeral);
         return Page();
     }
 }

@@ -139,6 +139,8 @@ public class EscolaContext : DbContext
     public DbSet<Turma> Turmas => Set<Turma>();
     public DbSet<Nota> Notas => Set<Nota>();
     public DbSet<Evento> Eventos => Set<Evento>();
+    public DbSet<Frequencia> Frequencias => Set<Frequencia>();
+    public DbSet<AulasDadas> Aulas => Set<AulasDadas>();
     public DbSet<Configuracao> Configuracoes => Set<Configuracao>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -159,6 +161,9 @@ public class EscolaContext : DbContext
         b.Entity<Configuracao>().ToTable("Configuracoes").Property(c => c.Id).ValueGeneratedNever();
         b.Entity<Configuracao>().Property(c => c.MediaMinima).HasPrecision(3, 1);
         b.Entity<Configuracao>().Property(c => c.MediaRecuperacao).HasPrecision(3, 1);
+        b.Entity<Configuracao>().Property(c => c.FrequenciaMinima).HasPrecision(4, 1);
+        b.Entity<Frequencia>().ToTable("Frequencias").HasKey(f => new { f.MatriculaId, f.DisciplinaId, f.Bimestre });
+        b.Entity<AulasDadas>().ToTable("AulasDadas").HasKey(a => new { a.TurmaId, a.DisciplinaId, a.Bimestre });
         b.Entity<Nota>().ToTable("Notas").HasKey(n => new { n.MatriculaId, n.DisciplinaId, n.Bimestre });
         b.Entity<Nota>().Property(n => n.Valor).HasPrecision(4, 1);
         b.Entity<Nota>().HasOne(n => n.Matricula).WithMany().HasForeignKey(n => n.MatriculaId).OnDelete(DeleteBehavior.Cascade);
