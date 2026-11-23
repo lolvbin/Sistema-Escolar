@@ -59,20 +59,14 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = new[] { pt }
 });
 
-// Início: cria o banco se não existir (sem migrations por enquanto).
+// Início: aplica as migrations (cria/atualiza o banco), cria os usuários de teste em Development
+// e carrega as configurações de aprovação/financeiro para a memória.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<EscolaContext>();
-    db.Database.EnsureCreated();
-    Tabelas.Preparar(db);
-    UsuarioSeed.Preparar(db, app.Environment.IsDevelopment());
-    TabelaProfessores.Preparar(db); // depois de Usuarios (FK)
-    TabelasDisciplinas.Preparar(db);
-    TabelasTurmas.Preparar(db); // depois de Matriculas, Professores e Disciplinas
-    TabelaEventos.Preparar(db);
-    TabelaFinanceiro.Preparar(db); // depois de Matriculas
-    TabelaNotas.Preparar(db);
-    TabelaConfiguracoes.Preparar(db); // depois de Matriculas e Disciplinas
+    db.Database.Migrate();
+    UsuarioSeed.Semear(db, app.Environment.IsDevelopment());
+    TabelaConfiguracoes.Carregar(db);
 }
 
 if (!app.Environment.IsDevelopment())

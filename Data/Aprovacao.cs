@@ -90,20 +90,9 @@ public class Configuracao
 
 public static class TabelaConfiguracoes
 {
-    public static void Preparar(EscolaContext db)
+    // A linha padrão (Id = 1) vem da migration. Aqui só carregamos os valores para a memória.
+    public static void Carregar(EscolaContext db)
     {
-        db.Database.ExecuteSqlRaw("""
-            CREATE TABLE IF NOT EXISTS "Configuracoes" (
-                "Id" integer PRIMARY KEY,
-                "MediaMinima" numeric(3,1) NOT NULL,
-                "MediaRecuperacao" numeric(3,1) NOT NULL
-            );
-            ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "FrequenciaMinima" numeric(4,1) NOT NULL DEFAULT 75.0;
-            ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "ModoRecuperacao" integer NOT NULL DEFAULT 0;
-            ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "MultaPercentual" numeric(5,2) NOT NULL DEFAULT 2.0;
-            ALTER TABLE "Configuracoes" ADD COLUMN IF NOT EXISTS "JurosMensal" numeric(5,2) NOT NULL DEFAULT 1.0;
-            INSERT INTO "Configuracoes" ("Id","MediaMinima","MediaRecuperacao") VALUES (1, 6.0, 4.0) ON CONFLICT ("Id") DO NOTHING;
-            """);
         var c = db.Configuracoes.AsNoTracking().First(x => x.Id == 1);
         Aprovacao.MediaMinima = c.MediaMinima;
         Aprovacao.MediaRecuperacao = c.MediaRecuperacao;

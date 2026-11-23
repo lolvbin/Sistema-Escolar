@@ -8,7 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- A pasta tests tem o próprio projeto -->
+    <Compile Remove="tests/**" />
+    <Content Remove="tests/**" />
+    <None Remove="tests/**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.*" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

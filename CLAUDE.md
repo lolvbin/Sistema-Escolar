@@ -25,7 +25,10 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Conexão (não versionada). Em cada PC:
   `dotnet user-secrets set "ConnectionStrings:Escola" "Host=<host>;Port=5432;Database=<banco>;Username=<usuario>;Password=<senha>"`
   Em produção: variável `ConnectionStrings__Escola`. Nunca commitar a senha
-- Banco criado com `EnsureCreated` (sem migrations). Ele NÃO altera tabelas existentes: mudou o modelo, é preciso apagar as tabelas ou adotar migrations (fazer antes de ter dados reais)
+- **Banco com EF Migrations** (`Migrations/`): `Program.cs` chama `Migrate()` na partida (cria/atualiza o banco). Mudou o modelo? `dotnet ef migrations add NomeDaMudanca` e commitar a pasta `Migrations/`. `Data/EscolaContextFactory.cs` deixa o `dotnet ef` funcionar sem subir a aplicação (lê user-secrets ou `ConnectionStrings__Escola`). Ferramenta: `dotnet tool install --global dotnet-ef --version 10.*`
+- O banco de dev compartilhado foi criado antes das migrations: ele foi "baselinado" (linha `InitialCreate` inserida em `__EFMigrationsHistory`). Banco novo = `Migrate()` cria tudo. As menções abaixo a "tabela criada por SQL em ...Preparar" são HISTÓRICAS: esses métodos foram removidos e o esquema vem das migrations
+- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 72 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
+- `docker compose up -d` sobe um PostgreSQL local (usuário/senha/banco `escola`/`escola_dev`/`escola`)
 - Ao rodar a DLL direto (sem `dotnet run`) a porta é 5000 e o ambiente é Production, sem user-secrets: definir `ASPNETCORE_ENVIRONMENT=Development`
 
 ## Git
@@ -47,7 +50,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 ### Login e perfis (testado no navegador)
 - `Data/Usuario.cs`: entidade `Usuario`, enum `Perfil` (Responsavel, Funcionario, Professor, Aluno), hash PBKDF2 (`Senha`) e `UsuarioSeed`
 - Cookie auth em `Program.cs`; política padrão exige login. `[AllowAnonymous]` em Login, Previa, Error. Pasta `/Matriculas` só para Funcionário (política `Funcionario`)
-- A tabela `Usuarios` é criada por SQL (`CREATE TABLE IF NOT EXISTS`) no `UsuarioSeed.Preparar`, porque `EnsureCreated` não adiciona tabelas em banco existente
+- A tabela `Usuarios` vem das migrations; `UsuarioSeed.Semear` só cria as contas de teste
 - Em Development cria 4 usuários `<perfil>@escola.test` (senha de dev em `UsuarioSeed`). Não vale em produção: criar usuários reais por outro meio
 - Prévia TEMPORÁRIA e estática (dados fictícios): `/Previa/{perfil}` e `Pages/Shared/_Painel.cshtml` (usado também no `/` conforme o perfil). Remover/substituir conforme os módulos reais surgirem
 - **Limite de tentativas** (`Data/Autenticacao.cs`, `LimiteLogin`): 5 falhas por e-mail ou 30 por IP bloqueiam por 15 min (mensagem com o tempo restante, nem confere a senha). Fica em memória: reiniciar o servidor zera. Vale também para errar a senha atual na troca
@@ -61,7 +64,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - `Pages/Alunos/` é só consulta (lista com busca) e correção dos dados (`Edit`), só Funcionário. Matrícula > Editar tem link para os dados do aluno; na edição da matrícula o aluno não muda
 - Modelo: `Data/Aluno.cs` (nome, nascimento, CPF único, responsáveis acadêmico/financeiro, `MesmoResponsavel`) e `Matricula` (`AlunoId` FK Restrict, série, turno, ano, status, data, observações). Índice único `AlunoId + AnoLetivo`
 - Partials compartilhados em `Pages/Shared`: `_DadosAluno` (aluno + responsáveis) e `_Responsavel`; `Pages/Matriculas/_Form` tem só os campos da matrícula. No Create os campos têm prefixo `Aluno.` e `Matricula.` (`Validar(ModelState, "prefixo")`)
-- As tabelas `Alunos` e `Matriculas` são criadas por SQL em `Tabelas.Preparar`. Se achar a matrícula no formato antigo, migra e deixa `Matriculas_antiga` (backup, pode apagar)
+- A migração do formato antigo de matrícula foi removida (não há mais dados nesse formato)
 
 ### Módulo Professores (testado no navegador)
 - `Data/Professor.cs` + `Pages/Professores/` (lista com busca e filtro ativo/inativo, novo, editar), só Funcionário. Tabela `Professores` criada por SQL em `TabelaProfessores.Preparar` (depois de `Usuarios`)
@@ -81,7 +84,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Cada disciplina ativa da série ganha um professor ativo (`TurmaDisciplina`); salvar em lote na tela de detalhes
 - Regras ligadas à matrícula: matrícula que deixa de ser Ativa sai da turma sozinha; mudar série/ano/turno de aluno enturmado é bloqueado (remover da turma antes)
 - Turma pode ser inativada; só exclui turma sem alunos (professores atribuídos saem junto)
-- Sempre mapear tabela de entidade sem DbSet com `ToTable("...")` (o EF usa o nome da classe no singular, e a tabela criada por SQL é plural)
+- Sempre mapear tabela de entidade sem DbSet com `ToTable("...")` (o EF usa o nome da classe no singular; com migrations o nome da tabela sai do mapeamento, então mantenha o plural explícito)
 
 ### Módulo Notas (testado no navegador)
 - `Data/Nota.cs` (chave composta MatriculaId + DisciplinaId + Bimestre, valor 0 a 10 com 1 casa) e `TabelaNotas.Preparar` (SQL, depois de Turmas). 4 bimestres fixos (`TabelaNotas.Bimestres`)

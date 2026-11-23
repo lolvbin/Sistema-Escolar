@@ -163,6 +163,7 @@ public class EscolaContext : DbContext
         b.Entity<Evento>().Property(e => e.Inicio).HasColumnType("date");
         b.Entity<Evento>().Property(e => e.Fim).HasColumnType("date");
         b.Entity<Configuracao>().ToTable("Configuracoes").Property(c => c.Id).ValueGeneratedNever();
+        b.Entity<Configuracao>().HasData(new Configuracao { Id = 1 });  // padrões: 6,0 / 4,0 / 75% / média das duas / 2% / 1%
         b.Entity<Configuracao>().Property(c => c.MediaMinima).HasPrecision(3, 1);
         b.Entity<Configuracao>().Property(c => c.MediaRecuperacao).HasPrecision(3, 1);
         b.Entity<Configuracao>().Property(c => c.FrequenciaMinima).HasPrecision(4, 1);
@@ -170,6 +171,10 @@ public class EscolaContext : DbContext
         b.Entity<Configuracao>().Property(c => c.JurosMensal).HasPrecision(5, 2);
         b.Entity<Cobranca>().Property(c => c.ValorPago).HasPrecision(10, 2);
         b.Entity<Frequencia>().ToTable("Frequencias").HasKey(f => new { f.MatriculaId, f.DisciplinaId, f.Bimestre });
+        b.Entity<Frequencia>().HasOne<Matricula>().WithMany().HasForeignKey(f => f.MatriculaId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<Frequencia>().HasOne<Disciplina>().WithMany().HasForeignKey(f => f.DisciplinaId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<AulasDadas>().HasOne<Turma>().WithMany().HasForeignKey(a => a.TurmaId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<AulasDadas>().HasOne<Disciplina>().WithMany().HasForeignKey(a => a.DisciplinaId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<AulasDadas>().ToTable("AulasDadas").HasKey(a => new { a.TurmaId, a.DisciplinaId, a.Bimestre });
         b.Entity<Cobranca>().ToTable("Cobrancas");
         b.Entity<Cobranca>().Property(c => c.Valor).HasPrecision(10, 2);
@@ -189,7 +194,7 @@ public class EscolaContext : DbContext
         b.Entity<Professor>().HasOne(p => p.Usuario).WithMany().HasForeignKey(p => p.UsuarioId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<Usuario>().HasIndex(u => u.Email).IsUnique();
         b.Entity<Matricula>().Property(m => m.DataMatricula).HasColumnType("date");
-        b.Entity<Matricula>().HasOne(m => m.Aluno).WithMany().HasForeignKey(m => m.AlunoId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<Matricula>().HasOne(m => m.Aluno).WithMany().HasForeignKey(m => m.AlunoId).IsRequired().OnDelete(DeleteBehavior.Restrict);
         b.Entity<Matricula>().HasIndex(m => new { m.AlunoId, m.AnoLetivo }).IsUnique();
     }
 }

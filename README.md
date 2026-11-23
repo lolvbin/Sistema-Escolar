@@ -58,16 +58,30 @@ dotnet user-secrets set "ConnectionStrings:Escola" "Host=localhost;Port=5432;Dat
 dotnet run
 ```
 
-Abra <http://localhost:5006>. As tabelas são criadas na primeira execução.
+Abra <http://localhost:5006>. O banco é criado (e atualizado) sozinho pelas migrations na primeira execução.
 
 Em **Development** são criados 4 usuários de teste, todos com a senha `Escola@123`:
 `funcionario@escola.test`, `professor@escola.test`, `aluno@escola.test` e `responsavel@escola.test`.
 Em produção eles não existem: defina a conexão pela variável `ConnectionStrings__Escola` e crie os usuários reais por outro meio.
 
+## ✅ Testes
+
+```bash
+dotnet test tests/SistemaEscolar.Tests
+```
+
+São 72 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 3 testes de integração aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
+
+```bash
+ESCOLA_TEST_DB="Host=localhost;Port=5432;Database=postgres;Username=escola;Password=escola_dev" dotnet test tests/SistemaEscolar.Tests
+```
+
 ## 📁 Estrutura
 
 ```
-Data/            Entidades, regras (aprovação, financeiro, validações) e criação das tabelas
+Data/            Entidades, regras (aprovação, financeiro, validações) e o contexto do EF
+Migrations/      Migrations do EF Core (esquema do banco)
+tests/           Testes automatizados (xUnit)
 Pages/           Telas por módulo (Matriculas, Alunos, Professores, Disciplinas, Turmas, Notas,
                  Boletim, Calendario, Financeiro, Mensalidades, Conta, Configuracoes)
 Pages/Shared/    Layout e partials compartilhados
@@ -80,14 +94,12 @@ Este projeto foi desenvolvido em parceria com o **Claude Code** (IA da Anthropic
 
 ## ⚠️ Limitações conhecidas
 
-- O banco é criado com `EnsureCreated` e SQL simples no início da aplicação (sem EF Migrations); mudar o modelo exige apagar as tabelas. Migrar para migrations é um próximo passo.
-- Ainda não há testes automatizados (os módulos foram testados manualmente no navegador).
 - A "Sala de aula" do professor e do aluno ainda é uma tela de demonstração com dados fictícios.
 - Não há envio de e-mail: "esqueci minha senha" depende do funcionário gerar uma senha provisória; a baixa de pagamentos é manual (sem boleto ou Pix real).
 
 ## 🗺️ Próximos passos
 
-Sala de aula real, EF Migrations, testes automatizados, recibos e relatório de inadimplência.
+Sala de aula real, testes de interface (páginas), recibos e relatório de inadimplência.
 
 ## 📄 Licença
 
