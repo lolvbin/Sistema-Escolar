@@ -23,14 +23,14 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 ## Como rodar
 - `dotnet run` (http://localhost:5006). O segredo do banco vem do user-secrets e só vale em Development
 - Conexão (não versionada). Em cada PC:
-  `dotnet user-secrets set "ConnectionStrings:Escola" "Host=100.96.172.97;Port=5432;Database=claude_testes;Username=lovbin;Password=<senha>"`
+  `dotnet user-secrets set "ConnectionStrings:Escola" "Host=<host>;Port=5432;Database=<banco>;Username=<usuario>;Password=<senha>"`
   Em produção: variável `ConnectionStrings__Escola`. Nunca commitar a senha
 - Banco criado com `EnsureCreated` (sem migrations). Ele NÃO altera tabelas existentes: mudou o modelo, é preciso apagar as tabelas ou adotar migrations (fazer antes de ter dados reais)
 - Ao rodar a DLL direto (sem `dotnet run`) a porta é 5000 e o ambiente é Production, sem user-secrets: definir `ASPNETCORE_ENVIRONMENT=Development`
 
 ## Git
-- Remoto: http://100.96.172.97:3002/lovbin/Sistema-Escolar.git (Gitea pessoal, via Tailscale), branch `main`
-- `git pull` ao começar, commit e `git push` ao terminar. Autenticação com token do Gitea (nunca gravar o token em arquivo do repositório)
+- Remotos: `origin` (Gitea pessoal do autor, privado) e `github` (público), branch `main`. Os dois recebem o mesmo código
+- `git pull` ao começar, commit e `git push` ao terminar. Autenticação por token (nunca gravar token ou senha em arquivo do repositório)
 
 ## Estado atual
 ### Módulo Matrícula (pronto e testado)

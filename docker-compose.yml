@@ -1,0 +1,15 @@
+# PostgreSQL local para desenvolvimento: docker compose up -d
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: escola
+      POSTGRES_PASSWORD: escola_dev
+      POSTGRES_DB: escola
+    ports:
+      - "5432:5432"
+    volumes:
+      - escola-dados:/var/lib/postgresql/data
+
+volumes:
+  escola-dados:
