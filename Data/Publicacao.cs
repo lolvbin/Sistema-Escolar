@@ -25,6 +25,7 @@ public class Publicacao
     public string? Link { get; set; }           // só http/https (validado ao salvar)
     public DateTime? Prazo { get; set; }        // só para Atividade
     public DateTime CriadoEm { get; set; }
+    public DateTime? EditadoEm { get; set; }    // preenchido quando o professor edita depois de publicar
 
     public Disciplina? Disciplina { get; set; }
     public Professor? Professor { get; set; }

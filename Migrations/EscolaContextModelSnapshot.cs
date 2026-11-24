@@ -444,6 +444,9 @@ namespace SistemaEscolar.Migrations
                     b.Property<int>("DisciplinaId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("EditadoEm")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<string>("Link")
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");

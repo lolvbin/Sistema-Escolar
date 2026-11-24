@@ -5,7 +5,7 @@
     <div class="pub-topo">
         <span><span class="badge tp-@Model.Tipo">@Html.DisplayFor(_ => Model.Tipo)</span>
             <strong>@Model.Titulo</strong></span>
-        <small class="suave">@Model.CriadoEm.ToString("dd/MM/yyyy HH:mm")</small>
+        <small class="suave">@Model.CriadoEm.ToString("dd/MM/yyyy HH:mm")@if (Model.EditadoEm != null) { <text> &middot; editado em @Model.EditadoEm.Value.ToString("dd/MM/yyyy HH:mm")</text> }</small>
     </div>
     @if (ViewData["Contexto"] is string ctx) { <p class="suave">@ctx</p> }
     @if (!string.IsNullOrEmpty(Model.Texto)) { <p class="pub-texto">@Model.Texto</p> }
@@ -17,6 +17,7 @@
     }
     @if (ViewData["Excluir"] is true)
     {
+        <a href="@Url.Page("Turma", new { turmaId = Model.TurmaId, disciplinaId = Model.DisciplinaId, editar = Model.Id })#topo-form">Editar</a>
         <form method="post" asp-page="Turma" asp-page-handler="Excluir" asp-route-turmaId="@Model.TurmaId" asp-route-disciplinaId="@Model.DisciplinaId" asp-route-id="@Model.Id" onsubmit="return confirm('Excluir esta publicação?')">
             <button class="link">Excluir</button>
         </form>

@@ -22,6 +22,8 @@ public class TurmaModel : PageModel
     }
 
     [BindProperty] public Entrada Input { get; set; } = new();
+    [BindProperty(SupportsGet = true)] public int? Editar { get; set; }   // id da publicação em edição (GET ?editar=)
+    [BindProperty] public int? EditandoId { get; set; }                   // o mesmo id, no POST
 
     public Data.Turma Turma { get; set; } = null!;
     public Disciplina Disciplina { get; set; } = null!;
@@ -46,8 +48,19 @@ public class TurmaModel : PageModel
         return null;
     }
 
-    public async Task<IActionResult> OnGetAsync(int turmaId, int disciplinaId) =>
-        await Carregar(turmaId, disciplinaId) ?? Page();
+    public async Task<IActionResult> OnGetAsync(int turmaId, int disciplinaId)
+    {
+        var r = await Carregar(turmaId, disciplinaId);
+        if (r != null) return r;
+        if (Editar != null)
+        {
+            var p = Itens.FirstOrDefault(x => x.Id == Editar);
+            if (p == null) return NotFound();
+            Input = new Entrada { Tipo = p.Tipo, Titulo = p.Titulo, Texto = p.Texto, Link = p.Link, Prazo = p.Prazo?.ToString("dd/MM/yyyy") };
+            EditandoId = p.Id;
+        }
+        return Page();
+    }
 
     public async Task<IActionResult> OnPostPublicarAsync(int turmaId, int disciplinaId)
     {
@@ -65,14 +78,32 @@ public class TurmaModel : PageModel
             ModelState.AddModelError("Input.Texto", "Escreva o texto ou informe um link");
         if (link != "" && !Publicacao.LinkValido(link))
             ModelState.AddModelError("Input.Link", "Link inválido. Use um endereço começando com http:// ou https://");
+        // Edição: só de publicação desta turma/disciplina (e do próprio professor)
+        Publicacao? existente = null;
+        if (EditandoId != null)
+        {
+            existente = await _db.Publicacoes.FirstOrDefaultAsync(x => x.Id == EditandoId && x.TurmaId == turmaId && x.DisciplinaId == disciplinaId);
+            if (existente == null) return NotFound();
+            if (existente.ProfessorId != _prof!.Id) return Forbid();
+        }
         DateTime? prazo = null;
         if (Input.Tipo == TipoPublicacao.Atividade)
         {
             if (!RegrasFinanceiro.LerData(Input.Prazo, out var p)) ModelState.AddModelError("Input.Prazo", "Informe o prazo (dd/mm/aaaa)");
-            else if (p.Date < DateTime.Today) ModelState.AddModelError("Input.Prazo", "O prazo não pode ser no passado");
+            else if (p.Date < DateTime.Today && p.Date != existente?.Prazo?.Date) ModelState.AddModelError("Input.Prazo", "O prazo não pode ser no passado"); // prazo antigo pode ficar ao editar o texto
             else prazo = p.Date;
         }
         if (!ModelState.IsValid) return Page();
+
+        if (existente != null)
+        {
+            existente.Tipo = Input.Tipo!.Value;
+            existente.Titulo = titulo; existente.Texto = texto == "" ? null : texto; existente.Link = link == "" ? null : link; existente.Prazo = prazo;
+            existente.EditadoEm = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
+            await _db.SaveChangesAsync();
+            Aviso = "Publicação atualizada.";
+            return RedirectToPage(new { turmaId, disciplinaId });
+        }
 
         _db.Publicacoes.Add(new Publicacao
         {

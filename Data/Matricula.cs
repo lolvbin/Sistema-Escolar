@@ -189,6 +189,7 @@ public class EscolaContext : DbContext
         b.Entity<Publicacao>().Property(x => x.Link).HasMaxLength(300);
         b.Entity<Publicacao>().Property(x => x.Prazo).HasColumnType("date");
         b.Entity<Publicacao>().Property(x => x.CriadoEm).HasColumnType("timestamp without time zone");
+        b.Entity<Publicacao>().Property(x => x.EditadoEm).HasColumnType("timestamp without time zone");
         b.Entity<Publicacao>().HasOne<Turma>().WithMany().HasForeignKey(x => x.TurmaId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<Publicacao>().HasOne(x => x.Disciplina).WithMany().HasForeignKey(x => x.DisciplinaId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<Publicacao>().HasOne(x => x.Professor).WithMany().HasForeignKey(x => x.ProfessorId).OnDelete(DeleteBehavior.Restrict);

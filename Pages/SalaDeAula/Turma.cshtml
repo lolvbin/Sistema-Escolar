@@ -9,8 +9,9 @@
 </div>
 @if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
 
-<form method="post" asp-page-handler="Publicar" asp-route-turmaId="@Model.Turma.Id" asp-route-disciplinaId="@Model.Disciplina.Id" class="card" novalidate style="margin-bottom:16px">
-    <h2>Nova publicação</h2>
+<form id="topo-form" method="post" asp-page-handler="Publicar" asp-route-turmaId="@Model.Turma.Id" asp-route-disciplinaId="@Model.Disciplina.Id" class="card" novalidate style="margin-bottom:16px">
+    <h2>@(Model.EditandoId != null ? "Editar publicação" : "Nova publicação")</h2>
+    @if (Model.EditandoId != null) { <input type="hidden" name="EditandoId" value="@Model.EditandoId" /> }
     <div class="grade">
         <div class="campo">
             <label for="Input_Tipo">Tipo</label>
@@ -44,7 +45,10 @@
         <input id="Input_Link" name="Input.Link" value="@Model.Input.Link" maxlength="300" placeholder="https://..." autocomplete="off" />
         <span asp-validation-for="Input.Link" class="erro"></span>
     </div>
-    <div class="rodape-form"><button class="btn">Publicar</button></div>
+    <div class="rodape-form">
+        <button class="btn">@(Model.EditandoId != null ? "Salvar alterações" : "Publicar")</button>
+        @if (Model.EditandoId != null) { <a class="btn btn-sec" asp-page="Turma" asp-route-turmaId="@Model.Turma.Id" asp-route-disciplinaId="@Model.Disciplina.Id">Cancelar</a> }
+    </div>
 </form>
 
 @if (Model.Itens.Count == 0)

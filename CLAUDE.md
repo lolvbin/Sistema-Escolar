@@ -148,6 +148,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - `Data/Publicacao.cs` (tabela `Publicacoes`, migration `SalaDeAula`): publicação de uma turma em uma disciplina, tipo Aviso, Material ou Atividade (com prazo), título, texto (até 2000), link opcional (só http/https), autor e data. Sem envio de arquivos e sem entrega de atividade
 - `Pages/SalaDeAula/`: `Index` (professor vê as turmas/disciplinas dele; aluno e responsável leem o mural da turma do aluno, com filtro por disciplina) e `Turma/{turmaId}/{disciplinaId}` (só o professor atribuído àquela disciplina na turma: publicar e excluir; senão Acesso negado). Parcial `_Publicacao` mostra um item
 - Política `SalaDeAula` = Professor, Aluno e Responsável (cartão "Sala de aula" nos três); `/SalaDeAula/Turma` exige Professor. `Acessos.AlunosDoUsuario` (em `Data/Publicacao.cs`) acha os alunos do aluno/responsável logado e o Boletim usa o mesmo
+- **Editar publicação**: link "Editar" em cada item na tela do professor (`Turma?editar=id`, reaproveita o formulário; hidden `EditandoId`); só o professor dono, na turma/disciplina dele (outra disciplina: 404; outro professor: acesso negado). Coluna `Publicacao.EditadoEm` (migration `EdicaoDePublicacao`) mostra "editado em" no mural (aluno e responsável veem). Atividade com prazo já vencido pode ter o texto editado mantendo o mesmo prazo; prazo novo no passado continua barrado
 - Falta: ver limites abaixo
 
 ### Registro de ações (log de auditoria, testado no navegador)
@@ -188,7 +189,7 @@ Lista viva: acrescentar aqui todo limite novo que aparecer e riscar o que for re
 - Dados de demonstração: cobranças dependem da data de hoje (refazer com `--demo-limpar` e `--demo`)
 - Testes: a matriz de permissões está em `PermissaoTests.Matriz`: página nova = acrescentar a linha lá. Não há testes do conteúdo/fluxo das telas (só quem pode abrir)
 - Publicação: a logo padrão do repositório é provisória (cada escola envia a sua em Configurações); prints com a barra do navegador; e-mail pessoal do GitHub marcado como oculto pelo autor (commits antigos ainda têm o e-mail real no histórico)
-- Sala de aula: sem editar publicação (só excluir e refazer), sem anexos/upload, sem entrega de atividade pelo aluno, sem comentários, sem aviso de nova publicação, sem horário/grade semanal; o aluno vê só a turma da matrícula mais recente; mural limitado às 100 publicações mais novas
+- Sala de aula: sem anexos/upload, sem entrega de atividade pelo aluno, sem comentários, sem aviso de nova publicação, sem horário/grade semanal; o aluno vê só a turma da matrícula mais recente; mural limitado às 100 publicações mais novas
 
 ## Cuidados
 - `psql` instalado. Para rodar SQL com a conexão do user-secrets sem expor a senha: ler `dotnet user-secrets list` e passar Host/Port/Username/Database por parâmetro e a senha por `PGPASSWORD`
