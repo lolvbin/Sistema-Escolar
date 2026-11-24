@@ -155,6 +155,12 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - `Pages/Log/Index`: só quem tem a área Configurações (administrador); filtros por ação, texto, período; mostra os 200 mais recentes; sem editar/apagar. Cartão "Registro de ações" na tela inicial
 - Falta: registrar frequência/faltas e publicações da sala de aula; login/logout e tentativas bloqueadas; exportar; política de retenção (nunca apaga)
 
+### Documentos para imprimir (testado no navegador)
+- Todos usam `window.print()` + CSS `@media print` (`.no-print` some, `.so-print` só aparece impresso, `.doc*` em `site.css`); sem PDF no servidor
+- **Declaração de matrícula** `Pages/Matriculas/Declaracao/{id}` (área Matrículas; link "Declaração" na lista, só matrícula Ativa; outra situação mostra aviso). **Histórico escolar** `Pages/Alunos/Historico/{alunoId}` (área Alunos; link na lista de Alunos): todos os anos, média final/frequência/situação por disciplina e resultado do ano. **Boletim**: botão Imprimir em `Boletim` (aluno/responsável) e `Desempenho/Aluno` (funcionário), com cabeçalho só na impressão
+- `ResultadoAlunoDb.CarregarAsync` (em `Data/ResultadoAluno.cs`) carrega o resultado de uma matrícula enturmada (Desempenho e Histórico)
+- Falta: nome/endereço/logo da escola configuráveis nos documentos (hoje "Sistema Escolar" fixo), número de série/autenticidade, assinatura digital, declaração de frequência, impressão do histórico por série completa com carga horária
+
 ### Dados de demonstração (para prints e vídeos)
 - `dotnet run -- --demo` (só Development) cria 30 alunos fictícios (27 com matrícula Ativa em 4 turmas do ano atual: 5º A, 5º B, 8º A, 1ª série A; 3 Pendentes do ano seguinte), 6 professores (`<nome>.demo@demo.test`, senha de dev), notas dos 4 bimestres, recuperação, faltas, aulas dadas, taxa + 12 mensalidades (a maioria em dia, ~1/3 com atraso) e eventos no calendário. Código em `Data/DadosDemo.cs`
 - `dotnet run -- --demo-limpar` remove só o que o `--demo` criou (alunos com `Observacoes = "[demo]"`, professores `@demo.test`, eventos com descrição `[demo]`, turmas que ficaram vazias). Não mexe em turma que já existia
@@ -170,7 +176,7 @@ Lista viva: acrescentar aqui todo limite novo que aparecer e riscar o que for re
 - Desempenho (funcionário): sem exportação/impressão; professor só vê o que lança
 - Calendário: sem eventos por turma/série, sem ligar provas às turmas, sem início/fim dos bimestres
 - Funcionários: sem permissão de só leitura dentro de uma área; cargos fixos no código (não há cadastro de cargos); lista de sessões revogadas fica em memória; log de ações só cobre as operações listadas em "Registro de ações"
-- Financeiro: baixa manual (sem boleto/Pix real), sem descontos/bolsas, sem integração de pagamento online; recibo só no acesso do funcionário (responsável não emite o próprio); nome da escola fixo "Sistema Escolar" no recibo
+- Financeiro: baixa manual (sem boleto/Pix real), sem descontos/bolsas, sem integração de pagamento online; recibo só no acesso do funcionário (responsável não emite o próprio); nome da escola fixo "Sistema Escolar" no recibo e nos documentos
 - Dados de demonstração: cobranças dependem da data de hoje (refazer com `--demo-limpar` e `--demo`)
 - Testes: a matriz de permissões está em `PermissaoTests.Matriz`: página nova = acrescentar a linha lá. Não há testes do conteúdo/fluxo das telas (só quem pode abrir)
 - Publicação: logo atual provisória (fundo branco no tema escuro); prints com a barra do navegador; e-mail pessoal visível no histórico de commits (avaliar noreply do GitHub)

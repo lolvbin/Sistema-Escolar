@@ -1,0 +1,36 @@
+@page "{id:int}"
+@model SistemaEscolar.Pages.Matriculas.DeclaracaoModel
+@using SistemaEscolar.Data
+@{
+    ViewData["Title"] = "Declaração de matrícula";
+    var m = Model.Matricula;
+    var a = m.Aluno!;
+    var meses = new[] { "janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro" };
+    var hoje = DateTime.Today;
+}
+
+<div class="barra no-print">
+    <h1>Declaração de matrícula</h1>
+    <span>
+        @if (m.Status == StatusMatricula.Ativa) { <button type="button" class="btn" onclick="window.print()">Imprimir</button> }
+        <a class="btn btn-sec" asp-page="Index">Voltar</a>
+    </span>
+</div>
+
+@if (m.Status != StatusMatricula.Ativa)
+{
+    <div class="card vazio no-print">A declaração só é emitida para matrícula <strong>Ativa</strong>. Esta está @m.Status.ToString().ToLower().</div>
+}
+else
+{
+    <div class="doc">
+        <div class="doc-topo"><strong class="grande">Sistema Escolar</strong><span>Declaração nº @m.Id.ToString("000000")</span></div>
+        <h2 class="doc-titulo">DECLARAÇÃO DE MATRÍCULA</h2>
+        <p class="doc-texto">Declaramos, para os devidos fins, que <strong>@a.Nome</strong>, nascido(a) em @a.DataNascimento?.ToString("dd/MM/yyyy"),
+            CPF @a.Cpf, encontra-se regularmente matriculado(a) nesta instituição no ano letivo de <strong>@m.AnoLetivo</strong>,
+            na série <strong>@Html.DisplayFor(_ => m.Serie)</strong>@(m.Turma != null ? $", turma {m.Turma.Nome}" : ""), no turno <strong>@Html.DisplayFor(_ => m.Turno)</strong>.</p>
+        <p class="doc-texto">Responsável: @a.Academico.Nome.</p>
+        <p class="doc-data">@hoje.Day de @meses[hoje.Month - 1] de @hoje.Year.</p>
+        <div class="recibo-ass"><span></span><span class="linha-ass">Secretaria / carimbo da escola</span></div>
+    </div>
+}

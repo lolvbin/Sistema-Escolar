@@ -3,7 +3,8 @@
 @using SistemaEscolar.Data
 @{ ViewData["Title"] = "Boletim"; }
 
-<div class="barra"><h1>Boletim</h1></div>
+<div class="barra no-print"><h1>Boletim</h1>@if (Model.Matricula != null && Model.Linhas.Count > 0) {<button type="button" class="btn btn-sec" onclick="window.print()">Imprimir</button>}</div>
+<div class="so-print doc-topo"><strong class="grande">Sistema Escolar</strong><span>Boletim escolar, emitido em @DateTime.Today.ToString("dd/MM/yyyy")</span></div>
 
 @if (Model.Aluno == null)
 {
@@ -13,7 +14,7 @@ else
 {
     @if (Model.Alunos.Count > 1)
     {
-        <div class="abas">
+        <div class="abas no-print">
             @foreach (var a in Model.Alunos)
             {
                 <a class="@(a.Id == Model.Aluno.Id ? "ativa" : "")" asp-page="Boletim" asp-route-alunoId="@a.Id">@a.Nome</a>

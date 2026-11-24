@@ -33,7 +33,7 @@
                     <td>@a.Nome<br /><small>@a.Cpf</small></td>
                     <td>@a.DataNascimento?.ToString("dd/MM/yyyy")</td>
                     <td>@a.Academico.Nome<br /><small>@a.Academico.Telefone</small></td>
-                    <td class="acoes"><a asp-page="Edit" asp-route-id="@a.Id">Editar</a></td>
+                    <td class="acoes"><a asp-page="Edit" asp-route-id="@a.Id">Editar</a> <a asp-page="Historico" asp-route-id="@a.Id">Histórico</a></td>
                 </tr>
             }
             </tbody>

@@ -1,5 +1,6 @@
 @page
 @model SistemaEscolar.Pages.Matriculas.IndexModel
+@using SistemaEscolar.Data
 @{ ViewData["Title"] = "Matrículas"; }
 
 <div class="barra">
@@ -37,6 +38,7 @@
                     <td><span class="badge st-@m.Status">@Html.DisplayFor(_ => m.Status)</span></td>
                     <td class="acoes">
                         <a asp-page="Edit" asp-route-id="@m.Id">Editar</a>
+                        @if (m.Status == StatusMatricula.Ativa) { <a asp-page="Declaracao" asp-route-id="@m.Id">Declaração</a> }
                         <a asp-page="Delete" asp-route-id="@m.Id">Excluir</a>
                     </td>
                 </tr>

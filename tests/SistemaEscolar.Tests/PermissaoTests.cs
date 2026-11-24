@@ -37,6 +37,11 @@ public class PermissaoTests : IDisposable
         ("/Usuarios",              "adm"),
         ("/Usuarios/Create",       "adm"),
         ("/Log",                   "adm"),
+        // páginas com id: sem dados, quem pode abrir recebe 404 (passou da autorização); quem não pode é barrado
+        ("/Matriculas/Declaracao/1", "adm sec"),
+        ("/Alunos/Historico/1",    "adm sec"),
+        ("/Desempenho/Aluno/1",    "adm sec coord"),
+        ("/Financeiro/Recibo/1",   "adm fin"),
         ("/Notas",                 "prof"),
         ("/Mensalidades",          "resp"),
         ("/Boletim",               "aluno resp"),
@@ -94,7 +99,7 @@ public class PermissaoTests : IDisposable
             foreach (var (pagina, quem) in Matriz)
             {
                 var r = await c.GetAsync(pagina);
-                bool abriu = r.StatusCode == HttpStatusCode.OK;
+                bool abriu = r.StatusCode == HttpStatusCode.OK || (pagina.Contains("/1") && r.StatusCode == HttpStatusCode.NotFound);
                 bool deve = quem.Split(' ').Contains(u);
                 if (abriu != deve)
                     erros.Add($"{u} em {pagina}: esperado {(deve ? "abrir" : "barrar")}, veio {(int)r.StatusCode}");

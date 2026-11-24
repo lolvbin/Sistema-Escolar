@@ -19,12 +19,7 @@ public class AlunoModel : PageModel
         if (m == null || m.TurmaId == null) return NotFound();
         Matricula = m;
 
-        var discs = await _db.Set<TurmaDisciplina>().AsNoTracking().Where(x => x.TurmaId == m.TurmaId)
-            .Select(x => new { x.DisciplinaId, x.Disciplina!.Nome }).OrderBy(x => x.Nome).ToListAsync();
-        var notas = await _db.Notas.AsNoTracking().Where(n => n.MatriculaId == id).ToListAsync();
-        var faltas = await _db.Frequencias.AsNoTracking().Where(f => f.MatriculaId == id).ToListAsync();
-        var aulas = await _db.Aulas.AsNoTracking().Where(a => a.TurmaId == m.TurmaId).ToListAsync();
-        Resultado = ResultadoAluno.Calcular(discs.Select(x => (x.DisciplinaId, x.Nome)), notas, faltas, aulas);
+        Resultado = await ResultadoAlunoDb.CarregarAsync(_db, id, m.TurmaId.Value);
         return Page();
     }
 }

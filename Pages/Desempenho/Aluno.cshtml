@@ -5,8 +5,12 @@
 
 <div class="barra">
     <h1>@Model.Matricula.Aluno!.Nome</h1>
-    <a class="btn btn-sec" asp-page="Turma" asp-route-id="@Model.Matricula.TurmaId">Voltar</a>
+    <span class="no-print">
+        <button type="button" class="btn" onclick="window.print()">Imprimir</button>
+        <a class="btn btn-sec" asp-page="Turma" asp-route-id="@Model.Matricula.TurmaId">Voltar</a>
+    </span>
 </div>
+<div class="so-print doc-topo"><strong class="grande">Sistema Escolar</strong><span>Boletim escolar, emitido em @DateTime.Today.ToString("dd/MM/yyyy")</span></div>
 <p class="suave">@Model.Matricula.Turma!.Nome, @Model.Matricula.AnoLetivo</p>
 
 @if (Model.Resultado.Linhas.Count == 0)

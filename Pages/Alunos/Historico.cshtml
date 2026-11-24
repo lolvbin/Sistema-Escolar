@@ -1,0 +1,50 @@
+@page "{id:int}"
+@model SistemaEscolar.Pages.Alunos.HistoricoModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Histórico escolar"; var a = Model.Aluno; }
+
+<div class="barra no-print">
+    <h1>Histórico escolar</h1>
+    <span>
+        <button type="button" class="btn" onclick="window.print()">Imprimir</button>
+        <a class="btn btn-sec" asp-page="Edit" asp-route-id="@a.Id">Voltar</a>
+    </span>
+</div>
+
+<div class="doc">
+    <div class="doc-topo"><strong class="grande">Sistema Escolar</strong><span>Histórico escolar</span></div>
+    <p>Aluno(a): <strong>@a.Nome</strong> &middot; CPF @a.Cpf &middot; Nascimento @a.DataNascimento?.ToString("dd/MM/yyyy")</p>
+
+    @foreach (var an in Model.Anos)
+    {
+        var m = an.Matricula;
+        <h2 class="doc-ano">@m.AnoLetivo &middot; @Html.DisplayFor(_ => m.Serie)@(m.Turma != null ? ", turma " + m.Turma.Nome : "")</h2>
+        @if (m.Status != StatusMatricula.Ativa)
+        {
+            <p class="suave">Matrícula @m.Status.ToString().ToLower(): sem resultado.</p>
+        }
+        else if (an.Resultado == null || an.Resultado.Linhas.Count == 0)
+        {
+            <p class="suave">Sem turma ou disciplinas no período: sem resultado.</p>
+        }
+        else
+        {
+            <table class="doc-tab">
+                <thead><tr><th>Disciplina</th><th>Média final</th><th>Frequência</th><th>Situação</th></tr></thead>
+                <tbody>
+                @foreach (var l in an.Resultado.Linhas)
+                {
+                    <tr><td>@l.Disciplina</td><td>@(l.Media?.ToString("0.0") ?? "-")</td><td>@(l.Freq?.ToString("0.#") is { } f ? f + "%" : "-")</td><td>@l.Situacao.Nome()</td></tr>
+                }
+                </tbody>
+            </table>
+            <p>Resultado do ano: <strong>@an.Resultado.Geral.Nome()</strong>
+                @if (an.Resultado.FreqGeral != null) { <span class="suave"> &middot; frequência geral @an.Resultado.FreqGeral.Value.ToString("0.#")%</span> }
+            </p>
+        }
+    }
+    @if (Model.Anos.Count == 0) { <p class="suave">Sem matrículas.</p> }
+
+    <p class="suave">Documento gerado pelo sistema em @DateTime.Today.ToString("dd/MM/yyyy"). Resultados conforme as regras de aprovação vigentes.</p>
+    <div class="recibo-ass"><span></span><span class="linha-ass">Secretaria / carimbo da escola</span></div>
+</div>
