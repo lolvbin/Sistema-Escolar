@@ -10,7 +10,7 @@
         <a class="btn btn-sec" asp-page="Turma" asp-route-id="@Model.Matricula.TurmaId">Voltar</a>
     </span>
 </div>
-<div class="so-print doc-topo"><strong class="grande">@Escola.Nome</strong><span>Boletim escolar, emitido em @DateTime.Today.ToString("dd/MM/yyyy")</span></div>
+<div class="so-print doc-topo"><strong class="grande">@if (Escola.TemLogo) { <img class="doc-logo" src="/logo?v=@Escola.LogoVersao" alt="" /> }@Escola.Nome</strong><span>Boletim escolar, emitido em @DateTime.Today.ToString("dd/MM/yyyy")</span></div>
 @if (Escola.Contato != "") { <p class="suave doc-contato so-print">@Escola.Contato</p> }
 <p class="suave">@Model.Matricula.Turma!.Nome, @Model.Matricula.AnoLetivo</p>
 

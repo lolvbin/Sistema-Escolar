@@ -4,7 +4,7 @@
 @{ ViewData["Title"] = "Boletim"; }
 
 <div class="barra no-print"><h1>Boletim</h1>@if (Model.Matricula != null && Model.Linhas.Count > 0) {<button type="button" class="btn btn-sec" onclick="window.print()">Imprimir</button>}</div>
-<div class="so-print doc-topo"><strong class="grande">@Escola.Nome</strong><span>Boletim escolar, emitido em @DateTime.Today.ToString("dd/MM/yyyy")</span></div>
+<div class="so-print doc-topo"><strong class="grande">@if (Escola.TemLogo) { <img class="doc-logo" src="/logo?v=@Escola.LogoVersao" alt="" /> }@Escola.Nome</strong><span>Boletim escolar, emitido em @DateTime.Today.ToString("dd/MM/yyyy")</span></div>
 @if (Escola.Contato != "") { <p class="suave doc-contato so-print">@Escola.Contato</p> }
 
 @if (Model.Aluno == null)

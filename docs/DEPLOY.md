@@ -50,7 +50,7 @@ escola.exemplo.com.br {
 Sem Docker: `dotnet publish -c Release -o publicar`, e rode `dotnet publicar/SistemaEscolar.dll` com as mesmas variáveis (serviço systemd, por exemplo). Defina `DATAPROTECTION_DIR` para uma pasta que o serviço consiga gravar.
 
 ## 4. Primeiro acesso
-Com o banco vazio, abrir o site leva à tela **Primeiro acesso**: crie o administrador (senha de 8+ caracteres com letra e número). A tela some assim que existe um administrador. Depois, em **Usuários**, cadastre os demais funcionários; professores, alunos e responsáveis são criados nas próprias telas. Em **Configurações**, ajuste nome da escola, médias, frequência, multa e juros. Troque o logo colocando `wwwroot/img/logo.svg` (ou `.png`) na imagem/publicação.
+Com o banco vazio, abrir o site leva à tela **Primeiro acesso**: crie o administrador (senha de 8+ caracteres com letra e número). A tela some assim que existe um administrador. Depois, em **Usuários**, cadastre os demais funcionários; professores, alunos e responsáveis são criados nas próprias telas. Em **Configurações**, ajuste nome da escola, médias, frequência, multa e juros. Envie a logo da escola na mesma tela (PNG, JPG ou SVG até 512 KB). Ela fica no banco, então não depende de pasta do servidor e entra no backup.
 
 Conferência rápida depois de subir:
 - `https://seu-dominio/saude` responde `ok` (200); 503 = o app não alcança o banco. Use esse endereço no monitoramento.

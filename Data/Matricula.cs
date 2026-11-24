@@ -148,9 +148,12 @@ public class EscolaContext : DbContext
     public DbSet<Configuracao> Configuracoes => Set<Configuracao>();
     public DbSet<Publicacao> Publicacoes => Set<Publicacao>();
     public DbSet<RegistroLog> Registros => Set<RegistroLog>();
+    public DbSet<LogoEscola> Logos => Set<LogoEscola>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        b.Entity<LogoEscola>().ToTable("LogosEscola").Property(l => l.Id).ValueGeneratedNever();
+        b.Entity<LogoEscola>().Property(l => l.AtualizadoEm).HasColumnType("timestamp without time zone");
         b.Entity<RegistroLog>().ToTable("Registros").HasIndex(r => r.Em);
         b.Entity<RegistroLog>().Property(r => r.Em).HasColumnType("timestamp without time zone");
         b.Entity<Aluno>().Property(a => a.DataNascimento).HasColumnType("date");

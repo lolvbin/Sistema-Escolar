@@ -1,7 +1,8 @@
 ﻿@inject IWebHostEnvironment Env
 @{
-    // Logo opcional: coloque wwwroot/img/logo.svg (ou logo.png) e ela aparece no topo
+    // Logo: a enviada em Configurações; se não houver, wwwroot/img/logo.svg (ou logo.png)
     var logo = new[] { "logo.svg", "logo.png" }.Where(f => System.IO.File.Exists(System.IO.Path.Combine(Env.WebRootPath, "img", f))).Select(f => "/img/" + f).FirstOrDefault();
+    if (SistemaEscolar.Data.Escola.TemLogo) logo = "/logo?v=" + SistemaEscolar.Data.Escola.LogoVersao; // a enviada pela tela vale mais que o arquivo
 }
 <!DOCTYPE html>
 <html lang="pt-BR">

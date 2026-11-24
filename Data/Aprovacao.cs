@@ -97,6 +97,9 @@ public static class Escola
     public static string Nome { get; set; } = "Sistema Escolar";
     public static string Endereco { get; set; } = "";
     public static string Telefone { get; set; } = "";
+    /// <summary>0 = sem logo enviada; senão identifica a versão (para o navegador renovar o cache).</summary>
+    public static long LogoVersao { get; set; }
+    public static bool TemLogo => LogoVersao != 0;
     /// <summary>"Rua X, 10 · (31) 3333-4444" ou vazio.</summary>
     public static string Contato => string.Join(" · ", new[] { Endereco, Telefone }.Where(x => !string.IsNullOrWhiteSpace(x)));
 
@@ -125,5 +128,7 @@ public static class TabelaConfiguracoes
         Escola.Nome = c.NomeEscola;
         Escola.Endereco = c.Endereco;
         Escola.Telefone = c.Telefone;
+        var logo = db.Logos.AsNoTracking().Select(l => new { l.AtualizadoEm }).FirstOrDefault();
+        Escola.LogoVersao = logo == null ? 0 : new DateTimeOffset(DateTime.SpecifyKind(logo.AtualizadoEm, DateTimeKind.Utc)).ToUnixTimeSeconds();
     }
 }

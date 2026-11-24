@@ -281,6 +281,27 @@ namespace SistemaEscolar.Migrations
                     b.ToTable("Frequencias", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaEscolar.Data.LogoEscola", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("AtualizadoEm")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<byte[]>("Dados")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LogosEscola", (string)null);
+                });
+
             modelBuilder.Entity("SistemaEscolar.Data.Matricula", b =>
                 {
                     b.Property<int>("Id")

@@ -130,6 +130,17 @@ app.Use(async (ctx, next) =>
 app.MapGet("/saude", async (EscolaContext db) =>
     await db.Database.CanConnectAsync() ? Results.Ok("ok") : Results.StatusCode(503)).AllowAnonymous();
 
+// Logo enviada pela escola (aparece na tela de login, por isso é anônima). CSP sandbox: um SVG aberto direto não executa nada.
+app.MapGet("/logo", async (EscolaContext db, HttpContext ctx) =>
+{
+    var l = await db.Logos.AsNoTracking().FirstOrDefaultAsync(x => x.Id == 1);
+    if (l == null) return Results.NotFound();
+    ctx.Response.Headers["Cache-Control"] = "public, max-age=86400";
+    ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    ctx.Response.Headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
+    return Results.File(l.Dados, l.Tipo);
+}).AllowAnonymous();
+
 app.MapStaticAssets().AllowAnonymous(); // css/js precisam carregar na tela de login
 app.MapRazorPages().WithStaticAssets();
 

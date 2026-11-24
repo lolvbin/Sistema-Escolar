@@ -24,7 +24,7 @@
 else
 {
     <div class="doc">
-        <div class="doc-topo"><strong class="grande">@Escola.Nome</strong><span>Declaração nº @m.Id.ToString("000000")</span></div>
+        <div class="doc-topo"><strong class="grande">@if (Escola.TemLogo) { <img class="doc-logo" src="/logo?v=@Escola.LogoVersao" alt="" /> }@Escola.Nome</strong><span>Declaração nº @m.Id.ToString("000000")</span></div>
 @if (Escola.Contato != "") { <p class="suave doc-contato">@Escola.Contato</p> }
         <h2 class="doc-titulo">DECLARAÇÃO DE MATRÍCULA</h2>
         <p class="doc-texto">Declaramos, para os devidos fins, que <strong>@a.Nome</strong>, nascido(a) em @a.DataNascimento?.ToString("dd/MM/yyyy"),

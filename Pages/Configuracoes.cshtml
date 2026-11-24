@@ -6,6 +6,21 @@
 <h1>Configurações</h1>
 @if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
 
+<div class="card">
+    <h2>Logo da escola</h2>
+    <p class="suave">Aparece no topo e nos documentos impressos. PNG, JPG ou SVG, até 512 KB (fundo transparente funciona melhor no tema escuro).</p>
+    @if (Model.TemLogo) { <p><img src="/logo?v=@Escola.LogoVersao" alt="Logo atual" style="max-height:60px" /></p> }
+    @if (Model.ErroLogo != null) { <span class="erro">@Model.ErroLogo</span> }
+    <form method="post" asp-page-handler="Logo" enctype="multipart/form-data" class="filtro">
+        <input type="file" name="arquivo" accept="image/png,image/jpeg,image/svg+xml" />
+        <button class="btn btn-sec">Enviar</button>
+    </form>
+    @if (Model.TemLogo)
+    {
+        <form method="post" asp-page-handler="RemoverLogo"><button class="btn btn-sec">Remover logo</button></form>
+    }
+</div>
+
 <form method="post" class="card" novalidate>
     <h2>Escola</h2>
     <p class="suave">Aparece no topo do sistema e nos documentos impressos (recibo, declaração, histórico, boletim).</p>

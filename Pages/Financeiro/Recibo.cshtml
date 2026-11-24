@@ -19,7 +19,7 @@
 
 <div class="card recibo">
     <div class="recibo-topo">
-        <strong class="grande">@Escola.Nome</strong>
+        <strong class="grande">@if (Escola.TemLogo) { <img class="doc-logo" src="/logo?v=@Escola.LogoVersao" alt="" /> }@Escola.Nome</strong>
         <span>Recibo nº @c.Id.ToString("000000")</span>
     </div>
 @if (Escola.Contato != "") { <p class="suave doc-contato">@Escola.Contato</p> }

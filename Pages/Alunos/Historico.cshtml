@@ -12,7 +12,7 @@
 </div>
 
 <div class="doc">
-    <div class="doc-topo"><strong class="grande">@Escola.Nome</strong><span>Histórico escolar</span></div>
+    <div class="doc-topo"><strong class="grande">@if (Escola.TemLogo) { <img class="doc-logo" src="/logo?v=@Escola.LogoVersao" alt="" /> }@Escola.Nome</strong><span>Histórico escolar</span></div>
 @if (Escola.Contato != "") { <p class="suave doc-contato">@Escola.Contato</p> }
     <p>Aluno(a): <strong>@a.Nome</strong> &middot; CPF @a.Cpf &middot; Nascimento @a.DataNascimento?.ToString("dd/MM/yyyy")</p>
 

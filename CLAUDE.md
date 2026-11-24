@@ -53,7 +53,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - A tabela `Usuarios` vem das migrations; `UsuarioSeed.Semear` só cria as contas de teste
 - Em Development cria 4 usuários `<perfil>@escola.test` (senha de dev em `UsuarioSeed`). Não vale em produção: criar usuários reais por outro meio
 - **Navegação**: o topo só tem marca (com logo opcional), Sair e Tema. O único menu são os cartões da tela inicial (`Pages/Shared/_Painel.cshtml`), um conjunto por perfil, com as telas que ele pode acessar + "Alterar senha". Página nova = adicionar o cartão no perfil certo. A prévia estática (`/Previa`) foi removida
-- **Logo**: coloque `wwwroot/img/logo.svg` (ou `logo.png`); aparece sozinha ao lado do nome no topo (altura 30px)
+- **Logo**: enviada pelo administrador em Configurações (PNG, JPG ou SVG até 512 KB), guardada no banco (`LogosEscola`, `Data/Logo.cs`, migration `LogoDaEscola`) e servida em `/logo` (anônimo, cache 1 dia com `?v=` por versão, CSP sandbox). `Logos.Validar` confere o conteúdo (assinatura PNG/JPEG; SVG sem script/`on*=`/`javascript:`/foreignObject). Aparece no topo e nos documentos impressos. Sem logo enviada, vale o arquivo `wwwroot/img/logo.svg|png` (padrão do repositório). Envio e remoção vão para o registro de ações
 - **Limite de tentativas** (`Data/Autenticacao.cs`, `LimiteLogin`): 5 falhas por e-mail ou 30 por IP bloqueiam por 15 min (mensagem com o tempo restante, nem confere a senha). Fica em memória: reiniciar o servidor zera. Vale também para errar a senha atual na troca
 - **Trocar a própria senha**: `Pages/Conta/Senha` (menu "Alterar senha"; mínimo 8 caracteres com letra e número, diferente da atual). Senha provisória (professor novo, "Nova senha", acessos de aluno/responsável) marca `Usuario.DeveTrocarSenha`: no login o claim `trocar-senha` redireciona (middleware em `Program.cs`) para a troca até ela ser feita. Usuários de dev (`@escola.test`) não são forçados
 - Cookie/claims criados por `Autenticacao.CriarPrincipal`
@@ -160,7 +160,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - **Declaração de matrícula** `Pages/Matriculas/Declaracao/{id}` (área Matrículas; link "Declaração" na lista, só matrícula Ativa; outra situação mostra aviso). **Histórico escolar** `Pages/Alunos/Historico/{alunoId}` (área Alunos; link na lista de Alunos): todos os anos, média final/frequência/situação por disciplina e resultado do ano. **Boletim**: botão Imprimir em `Boletim` (aluno/responsável) e `Desempenho/Aluno` (funcionário), com cabeçalho só na impressão
 - `ResultadoAlunoDb.CarregarAsync` (em `Data/ResultadoAluno.cs`) carrega o resultado de uma matrícula enturmada (Desempenho e Histórico)
 - **Identificação da escola**: nome, endereço e telefone em `Pages/Configuracoes` (seção "Escola"), colunas `Configuracoes.NomeEscola/Endereco/Telefone` (migration `DadosDaEscola`) e estático `Escola.*` (`Data/Aprovacao.cs`, carregado na partida, como as outras configurações). Aparece no topo, no título da aba, no recibo, declaração, histórico e boletim impresso. Mudanças vão para o registro de ações
-- Falta: logo configurável pela tela (continua `wwwroot/img/logo.*`), CNPJ, número de série/autenticidade, assinatura digital, declaração de frequência, impressão do histórico por série completa com carga horária
+- Falta: CNPJ, número de série/autenticidade, assinatura digital, declaração de frequência, impressão do histórico por série completa com carga horária
 
 ### Deploy e backup (testado)
 - `docs/DEPLOY.md` (guia completo), `Dockerfile` (imagem de produção, testada com PostgreSQL em contêiner), `.dockerignore`, `scripts/backup.sh` (pg_dump custom + verificação + rotação; restauração testada num banco temporário)
@@ -175,18 +175,18 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 
 ### Limites e pendências (conferir depois)
 Lista viva: acrescentar aqui todo limite novo que aparecer e riscar o que for resolvido.
-- Dados: aluno órfão "Alberto da Silva" (sem matrícula) no banco de dev compartilhado: matricular de novo pelo CPF ou apagar
+- (resolvido) aluno órfão "Alberto da Silva" removido do banco de dev
 - Acesso: sem "esqueci minha senha" por e-mail (só o funcionário gera outra provisória); limite de tentativas de login fica em memória (reiniciar zera)
 - Configurações (aprovação, frequência, multa e juros) ficam em propriedades estáticas: serve a uma instância só
 - Notas e frequência: sem abono/justificativa de faltas, sem chamada diária (só total de faltas por bimestre), sem regra de recuperação por bimestre
 - Desempenho (funcionário): impressão do boletim feita, sem exportação para planilha; professor só vê o que lança
 - Calendário: sem eventos por turma/série, sem ligar provas às turmas, sem início/fim dos bimestres
 - Funcionários: sem permissão de só leitura dentro de uma área; cargos fixos no código (não há cadastro de cargos); lista de sessões revogadas fica em memória; log de ações só cobre as operações listadas em "Registro de ações"
-- Financeiro: baixa manual (sem boleto/Pix real), sem descontos/bolsas, sem integração de pagamento online; recibo só no acesso do funcionário (responsável não emite o próprio); logo só por arquivo; sem CNPJ nos documentos
+- Financeiro: baixa manual (sem boleto/Pix real), sem descontos/bolsas, sem integração de pagamento online; recibo só no acesso do funcionário (responsável não emite o próprio); sem CNPJ nos documentos
 - Deploy: sem CI (build/testes no push), sem monitoramento além do log; uma instância só (estado em memória); guia em `docs/DEPLOY.md`
 - Dados de demonstração: cobranças dependem da data de hoje (refazer com `--demo-limpar` e `--demo`)
 - Testes: a matriz de permissões está em `PermissaoTests.Matriz`: página nova = acrescentar a linha lá. Não há testes do conteúdo/fluxo das telas (só quem pode abrir)
-- Publicação: logo atual provisória (fundo branco no tema escuro); prints com a barra do navegador; e-mail pessoal visível no histórico de commits (avaliar noreply do GitHub)
+- Publicação: a logo padrão do repositório é provisória (cada escola envia a sua em Configurações); prints com a barra do navegador; e-mail pessoal do GitHub marcado como oculto pelo autor (commits antigos ainda têm o e-mail real no histórico)
 - Sala de aula: sem editar publicação (só excluir e refazer), sem anexos/upload, sem entrega de atividade pelo aluno, sem comentários, sem aviso de nova publicação, sem horário/grade semanal; o aluno vê só a turma da matrícula mais recente; mural limitado às 100 publicações mais novas
 
 ## Cuidados

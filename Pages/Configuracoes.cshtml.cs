@@ -42,6 +42,43 @@ public class ConfiguracoesModel : PageModel
         Juros = RegrasFinanceiro.JurosMensalPercentual.ToString("0.0#", CultureInfo.CurrentCulture);
     }
 
+    public bool TemLogo => Escola.TemLogo;
+    [TempData] public string? ErroLogo { get; set; }
+
+    // Envio da logo (PNG, JPG ou SVG até 512 KB): fica no banco
+    public async Task<IActionResult> OnPostLogoAsync(IFormFile? arquivo)
+    {
+        if (arquivo == null || arquivo.Length == 0) { ErroLogo = "Escolha um arquivo"; return RedirectToPage(); }
+        if (arquivo.Length > Logos.MaxBytes) { ErroLogo = "Arquivo grande demais (máximo 512 KB)"; return RedirectToPage(); }
+        using var ms = new MemoryStream();
+        await arquivo.CopyToAsync(ms);
+        var tipo = Logos.Validar(ms.ToArray(), out var erro);
+        if (tipo == null) { ErroLogo = erro; return RedirectToPage(); }
+
+        var l = await _db.Logos.FirstOrDefaultAsync(x => x.Id == 1);
+        if (l == null) _db.Logos.Add(l = new LogoEscola());
+        l.Dados = ms.ToArray(); l.Tipo = tipo; l.AtualizadoEm = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified); // coluna sem fuso, guarda UTC
+        _db.Registrar(User, Auditoria.Configuracoes, $"Enviou nova logo ({tipo}, {l.Dados.Length / 1024 + 1} KB)");
+        await _db.SaveChangesAsync();
+        TabelaConfiguracoes.Carregar(_db);
+        Aviso = "Logo atualizada.";
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostRemoverLogoAsync()
+    {
+        var l = await _db.Logos.FirstOrDefaultAsync(x => x.Id == 1);
+        if (l != null)
+        {
+            _db.Logos.Remove(l);
+            _db.Registrar(User, Auditoria.Configuracoes, "Removeu a logo");
+            await _db.SaveChangesAsync();
+        }
+        Escola.LogoVersao = 0;
+        Aviso = "Logo removida.";
+        return RedirectToPage();
+    }
+
     static bool Ler(string? txt, out decimal v, decimal max = 10) =>
         decimal.TryParse((txt ?? "").Trim().Replace('.', ','), NumberStyles.Number, CultureInfo.CurrentCulture, out v) && v >= 0 && v <= max;
 
