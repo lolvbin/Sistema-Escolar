@@ -146,6 +146,7 @@ public class EscolaContext : DbContext
     public DbSet<AulasDadas> Aulas => Set<AulasDadas>();
     public DbSet<Cobranca> Cobrancas => Set<Cobranca>();
     public DbSet<Configuracao> Configuracoes => Set<Configuracao>();
+    public DbSet<Publicacao> Publicacoes => Set<Publicacao>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -176,6 +177,16 @@ public class EscolaContext : DbContext
         b.Entity<AulasDadas>().HasOne<Turma>().WithMany().HasForeignKey(a => a.TurmaId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<AulasDadas>().HasOne<Disciplina>().WithMany().HasForeignKey(a => a.DisciplinaId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<AulasDadas>().ToTable("AulasDadas").HasKey(a => new { a.TurmaId, a.DisciplinaId, a.Bimestre });
+        b.Entity<Publicacao>().ToTable("Publicacoes");
+        b.Entity<Publicacao>().Property(x => x.Titulo).HasMaxLength(100);
+        b.Entity<Publicacao>().Property(x => x.Texto).HasMaxLength(2000);
+        b.Entity<Publicacao>().Property(x => x.Link).HasMaxLength(300);
+        b.Entity<Publicacao>().Property(x => x.Prazo).HasColumnType("date");
+        b.Entity<Publicacao>().Property(x => x.CriadoEm).HasColumnType("timestamp without time zone");
+        b.Entity<Publicacao>().HasOne<Turma>().WithMany().HasForeignKey(x => x.TurmaId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<Publicacao>().HasOne(x => x.Disciplina).WithMany().HasForeignKey(x => x.DisciplinaId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<Publicacao>().HasOne(x => x.Professor).WithMany().HasForeignKey(x => x.ProfessorId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<Publicacao>().HasIndex(x => new { x.TurmaId, x.CriadoEm });
         b.Entity<Cobranca>().ToTable("Cobrancas");
         b.Entity<Cobranca>().Property(c => c.Valor).HasPrecision(10, 2);
         b.Entity<Cobranca>().Property(c => c.Vencimento).HasColumnType("date");

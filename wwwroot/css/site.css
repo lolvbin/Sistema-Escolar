@@ -157,3 +157,10 @@ button.link { background: none; border: 0; padding: 0; margin-right: 10px; font:
     .card { border-color: #999; box-shadow: none; background: #fff; color: #000; }
     .suave { color: #444; }
 }
+
+/* Sala de aula */
+.pub { margin-bottom: 12px; }
+.pub-topo { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.pub-texto { white-space: pre-wrap; }
+.tp-Material { color: var(--ok); border-color: var(--ok); }
+.tp-Atividade { color: var(--aviso); border-color: var(--aviso); }

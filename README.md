@@ -31,6 +31,7 @@ Feito para ser **leve**: HTML renderizado no servidor, quase nenhum JavaScript (
 | **Boletim** | Notas, recuperação, frequência e situação (aprovado, recuperação, reprovado) | Aluno e responsável |
 | **Calendário** | Grade mensal com feriados, recessos, provas e reuniões | Todos veem, funcionário cadastra |
 | **Financeiro** | Contrato, taxa e mensalidades, multa e juros, baixa de pagamentos, recibo para imprimir e relatório de inadimplência; libera a matrícula pendente | Funcionário (responsável consulta) |
+| **Sala de aula** | Professor publica avisos, materiais e atividades com prazo por turma e disciplina; aluno e responsável leem | Professor (publica), aluno e responsável |
 | **Configurações** | Médias de aprovação e recuperação, modelo da média final, frequência mínima, multa e juros | Funcionário |
 
 ### Algumas regras de negócio
@@ -84,7 +85,7 @@ dotnet run -- --demo-limpar   # remove só o que ele criou
 dotnet test tests/SistemaEscolar.Tests
 ```
 
-São 85 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 3 testes de integração aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
+São 94 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 3 testes de integração aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
 
 ```bash
 ESCOLA_TEST_DB="Host=localhost;Port=5432;Database=postgres;Username=escola;Password=escola_dev" dotnet test tests/SistemaEscolar.Tests
@@ -97,7 +98,7 @@ Data/            Entidades, regras (aprovação, financeiro, validações) e o c
 Migrations/      Migrations do EF Core (esquema do banco)
 tests/           Testes automatizados (xUnit)
 Pages/           Telas por módulo (Matriculas, Alunos, Professores, Disciplinas, Turmas, Notas,
-                 Desempenho, Boletim, Calendario, Financeiro, Mensalidades, Conta, Configuracoes)
+                 Desempenho, Boletim, SalaDeAula, Calendario, Financeiro, Mensalidades, Conta, Configuracoes)
 Pages/Shared/    Layout e partials compartilhados
 wwwroot/         site.css e site.js
 ```
@@ -108,12 +109,12 @@ Este projeto foi desenvolvido em parceria com o **Claude Code** (IA da Anthropic
 
 ## ⚠️ Limitações conhecidas
 
-- A "Sala de aula" do professor e do aluno ainda é uma tela de demonstração com dados fictícios.
+- A Sala de aula é um mural simples: sem anexos, sem entrega de atividade pelo aluno e sem edição de publicações.
 - Não há envio de e-mail: "esqueci minha senha" depende do funcionário gerar uma senha provisória; a baixa de pagamentos é manual (sem boleto ou Pix real).
 
 ## 🗺️ Próximos passos
 
-Sala de aula real, recibo no acesso do responsável e testes de interface (páginas).
+Entrega de atividades, anexos, recibo no acesso do responsável e testes de interface (páginas).
 
 ## 📄 Licença
 

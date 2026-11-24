@@ -21,8 +21,9 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Notas", "Professor");
     // Boletim: aluno e responsável
     o.Conventions.AuthorizePage("/Boletim", "Boletim");
-    // Sala de aula: professor e aluno
-    o.Conventions.AuthorizePage("/SalaDeAula", "SalaDeAula");
+    // Sala de aula: professor publica; aluno e responsável leem
+    o.Conventions.AuthorizeFolder("/SalaDeAula", "SalaDeAula");
+    o.Conventions.AuthorizePage("/SalaDeAula/Turma", "Professor");
 });
 
 // Login por cookie. Tudo exige login, exceto o que tiver [AllowAnonymous] (Login, Prévia, Erro).
@@ -43,7 +44,7 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("Responsavel", p => p.RequireRole(nameof(Perfil.Responsavel)))
     .AddPolicy("Professor", p => p.RequireRole(nameof(Perfil.Professor)))
     .AddPolicy("Boletim", p => p.RequireRole(nameof(Perfil.Aluno), nameof(Perfil.Responsavel)))
-    .AddPolicy("SalaDeAula", p => p.RequireRole(nameof(Perfil.Professor), nameof(Perfil.Aluno)));
+    .AddPolicy("SalaDeAula", p => p.RequireRole(nameof(Perfil.Professor), nameof(Perfil.Aluno), nameof(Perfil.Responsavel)));
 // Connection string vem do user-secrets (dev) ou de variável de ambiente (ConnectionStrings__Escola).
 var cs = builder.Configuration.GetConnectionString("Escola")
     ?? throw new InvalidOperationException("Defina ConnectionStrings:Escola (user-secrets).");

@@ -383,6 +383,56 @@ namespace SistemaEscolar.Migrations
                     b.ToTable("Professores");
                 });
 
+            modelBuilder.Entity("SistemaEscolar.Data.Publicacao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("DisciplinaId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("Prazo")
+                        .HasColumnType("date");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Texto")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("TurmaId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DisciplinaId");
+
+                    b.HasIndex("ProfessorId");
+
+                    b.HasIndex("TurmaId", "CriadoEm");
+
+                    b.ToTable("Publicacoes", (string)null);
+                });
+
             modelBuilder.Entity("SistemaEscolar.Data.Turma", b =>
                 {
                     b.Property<int>("Id")
@@ -648,6 +698,31 @@ namespace SistemaEscolar.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("SistemaEscolar.Data.Publicacao", b =>
+                {
+                    b.HasOne("SistemaEscolar.Data.Disciplina", "Disciplina")
+                        .WithMany()
+                        .HasForeignKey("DisciplinaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaEscolar.Data.Professor", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaEscolar.Data.Turma", null)
+                        .WithMany()
+                        .HasForeignKey("TurmaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Disciplina");
+
+                    b.Navigation("Professor");
                 });
 
             modelBuilder.Entity("SistemaEscolar.Data.TurmaDisciplina", b =>

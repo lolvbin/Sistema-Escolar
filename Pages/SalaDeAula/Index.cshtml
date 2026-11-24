@@ -1,0 +1,75 @@
+@page
+@model SistemaEscolar.Pages.SalaDeAula.IndexModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Sala de aula"; }
+
+<div class="barra"><h1>Sala de aula</h1></div>
+
+@if (Model.EhProfessor)
+{
+    <p class="suave">Escolha a turma e a disciplina para publicar avisos, materiais e atividades.</p>
+    <div class="card tabela">
+        @if (Model.Atribuicoes.Count == 0)
+        {
+            <div class="vazio">Você ainda não foi atribuído a nenhuma turma. Fale com a secretaria.</div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Turma</th><th>Ano</th><th>Disciplina</th><th>Publicações</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var a in Model.Atribuicoes)
+                {
+                    <tr>
+                        <td>@a.Turma</td><td>@a.Ano</td><td>@a.Disciplina</td><td>@a.Publicacoes</td>
+                        <td class="acoes"><a asp-page="Turma" asp-route-turmaId="@a.TurmaId" asp-route-disciplinaId="@a.DisciplinaId">Abrir</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+}
+else if (Model.Aluno == null)
+{
+    <div class="card vazio">Nenhum aluno ligado ao seu acesso. Fale com a secretaria.</div>
+}
+else
+{
+    @if (Model.Alunos.Count > 1)
+    {
+        <div class="abas">
+            @foreach (var a in Model.Alunos)
+            {
+                <a class="@(a.Id == Model.Aluno.Id ? "ativa" : "")" asp-page="Index" asp-route-alunoId="@a.Id">@a.Nome</a>
+            }
+        </div>
+    }
+    <p><strong>@Model.Aluno.Nome</strong>
+        @if (Model.Matricula?.Turma != null) { <span class="suave"> - @Model.Matricula.Turma.Nome, @Model.Matricula.AnoLetivo</span> }
+    </p>
+
+    @if (Model.Matricula == null)
+    {
+        <div class="card vazio">O aluno ainda não está em uma turma.</div>
+    }
+    else
+    {
+        <form method="get" class="filtro">
+            <input type="hidden" name="AlunoId" value="@Model.Aluno.Id" />
+            <select name="DisciplinaId">
+                <option value="">Todas as disciplinas</option>
+                @foreach (var d in Model.Disciplinas) { <option value="@d.Id" selected="@(Model.DisciplinaId == d.Id)">@d.Nome</option> }
+            </select>
+            <button class="btn btn-sec">Filtrar</button>
+        </form>
+        @if (Model.Itens.Count == 0)
+        {
+            <div class="card vazio">Nada publicado ainda.</div>
+        }
+        @foreach (var p in Model.Itens)
+        {
+            <partial name="_Publicacao" model="p" view-data="@(new ViewDataDictionary(ViewData) { { "Contexto", p.Disciplina?.Nome + " · " + p.Professor?.Nome } })" />
+        }
+    }
+}

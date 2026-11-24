@@ -83,8 +83,10 @@ public static class DadosDemo
 
             // disciplinas ativas da série, cada uma com um professor (revezando)
             var discs = db.Disciplinas.Where(d => d.Ativa && d.Series.Any(s => s.Serie == pl.S)).OrderBy(d => d.Nome).ToList();
-            foreach (var d in discs)
-                db.Set<TurmaDisciplina>().Add(new TurmaDisciplina { TurmaId = turma.Id, DisciplinaId = d.Id, ProfessorId = profs[p++ % profs.Count].Id });
+            var atrib = discs.Select(d => (Disc: d, Prof: profs[p++ % profs.Count])).ToList();
+            foreach (var x in atrib)
+                db.Set<TurmaDisciplina>().Add(new TurmaDisciplina { TurmaId = turma.Id, DisciplinaId = x.Disc.Id, ProfessorId = x.Prof.Id });
+            Mural(db, turma.Id, atrib.Select(x => (x.Disc.Id, x.Disc.Nome, x.Prof.Id)).ToList(), hoje);
             foreach (var d in discs)
                 for (int b = 1; b <= TabelaNotas.Bimestres; b++)
                     db.Aulas.Add(new AulasDadas { TurmaId = turma.Id, DisciplinaId = d.Id, Bimestre = b, Aulas = 40 });
@@ -173,6 +175,23 @@ public static class DadosDemo
         db.SaveChanges();
 
         return $"Dados de demonstração criados: {db.Alunos.Count(a => a.Observacoes == Marca)} alunos, {profs.Count} professores. Login dos professores: <nome>.demo@demo.test / {SenhaDev}. Para remover: dotnet run -- --demo-limpar";
+    }
+
+    // Algumas publicações da Sala de aula por turma (avisos, materiais e atividades, uma já encerrada)
+    static void Mural(EscolaContext db, int turmaId, List<(int Id, string Nome, int ProfId)> discs, DateTime hoje)
+    {
+        DateTime Agora(int diasAtras, int hora) => DateTime.SpecifyKind(hoje.AddDays(-diasAtras).AddHours(hora), DateTimeKind.Unspecified);
+        void Add(int i, TipoPublicacao t, string titulo, string? texto, string? link, DateTime? prazo, int diasAtras)
+        {
+            if (i >= discs.Count) return;
+            db.Publicacoes.Add(new Publicacao { TurmaId = turmaId, DisciplinaId = discs[i].Id, ProfessorId = discs[i].ProfId, Tipo = t, Titulo = titulo, Texto = texto, Link = link, Prazo = prazo?.Date, CriadoEm = Agora(diasAtras, 9 + i) });
+        }
+        Add(0, TipoPublicacao.Aviso, "Prova na próxima semana", "Revisem os capítulos 4 e 5 do livro. Tragam dúvidas para a aula de revisão.", null, null, 1);
+        Add(0, TipoPublicacao.Atividade, "Lista de exercícios 3", "Resolver os exercícios 1 a 10 da página 58 e trazer no caderno.", null, hoje.AddDays(6), 2);
+        Add(1, TipoPublicacao.Material, "Resumo do conteúdo do bimestre", "Material de apoio para estudar em casa.", "https://pt.wikipedia.org/wiki/Educa%C3%A7%C3%A3o", null, 3);
+        Add(1, TipoPublicacao.Atividade, "Pesquisa em dupla", "Pesquisar sobre o tema da aula e montar um cartaz.", null, hoje.AddDays(-2), 12);
+        Add(2, TipoPublicacao.Atividade, "Relatório do experimento", "Entregar o relatório com introdução, método e conclusão.", null, hoje.AddDays(10), 4);
+        Add(3, TipoPublicacao.Aviso, "Trazer material para a aula prática", "Na quinta-feira teremos aula prática. Não esqueçam o material.", null, null, 5);
     }
 
     // Taxa de matrícula + 12 mensalidades (vencem dia 10, de fevereiro a janeiro). Perfis de pagamento:

@@ -1,0 +1,57 @@
+@page "{turmaId:int}/{disciplinaId:int}"
+@model SistemaEscolar.Pages.SalaDeAula.TurmaModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Sala de aula"; }
+
+<div class="barra">
+    <h1>@Model.Disciplina.Nome <span class="suave">- @Model.Turma.Nome, @Model.Turma.AnoLetivo</span></h1>
+    <a class="btn btn-sec" asp-page="Index">Voltar</a>
+</div>
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+
+<form method="post" asp-page-handler="Publicar" asp-route-turmaId="@Model.Turma.Id" asp-route-disciplinaId="@Model.Disciplina.Id" class="card" novalidate style="margin-bottom:16px">
+    <h2>Nova publicação</h2>
+    <div class="grade">
+        <div class="campo">
+            <label for="Input_Tipo">Tipo</label>
+            <select id="Input_Tipo" name="Input.Tipo">
+                <option value="">Selecione</option>
+                @foreach (var t in Enum.GetValues<TipoPublicacao>())
+                {
+                    <option value="@t" selected="@(Model.Input.Tipo == t)">@t.ToString().Replace("Atividade", "Atividade (com prazo)")</option>
+                }
+            </select>
+            <span asp-validation-for="Input.Tipo" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label for="Input_Titulo">Título</label>
+            <input id="Input_Titulo" name="Input.Titulo" value="@Model.Input.Titulo" maxlength="100" autocomplete="off" />
+            <span asp-validation-for="Input.Titulo" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label for="Input_Prazo">Prazo (só para atividade)</label>
+            <input id="Input_Prazo" name="Input.Prazo" value="@Model.Input.Prazo" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+            <span asp-validation-for="Input.Prazo" class="erro"></span>
+        </div>
+    </div>
+    <div class="campo">
+        <label for="Input_Texto">Texto</label>
+        <textarea id="Input_Texto" name="Input.Texto" rows="4" maxlength="2000">@Model.Input.Texto</textarea>
+        <span asp-validation-for="Input.Texto" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label for="Input_Link">Link (opcional)</label>
+        <input id="Input_Link" name="Input.Link" value="@Model.Input.Link" maxlength="300" placeholder="https://..." autocomplete="off" />
+        <span asp-validation-for="Input.Link" class="erro"></span>
+    </div>
+    <div class="rodape-form"><button class="btn">Publicar</button></div>
+</form>
+
+@if (Model.Itens.Count == 0)
+{
+    <div class="card vazio">Nada publicado ainda para esta turma.</div>
+}
+@foreach (var p in Model.Itens)
+{
+    <partial name="_Publicacao" model="p" view-data="@(new ViewDataDictionary(ViewData) { { "Excluir", true } })" />
+}

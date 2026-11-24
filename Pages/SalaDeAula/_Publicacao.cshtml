@@ -1,0 +1,24 @@
+@using SistemaEscolar.Data
+@model Publicacao
+@* Um item do mural. ViewData["Excluir"] = true mostra o botão de excluir (só na tela do professor). *@
+<div class="card pub">
+    <div class="pub-topo">
+        <span><span class="badge tp-@Model.Tipo">@Html.DisplayFor(_ => Model.Tipo)</span>
+            <strong>@Model.Titulo</strong></span>
+        <small class="suave">@Model.CriadoEm.ToString("dd/MM/yyyy HH:mm")</small>
+    </div>
+    @if (ViewData["Contexto"] is string ctx) { <p class="suave">@ctx</p> }
+    @if (!string.IsNullOrEmpty(Model.Texto)) { <p class="pub-texto">@Model.Texto</p> }
+    @if (Model.Link != null) { <p><a href="@Model.Link" target="_blank" rel="noopener noreferrer">@Model.Link</a></p> }
+    @if (Model.Tipo == TipoPublicacao.Atividade && Model.Prazo != null)
+    {
+        <p>Prazo: <strong>@Model.Prazo.Value.ToString("dd/MM/yyyy")</strong>
+            <span class="badge @(Model.Encerrada ? "cb-Atrasada" : "cb-Paga")">@(Model.Encerrada ? "Encerrada" : "Aberta")</span></p>
+    }
+    @if (ViewData["Excluir"] is true)
+    {
+        <form method="post" asp-page="Turma" asp-page-handler="Excluir" asp-route-turmaId="@Model.TurmaId" asp-route-disciplinaId="@Model.DisciplinaId" asp-route-id="@Model.Id" onsubmit="return confirm('Excluir esta publicação?')">
+            <button class="link">Excluir</button>
+        </form>
+    }
+</div>

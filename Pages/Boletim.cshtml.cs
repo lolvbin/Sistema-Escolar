@@ -23,17 +23,7 @@ public class BoletimModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var uid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        if (User.IsInRole("Aluno"))
-            Alunos = await _db.Alunos.AsNoTracking().Where(a => a.UsuarioId == uid).ToListAsync();
-        else
-        {
-            // Responsável: alunos em que o e-mail dele consta como responsável acadêmico ou financeiro
-            var email = (User.FindFirstValue(ClaimTypes.Email) ?? "").ToLower();
-            Alunos = await _db.Alunos.AsNoTracking()
-                .Where(a => a.Academico.Email.ToLower() == email || a.Financeiro.Email.ToLower() == email)
-                .OrderBy(a => a.Nome).ToListAsync();
-        }
+        Alunos = await Acessos.AlunosDoUsuario(_db, User);
 
         // Só enxerga aluno da própria lista
         Aluno = Alunos.FirstOrDefault(a => a.Id == AlunoId) ?? Alunos.FirstOrDefault();

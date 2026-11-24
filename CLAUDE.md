@@ -27,7 +27,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   Em produção: variável `ConnectionStrings__Escola`. Nunca commitar a senha
 - **Banco com EF Migrations** (`Migrations/`): `Program.cs` chama `Migrate()` na partida (cria/atualiza o banco). Mudou o modelo? `dotnet ef migrations add NomeDaMudanca` e commitar a pasta `Migrations/`. `Data/EscolaContextFactory.cs` deixa o `dotnet ef` funcionar sem subir a aplicação (lê user-secrets ou `ConnectionStrings__Escola`). Ferramenta: `dotnet tool install --global dotnet-ef --version 10.*`
 - O banco de dev compartilhado foi criado antes das migrations: ele foi "baselinado" (linha `InitialCreate` inserida em `__EFMigrationsHistory`). Banco novo = `Migrate()` cria tudo. As menções abaixo a "tabela criada por SQL em ...Preparar" são HISTÓRICAS: esses métodos foram removidos e o esquema vem das migrations
-- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 85 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
+- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 94 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
 - `docker compose up -d` sobe um PostgreSQL local (usuário/senha/banco `escola`/`escola_dev`/`escola`)
 - Ao rodar a DLL direto (sem `dotnet run`) a porta é 5000 e o ambiente é Production, sem user-secrets: definir `ASPNETCORE_ENVIRONMENT=Development`
 
@@ -131,21 +131,36 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - **Recibo** (`Pages/Financeiro/Recibo/{cobrançaId}`, link "Recibo" nas cobranças pagas do Detalhe): só de cobrança paga (senão 404), com valor por extenso (`Extenso.Reais` em `Data/Financeiro.cs`), multa e juros separados, para imprimir. Só funcionário por enquanto (responsável ainda não emite o próprio recibo)
 - Falta: descontos/bolsas, integração com pagamento online, recibo no acesso do responsável
 
+### Sala de aula (testado no navegador)
+- `Data/Publicacao.cs` (tabela `Publicacoes`, migration `SalaDeAula`): publicação de uma turma em uma disciplina, tipo Aviso, Material ou Atividade (com prazo), título, texto (até 2000), link opcional (só http/https), autor e data. Sem envio de arquivos e sem entrega de atividade
+- `Pages/SalaDeAula/`: `Index` (professor vê as turmas/disciplinas dele; aluno e responsável leem o mural da turma do aluno, com filtro por disciplina) e `Turma/{turmaId}/{disciplinaId}` (só o professor atribuído àquela disciplina na turma: publicar e excluir; senão Acesso negado). Parcial `_Publicacao` mostra um item
+- Política `SalaDeAula` = Professor, Aluno e Responsável (cartão "Sala de aula" nos três); `/SalaDeAula/Turma` exige Professor. `Acessos.AlunosDoUsuario` (em `Data/Publicacao.cs`) acha os alunos do aluno/responsável logado e o Boletim usa o mesmo
+- Falta: ver limites abaixo
+
 ### Dados de demonstração (para prints e vídeos)
 - `dotnet run -- --demo` (só Development) cria 30 alunos fictícios (27 com matrícula Ativa em 4 turmas do ano atual: 5º A, 5º B, 8º A, 1ª série A; 3 Pendentes do ano seguinte), 6 professores (`<nome>.demo@demo.test`, senha de dev), notas dos 4 bimestres, recuperação, faltas, aulas dadas, taxa + 12 mensalidades (a maioria em dia, ~1/3 com atraso) e eventos no calendário. Código em `Data/DadosDemo.cs`
 - `dotnet run -- --demo-limpar` remove só o que o `--demo` criou (alunos com `Observacoes = "[demo]"`, professores `@demo.test`, eventos com descrição `[demo]`, turmas que ficaram vazias). Não mexe em turma que já existia
 - A primeira família usa `responsavel@escola.test` e o primeiro aluno `aluno@escola.test`, para os usuários de dev verem boletim e mensalidades
 - **Esses dados FICAM no banco de dev de propósito**: no "fim do dia" apagar só os dados de teste manuais e os usuários `@escola.test`, NÃO rodar `--demo-limpar` a menos que o usuário peça. Cobranças dependem da data de hoje: para atualizar, rodar `--demo-limpar` e `--demo`
 
-### Pendências conhecidas
-- Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco
-- Senha: o funcionário gera a provisória e o usuário troca no primeiro acesso. Não há "esqueci minha senha" por e-mail (só o funcionário gera outra)
-- Próximos passos possíveis: Sala de aula real (professor/aluno), migrations, testes automatizados, publicar no GitHub
+### Limites e pendências (conferir depois)
+Lista viva: acrescentar aqui todo limite novo que aparecer e riscar o que for resolvido.
+- Dados: aluno órfão "Alberto da Silva" (sem matrícula) no banco de dev compartilhado: matricular de novo pelo CPF ou apagar
+- Acesso: sem "esqueci minha senha" por e-mail (só o funcionário gera outra provisória); limite de tentativas de login fica em memória (reiniciar zera)
+- Configurações (aprovação, frequência, multa e juros) ficam em propriedades estáticas: serve a uma instância só
+- Notas e frequência: sem abono/justificativa de faltas, sem chamada diária (só total de faltas por bimestre), sem regra de recuperação por bimestre
+- Desempenho (funcionário): sem exportação/impressão; professor só vê o que lança
+- Calendário: sem eventos por turma/série, sem ligar provas às turmas, sem início/fim dos bimestres
+- Financeiro: baixa manual (sem boleto/Pix real), sem descontos/bolsas, sem integração de pagamento online; recibo só no acesso do funcionário (responsável não emite o próprio); nome da escola fixo "Sistema Escolar" no recibo
+- Dados de demonstração: cobranças dependem da data de hoje (refazer com `--demo-limpar` e `--demo`)
+- Testes: não há testes de páginas (integração das telas); só regras puras e 3 de banco
+- Publicação: logo atual provisória (fundo branco no tema escuro); prints com a barra do navegador; e-mail pessoal visível no histórico de commits (avaliar noreply do GitHub)
+- Sala de aula: sem editar publicação (só excluir e refazer), sem anexos/upload, sem entrega de atividade pelo aluno, sem comentários, sem aviso de nova publicação, sem horário/grade semanal; o aluno vê só a turma da matrícula mais recente; mural limitado às 100 publicações mais novas
 
 ## Cuidados
 - `psql` instalado. Para rodar SQL com a conexão do user-secrets sem expor a senha: ler `dotnet user-secrets list` e passar Host/Port/Username/Database por parâmetro e a senha por `PGPASSWORD`
 - Rodar servidores de teste em background: guardar o PID e encerrar com `kill <pid>`. Não usar `pkill -f` com o nome da DLL, pois mata o próprio shell
-- Dados de teste criados no banco compartilhado devem ser apagados ao final
+- Dados de teste criados no banco compartilhado devem ser apagados ao final (exceto os de demonstração, ver acima)
 - Fim do dia: quando o usuário rodar `git commit` e `git push` dizendo que finalizamos por hoje, apagar do banco os dados de exemplo (matrículas de teste e usuários `@escola.test`). Em Development os usuários de teste são recriados na próxima execução
 - Cada perfil só vê na tela inicial os cartões do que lhe cabe. Página fora do perfil: Acesso negado
 - Matar o servidor de teste: `dotnet run` deixa um processo filho; se `kill $(cat pid)` não liberar a porta, ache o PID real com `ss -ltnp | grep 5006`
