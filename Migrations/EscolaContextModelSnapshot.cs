@@ -494,8 +494,14 @@ namespace SistemaEscolar.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Areas")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("Ativo")
                         .HasColumnType("boolean");
+
+                    b.Property<int?>("Cargo")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("DeveTrocarSenha")
                         .HasColumnType("boolean");

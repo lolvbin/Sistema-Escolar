@@ -3,7 +3,7 @@
 @model SistemaEscolar.Pages.IndexModel
 @{
     ViewData["Title"] = "Início";
-    if (Model.Perfil == Perfil.Funcionario)
+    if (User.TemArea(Area.Matriculas))
     {
         ViewData["MatInfo"] = $"{Model.Total} cadastradas · {Model.Pendentes} pendentes";
     }

@@ -58,6 +58,16 @@ public static class DadosDemo
             });
         }
         db.Professores.AddRange(profs);
+
+        // --- Um funcionário por cargo (login com senha de dev, para mostrar cada visão)
+        var funcionarios = new (string Nome, string Email, Cargo Cargo)[]
+        {
+            ("Juliana Prado", "secretaria.demo@demo.test", Cargo.Secretaria),
+            ("Ricardo Menezes", "financeiro.demo@demo.test", Cargo.Financeiro),
+            ("Adriana Lacerda", "coordenacao.demo@demo.test", Cargo.Coordenacao),
+        };
+        foreach (var f in funcionarios)
+            db.Usuarios.Add(new Usuario { Nome = f.Nome, Email = f.Email, Perfil = Perfil.Funcionario, Cargo = f.Cargo, Areas = f.Cargo.Padrao(), SenhaHash = Senha.Gerar(SenhaDev) });
         db.SaveChanges();
 
         // --- Turmas do ano atual: série, letra, turno, quantos alunos
@@ -174,7 +184,7 @@ public static class DadosDemo
             db.Eventos.Add(new Evento { Titulo = e.T, Tipo = e.Tp, Inicio = e.I.Date, Fim = e.F?.Date, Descricao = Marca });
         db.SaveChanges();
 
-        return $"Dados de demonstração criados: {db.Alunos.Count(a => a.Observacoes == Marca)} alunos, {profs.Count} professores. Login dos professores: <nome>.demo@demo.test / {SenhaDev}. Para remover: dotnet run -- --demo-limpar";
+        return $"Dados de demonstração criados: {db.Alunos.Count(a => a.Observacoes == Marca)} alunos, {profs.Count} professores. Logins (senha {SenhaDev}): professores <nome>.demo@demo.test e funcionários secretaria/financeiro/coordenacao.demo@demo.test. Para remover: dotnet run -- --demo-limpar";
     }
 
     // Algumas publicações da Sala de aula por turma (avisos, materiais e atividades, uma já encerrada)
@@ -274,6 +284,7 @@ public static class DadosDemo
         db.Professores.RemoveRange(profs);
         db.SaveChanges();
         db.Usuarios.RemoveRange(profs.Where(p => p.Usuario != null).Select(p => p.Usuario!));
+        db.Usuarios.RemoveRange(db.Usuarios.Where(u => u.Perfil == Perfil.Funcionario && u.Email.EndsWith("@demo.test")));
         db.Eventos.RemoveRange(db.Eventos.Where(e => e.Descricao == Marca));
         db.SaveChanges();
         return $"Dados de demonstração removidos ({alunos.Count} alunos, {profs.Count} professores).";

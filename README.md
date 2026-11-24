@@ -32,6 +32,7 @@ Feito para ser **leve**: HTML renderizado no servidor, quase nenhum JavaScript (
 | **Calendário** | Grade mensal com feriados, recessos, provas e reuniões | Todos veem, funcionário cadastra |
 | **Financeiro** | Contrato, taxa e mensalidades, multa e juros, baixa de pagamentos, recibo para imprimir e relatório de inadimplência; libera a matrícula pendente | Funcionário (responsável consulta) |
 | **Sala de aula** | Professor publica avisos, materiais e atividades com prazo por turma e disciplina; aluno e responsável leem | Professor (publica), aluno e responsável |
+| **Usuários** | Cargos e áreas de acesso dos funcionários (administrador/TI, secretaria, financeiro, coordenação), senha provisória, inativação | Administrador |
 | **Configurações** | Médias de aprovação e recuperação, modelo da média final, frequência mínima, multa e juros | Funcionário |
 
 ### Algumas regras de negócio
@@ -39,6 +40,7 @@ Feito para ser **leve**: HTML renderizado no servidor, quase nenhum JavaScript (
 - Só alunos com matrícula **Ativa**, da mesma série, ano e turno, entram na turma.
 - A **média de aprovação, a de recuperação e a frequência mínima** são configuráveis. Há 3 modelos para a média final com recuperação (média das duas, maior das duas, substitui a média).
 - **Multa** (única) e **juros** (simples, proporcionais aos dias) calculados na hora para cobranças em atraso; o valor recebido fica gravado.
+- **Funcionários têm cargos** (administrador/TI, secretaria, financeiro, coordenação): cada um acessa só as áreas liberadas, e o administrador ajusta uma a uma. Nunca sobra o sistema sem administrador, e quem é inativado perde a sessão na hora.
 - Segurança: senhas com PBKDF2, **senha provisória obrigatória de trocar** no primeiro acesso, **limite de tentativas de login**, autorização por perfil em cada página.
 
 ## 🧱 Tecnologias
@@ -68,7 +70,7 @@ Abra <http://localhost:5006>. O banco é criado (e atualizado) sozinho pelas mig
 
 Em **Development** são criados 4 usuários de teste, todos com a senha `Escola@123`:
 `funcionario@escola.test`, `professor@escola.test`, `aluno@escola.test` e `responsavel@escola.test`.
-Em produção eles não existem: defina a conexão pela variável `ConnectionStrings__Escola` e crie os usuários reais por outro meio.
+Em produção eles não existem: defina a conexão pela variável `ConnectionStrings__Escola`; no primeiro acesso o sistema pede para criar o administrador, que cadastra os demais funcionários em **Usuários**.
 
 ### Dados de demonstração
 
@@ -85,7 +87,7 @@ dotnet run -- --demo-limpar   # remove só o que ele criou
 dotnet test tests/SistemaEscolar.Tests
 ```
 
-São 94 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 3 testes de integração aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
+São 103 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 3 testes de integração aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
 
 ```bash
 ESCOLA_TEST_DB="Host=localhost;Port=5432;Database=postgres;Username=escola;Password=escola_dev" dotnet test tests/SistemaEscolar.Tests

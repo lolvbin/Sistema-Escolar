@@ -27,7 +27,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   Em produção: variável `ConnectionStrings__Escola`. Nunca commitar a senha
 - **Banco com EF Migrations** (`Migrations/`): `Program.cs` chama `Migrate()` na partida (cria/atualiza o banco). Mudou o modelo? `dotnet ef migrations add NomeDaMudanca` e commitar a pasta `Migrations/`. `Data/EscolaContextFactory.cs` deixa o `dotnet ef` funcionar sem subir a aplicação (lê user-secrets ou `ConnectionStrings__Escola`). Ferramenta: `dotnet tool install --global dotnet-ef --version 10.*`
 - O banco de dev compartilhado foi criado antes das migrations: ele foi "baselinado" (linha `InitialCreate` inserida em `__EFMigrationsHistory`). Banco novo = `Migrate()` cria tudo. As menções abaixo a "tabela criada por SQL em ...Preparar" são HISTÓRICAS: esses métodos foram removidos e o esquema vem das migrations
-- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 94 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
+- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 103 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
 - `docker compose up -d` sobe um PostgreSQL local (usuário/senha/banco `escola`/`escola_dev`/`escola`)
 - Ao rodar a DLL direto (sem `dotnet run`) a porta é 5000 e o ambiente é Production, sem user-secrets: definir `ASPNETCORE_ENVIRONMENT=Development`
 
@@ -49,7 +49,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 
 ### Login e perfis (testado no navegador)
 - `Data/Usuario.cs`: entidade `Usuario`, enum `Perfil` (Responsavel, Funcionario, Professor, Aluno), hash PBKDF2 (`Senha`) e `UsuarioSeed`
-- Cookie auth em `Program.cs`; política padrão exige login. `[AllowAnonymous]` em Login, Error. Pasta `/Matriculas` só para Funcionário (política `Funcionario`)
+- Cookie auth em `Program.cs`; política padrão exige login. `[AllowAnonymous]` em Login, Error. Pasta `/Matriculas` só para quem tem a área Matrículas (ver "Funcionários: cargos e áreas")
 - A tabela `Usuarios` vem das migrations; `UsuarioSeed.Semear` só cria as contas de teste
 - Em Development cria 4 usuários `<perfil>@escola.test` (senha de dev em `UsuarioSeed`). Não vale em produção: criar usuários reais por outro meio
 - **Navegação**: o topo só tem marca (com logo opcional), Sair e Tema. O único menu são os cartões da tela inicial (`Pages/Shared/_Painel.cshtml`), um conjunto por perfil, com as telas que ele pode acessar + "Alterar senha". Página nova = adicionar o cartão no perfil certo. A prévia estática (`/Previa`) foi removida
@@ -131,6 +131,18 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - **Recibo** (`Pages/Financeiro/Recibo/{cobrançaId}`, link "Recibo" nas cobranças pagas do Detalhe): só de cobrança paga (senão 404), com valor por extenso (`Extenso.Reais` em `Data/Financeiro.cs`), multa e juros separados, para imprimir. Só funcionário por enquanto (responsável ainda não emite o próprio recibo)
 - Falta: descontos/bolsas, integração com pagamento online, recibo no acesso do responsável
 
+### Funcionários: cargos e áreas (testado no navegador)
+- `Data/Areas.cs`: enum de flags `Area` (Matrículas, Alunos, Professores, Disciplinas, Turmas, Desempenho, Financeiro, Calendário, Configurações, Usuários; todas = 1023) e enum `Cargo` (Administrador/TI, Secretaria, Financeiro, Coordenação). O cargo é só um **atalho**: `Cargo.Padrao()` preenche as áreas ao criar; o que vale é `Usuario.Areas`. Acesso por área é tudo ou nada (não há só leitura)
+- Cargos: Administrador = todas; Secretaria = Matrículas, Alunos, Professores, Disciplinas, Turmas, Desempenho, Calendário; Financeiro = Financeiro, Calendário; Coordenação = Professores, Disciplinas, Turmas, Desempenho, Calendário. Só o administrador tem Configurações e Usuários
+- Cada área tem uma política `Area:<nome>` (`Program.cs`); as pastas das telas usam essas políticas (a política antiga `Funcionario` não existe mais). As áreas vão no cookie (claim `areas`, `User.TemArea(Area.X)`). Calendário: todos veem; só quem tem a área cadastra. Cartões da tela inicial só aparecem para quem tem a área
+- `Pages/Usuarios/` (Index, Create, Edit com `_Form`): só quem tem a área Usuários; gerencia **funcionários** (professor/aluno/responsável continuam nas próprias telas). Cria com senha provisória (mostrada uma vez, troca obrigatória); Editar muda nome, e-mail, cargo, áreas e ativo; "Gerar nova senha provisória". Em `site.js`, o `select[data-preset]` do cargo marca as áreas sugeridas
+- **Trava**: sempre sobra pelo menos um funcionário ativo com a área Usuários (`RegrasUsuarios.RestaAdministrador`)
+- **Sessões**: `Sessoes.Revogar(id)` (em `Data/Autenticacao.cs`) derruba os cookies emitidos antes quando o usuário é inativado, muda de áreas/e-mail ou recebe nova senha (também ao inativar professor). Em memória: reiniciar o servidor zera a lista. Quem edita o próprio acesso é re-logado na hora
+- **Primeiro acesso**: `Pages/PrimeiroAcesso` (anônima) só existe enquanto não há nenhum administrador ativo (senão 404); o Login redireciona para ela. Cria o Administrador e já entra. Em Development nunca aparece (a conta `funcionario@escola.test` é administradora)
+- Migration `AreasDoFuncionario`: funcionários que já existiam viram Administrador (Areas = 1023)
+- `--demo` cria também 3 funcionários (`secretaria|financeiro|coordenacao.demo@demo.test`, senha de dev); `--demo-limpar` remove
+- Cuidado nos testes via `curl`: errar a senha 5 vezes para o mesmo e-mail bloqueia o login por 15 min (é o limite de tentativas funcionando)
+
 ### Sala de aula (testado no navegador)
 - `Data/Publicacao.cs` (tabela `Publicacoes`, migration `SalaDeAula`): publicação de uma turma em uma disciplina, tipo Aviso, Material ou Atividade (com prazo), título, texto (até 2000), link opcional (só http/https), autor e data. Sem envio de arquivos e sem entrega de atividade
 - `Pages/SalaDeAula/`: `Index` (professor vê as turmas/disciplinas dele; aluno e responsável leem o mural da turma do aluno, com filtro por disciplina) e `Turma/{turmaId}/{disciplinaId}` (só o professor atribuído àquela disciplina na turma: publicar e excluir; senão Acesso negado). Parcial `_Publicacao` mostra um item
@@ -151,6 +163,7 @@ Lista viva: acrescentar aqui todo limite novo que aparecer e riscar o que for re
 - Notas e frequência: sem abono/justificativa de faltas, sem chamada diária (só total de faltas por bimestre), sem regra de recuperação por bimestre
 - Desempenho (funcionário): sem exportação/impressão; professor só vê o que lança
 - Calendário: sem eventos por turma/série, sem ligar provas às turmas, sem início/fim dos bimestres
+- Funcionários: sem permissão de só leitura dentro de uma área; cargos fixos no código (não há cadastro de cargos); lista de sessões revogadas fica em memória; sem log de quem fez o quê (item planejado: registro de ações sensíveis)
 - Financeiro: baixa manual (sem boleto/Pix real), sem descontos/bolsas, sem integração de pagamento online; recibo só no acesso do funcionário (responsável não emite o próprio); nome da escola fixo "Sistema Escolar" no recibo
 - Dados de demonstração: cobranças dependem da data de hoje (refazer com `--demo-limpar` e `--demo`)
 - Testes: não há testes de páginas (integração das telas); só regras puras e 3 de banco

@@ -1,0 +1,44 @@
+@using SistemaEscolar.Data
+@model SistemaEscolar.Pages.Usuarios.UsuarioForm
+@{
+    string? Erro(string campo) => ViewData.ModelState.TryGetValue("Input." + campo, out var e) ? e.Errors.FirstOrDefault()?.ErrorMessage : null;
+    var edicao = ViewData["Edicao"] is true;
+}
+<div class="grade">
+    <div class="campo">
+        <label for="Input_Nome">Nome</label>
+        <input id="Input_Nome" name="Input.Nome" value="@Model.Nome" data-mask="nome" maxlength="120" autocomplete="off" />
+        @if (Erro("Nome") is { } e1) { <span class="erro">@e1</span> }
+    </div>
+    <div class="campo">
+        <label for="Input_Email">E-mail (é o login)</label>
+        <input id="Input_Email" name="Input.Email" value="@Model.Email" maxlength="120" autocomplete="off" />
+        @if (Erro("Email") is { } e2) { <span class="erro">@e2</span> }
+    </div>
+    <div class="campo">
+        <label for="Input_Cargo">Cargo (preenche as áreas sugeridas)</label>
+        <select id="Input_Cargo" name="Input.Cargo" data-preset>
+            <option value="" data-areas="-1">Selecione</option>
+            @foreach (var c in Enum.GetValues<Cargo>())
+            {
+                <option value="@c" data-areas="@((int)c.Padrao())" selected="@(Model.Cargo == c)">@c.Nome()</option>
+            }
+        </select>
+        @if (Erro("Cargo") is { } e3) { <span class="erro">@e3</span> }
+    </div>
+</div>
+
+<fieldset class="areas">
+    <legend>Áreas que este funcionário pode acessar</legend>
+    @foreach (var a in AreaExt.Individuais)
+    {
+        <label class="check"><input type="checkbox" name="Input.Marcadas" value="@((int)a)" data-area="@((int)a)" checked="@Model.Areas.HasFlag(a)" /> @a.Nome()</label>
+    }
+    @if (Erro("Marcadas") is { } e4) { <span class="erro">@e4</span> }
+</fieldset>
+
+@if (edicao)
+{
+    <label class="check"><input type="checkbox" name="Input.Ativo" value="true" checked="@Model.Ativo" /> Acesso ativo</label>
+    <input type="hidden" name="Input.Ativo" value="false" />
+}

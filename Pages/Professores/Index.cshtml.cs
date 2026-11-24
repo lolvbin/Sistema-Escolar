@@ -37,6 +37,7 @@ public class IndexModel : PageModel
         p.Ativo = !p.Ativo;
         if (p.Usuario != null) p.Usuario.Ativo = p.Ativo;
         await _db.SaveChangesAsync();
+        if (!p.Ativo && p.Usuario != null) Sessoes.Revogar(p.Usuario.Id); // derruba o login que estiver aberto
 
         TempData["Aviso"] = p.Ativo ? $"{p.Nome} reativado." : $"{p.Nome} inativado (o login foi bloqueado).";
         return RedirectToPage(new { Busca, Situacao });
@@ -52,6 +53,7 @@ public class IndexModel : PageModel
         p.Usuario.SenhaHash = Senha.Gerar(senha);
         p.Usuario.DeveTrocarSenha = true;
         await _db.SaveChangesAsync();
+        Sessoes.Revogar(p.Usuario.Id);
 
         TempData["Aviso"] = $"Nova senha provisória de {p.Nome}: {senha} (mostrada só agora)";
         return RedirectToPage(new { Busca, Situacao });

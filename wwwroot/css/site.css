@@ -164,3 +164,7 @@ button.link { background: none; border: 0; padding: 0; margin-right: 10px; font:
 .pub-texto { white-space: pre-wrap; }
 .tp-Material { color: var(--ok); border-color: var(--ok); }
 .tp-Atividade { color: var(--aviso); border-color: var(--aviso); }
+
+/* Usuários e áreas */
+.areas { border: 1px solid var(--borda); border-radius: 8px; padding: 10px 14px; margin: 12px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 16px; }
+.areas legend { padding: 0 6px; color: var(--suave); }

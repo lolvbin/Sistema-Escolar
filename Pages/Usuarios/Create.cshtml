@@ -1,0 +1,9 @@
+@page
+@model SistemaEscolar.Pages.Usuarios.CreateModel
+@{ ViewData["Title"] = "Novo funcionário"; }
+
+<div class="barra"><h1>Novo funcionário</h1><a class="btn btn-sec" asp-page="Index">Voltar</a></div>
+<form method="post" class="card" novalidate>
+    <partial name="_Form" model="Model.Input" view-data="ViewData" />
+    <div class="rodape-form"><button class="btn">Criar funcionário</button></div>
+</form>

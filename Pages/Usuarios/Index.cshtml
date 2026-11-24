@@ -1,0 +1,31 @@
+@page
+@model SistemaEscolar.Pages.Usuarios.IndexModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Usuários"; }
+
+<div class="barra">
+    <h1>Usuários</h1>
+    <a class="btn" asp-page="Create">Novo funcionário</a>
+</div>
+<p class="suave">Funcionários da escola e o que cada um pode acessar. Professores, alunos e responsáveis têm o acesso criado nas próprias telas.</p>
+
+@if (TempData["Aviso"] is string aviso) { <div class="card aviso">@aviso</div> }
+
+<div class="card tabela">
+    <table>
+        <thead><tr><th>Nome</th><th>E-mail</th><th>Cargo</th><th>Áreas</th><th>Situação</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var u in Model.Itens)
+        {
+            <tr>
+                <td>@u.Nome @if (u.Id == Model.MeuId) { <span class="suave">(você)</span> }</td>
+                <td>@u.Email</td>
+                <td>@(u.Cargo?.Nome() ?? "-")</td>
+                <td>@u.Areas.Resumo()</td>
+                <td><span class="badge @(u.Ativo ? "st-Ativa" : "st-Cancelada")">@(u.Ativo ? "Ativo" : "Inativo")</span></td>
+                <td class="acoes"><a asp-page="Edit" asp-route-id="@u.Id">Editar</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

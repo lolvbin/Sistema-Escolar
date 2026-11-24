@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using SistemaEscolar.Data;
 
@@ -5,17 +6,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages(o =>
 {
-    // Matrículas: só funcionário
-    o.Conventions.AuthorizeFolder("/Matriculas", "Funcionario");
-    o.Conventions.AuthorizeFolder("/Alunos", "Funcionario");
-    o.Conventions.AuthorizeFolder("/Professores", "Funcionario");
-    o.Conventions.AuthorizeFolder("/Disciplinas", "Funcionario");
-    o.Conventions.AuthorizeFolder("/Turmas", "Funcionario");
-    o.Conventions.AuthorizeFolder("/Desempenho", "Funcionario");
-    // Calendário: todos veem; só o funcionário cadastra
-    o.Conventions.AuthorizePage("/Calendario/Evento", "Funcionario");
-    o.Conventions.AuthorizePage("/Configuracoes", "Funcionario");
-    o.Conventions.AuthorizeFolder("/Financeiro", "Funcionario");
+    // Funcionário: cada área tem a sua política (cargo = conjunto de áreas, ver Data/Areas.cs)
+    o.Conventions.AuthorizeFolder("/Matriculas", "Area:Matriculas");
+    o.Conventions.AuthorizeFolder("/Alunos", "Area:Alunos");
+    o.Conventions.AuthorizeFolder("/Professores", "Area:Professores");
+    o.Conventions.AuthorizeFolder("/Disciplinas", "Area:Disciplinas");
+    o.Conventions.AuthorizeFolder("/Turmas", "Area:Turmas");
+    o.Conventions.AuthorizeFolder("/Desempenho", "Area:Desempenho");
+    o.Conventions.AuthorizeFolder("/Financeiro", "Area:Financeiro");
+    o.Conventions.AuthorizePage("/Calendario/Evento", "Area:Calendario"); // todos veem o calendário; só quem tem a área cadastra
+    o.Conventions.AuthorizePage("/Configuracoes", "Area:Configuracoes");
+    o.Conventions.AuthorizeFolder("/Usuarios", "Area:Usuarios");
+    o.Conventions.AllowAnonymousToPage("/PrimeiroAcesso");
     o.Conventions.AuthorizePage("/Mensalidades", "Responsavel");
     // Notas: lançamento só pelo professor
     o.Conventions.AuthorizeFolder("/Notas", "Professor");
@@ -37,14 +39,24 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
         o.Cookie.Name = "escola.auth";
         o.Cookie.HttpOnly = true;
         o.Cookie.SameSite = SameSiteMode.Lax;
+        // Usuário inativado ou com acesso alterado perde a sessão na hora
+        o.Events.OnValidatePrincipal = async ctx =>
+        {
+            if (Sessoes.Invalida(ctx.Principal, ctx.Properties.IssuedUtc))
+            {
+                ctx.RejectPrincipal();
+                await ctx.HttpContext.SignOutAsync();
+            }
+        };
     });
-builder.Services.AddAuthorizationBuilder()
+var auth = builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
-    .AddPolicy("Funcionario", p => p.RequireRole(nameof(Perfil.Funcionario)))
     .AddPolicy("Responsavel", p => p.RequireRole(nameof(Perfil.Responsavel)))
     .AddPolicy("Professor", p => p.RequireRole(nameof(Perfil.Professor)))
     .AddPolicy("Boletim", p => p.RequireRole(nameof(Perfil.Aluno), nameof(Perfil.Responsavel)))
     .AddPolicy("SalaDeAula", p => p.RequireRole(nameof(Perfil.Professor), nameof(Perfil.Aluno), nameof(Perfil.Responsavel)));
+foreach (var area in AreaExt.Individuais)
+    auth.AddPolicy("Area:" + area, p => p.RequireRole(nameof(Perfil.Funcionario)).RequireAssertion(c => c.User.TemArea(area)));
 // Connection string vem do user-secrets (dev) ou de variável de ambiente (ConnectionStrings__Escola).
 var cs = builder.Configuration.GetConnectionString("Escola")
     ?? throw new InvalidOperationException("Defina ConnectionStrings:Escola (user-secrets).");

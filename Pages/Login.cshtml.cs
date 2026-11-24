@@ -20,10 +20,12 @@ public class LoginModel : PageModel
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
     public string? Erro { get; set; }
 
-    public IActionResult OnGet()
+    public async Task<IActionResult> OnGetAsync()
     {
         if (User.Identity?.IsAuthenticated == true) return LocalRedirect("/");
-        return Page();
+        // Banco novo, sem nenhum administrador: cria o primeiro
+        if (!await PrimeiroAcessoModel.SemAdministrador(_db)) return Page();
+        return RedirectToPage("/PrimeiroAcesso");
     }
 
     public async Task<IActionResult> OnPostAsync()

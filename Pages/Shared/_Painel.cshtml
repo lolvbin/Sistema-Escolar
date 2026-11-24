@@ -6,15 +6,16 @@
 <div class="grade">
 @if (Model == Perfil.Funcionario)
 {
-    <a class="card atalho" asp-page="/Matriculas/Index"><strong>Matrículas</strong><br /><span class="suave">@matInfo</span></a>
-    <a class="card atalho" asp-page="/Alunos/Index"><strong>Alunos</strong><br /><span class="suave">Cadastro, responsáveis e acessos</span></a>
-    <a class="card atalho" asp-page="/Professores/Index"><strong>Professores</strong><br /><span class="suave">Cadastro e acesso</span></a>
-    <a class="card atalho" asp-page="/Disciplinas/Index"><strong>Disciplinas</strong><br /><span class="suave">Catálogo por série</span></a>
-    <a class="card atalho" asp-page="/Turmas/Index"><strong>Turmas</strong><br /><span class="suave">Alunos e professores por turma</span></a>
-    <a class="card atalho" asp-page="/Desempenho/Index"><strong>Notas e frequência</strong><br /><span class="suave">Desempenho dos alunos por turma</span></a>
-    <a class="card atalho" asp-page="/Financeiro/Index"><strong>Financeiro</strong><br /><span class="suave">Contratos, mensalidades e pagamentos</span></a>
+    @if (User.TemArea(Area.Matriculas)) { <a class="card atalho" asp-page="/Matriculas/Index"><strong>Matrículas</strong><br /><span class="suave">@matInfo</span></a> }
+    @if (User.TemArea(Area.Alunos)) { <a class="card atalho" asp-page="/Alunos/Index"><strong>Alunos</strong><br /><span class="suave">Cadastro, responsáveis e acessos</span></a> }
+    @if (User.TemArea(Area.Professores)) { <a class="card atalho" asp-page="/Professores/Index"><strong>Professores</strong><br /><span class="suave">Cadastro e acesso</span></a> }
+    @if (User.TemArea(Area.Disciplinas)) { <a class="card atalho" asp-page="/Disciplinas/Index"><strong>Disciplinas</strong><br /><span class="suave">Catálogo por série</span></a> }
+    @if (User.TemArea(Area.Turmas)) { <a class="card atalho" asp-page="/Turmas/Index"><strong>Turmas</strong><br /><span class="suave">Alunos e professores por turma</span></a> }
+    @if (User.TemArea(Area.Desempenho)) { <a class="card atalho" asp-page="/Desempenho/Index"><strong>Notas e frequência</strong><br /><span class="suave">Desempenho dos alunos por turma</span></a> }
+    @if (User.TemArea(Area.Financeiro)) { <a class="card atalho" asp-page="/Financeiro/Index"><strong>Financeiro</strong><br /><span class="suave">Contratos, mensalidades e pagamentos</span></a> }
     <a class="card atalho" asp-page="/Calendario/Index"><strong>Calendário</strong><br /><span class="suave">Eventos, provas e feriados</span></a>
-    <a class="card atalho" asp-page="/Configuracoes"><strong>Configurações</strong><br /><span class="suave">Médias, frequência, multa e juros</span></a>
+    @if (User.TemArea(Area.Configuracoes)) { <a class="card atalho" asp-page="/Configuracoes"><strong>Configurações</strong><br /><span class="suave">Médias, frequência, multa e juros</span></a> }
+    @if (User.TemArea(Area.Usuarios)) { <a class="card atalho" asp-page="/Usuarios/Index"><strong>Usuários</strong><br /><span class="suave">Funcionários, cargos e acessos</span></a> }
 }
 else if (Model == Perfil.Professor)
 {

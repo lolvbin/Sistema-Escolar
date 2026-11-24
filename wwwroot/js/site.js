@@ -33,6 +33,16 @@
         if (f) e.target.value = f(e.target.value);
     });
 
+    // Cargo: marca as áreas sugeridas (data-areas = máscara de bits); o usuário ainda pode ajustar
+    var cargo = document.querySelector("select[data-preset]");
+    if (cargo) cargo.addEventListener("change", function () {
+        var m = parseInt(cargo.options[cargo.selectedIndex].getAttribute("data-areas") || "-1", 10);
+        if (m < 0) return;
+        document.querySelectorAll("input[data-area]").forEach(function (c) {
+            c.checked = (m & parseInt(c.getAttribute("data-area"), 10)) !== 0;
+        });
+    });
+
     // Mostra/esconde o responsável financeiro
     var chk = document.querySelector('input[type=checkbox][name$="MesmoResponsavel"]');
     var fin = document.getElementById("financeiro");

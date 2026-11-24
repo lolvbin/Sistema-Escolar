@@ -54,6 +54,7 @@ public static class Autenticacao
             new(ClaimTypes.Role, u.Perfil.ToString()),
         };
         if (u.DeveTrocarSenha) claims.Add(new Claim(ClaimTrocarSenha, "1"));
+        if (u.Perfil == Perfil.Funcionario) claims.Add(new Claim(AreaExt.ClaimAreas, ((int)u.Areas).ToString()));
         return new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
     }
 
@@ -63,5 +64,23 @@ public static class Autenticacao
         if (string.IsNullOrEmpty(s) || s.Length < 8) return "A senha deve ter pelo menos 8 caracteres";
         if (!s.Any(char.IsLetter) || !s.Any(char.IsDigit)) return "Use letras e números na senha";
         return null;
+    }
+}
+
+// Sessões derrubadas: ao inativar um usuário, mudar suas áreas ou gerar nova senha, os cookies emitidos antes
+// deixam de valer na próxima requisição. Fica em memória (uma instância só): reiniciar o servidor zera a lista.
+public static class Sessoes
+{
+    static readonly ConcurrentDictionary<int, DateTimeOffset> Revogadas = new();
+
+    // O IssuedUtc do cookie tem precisão de segundos: guardamos o instante também em segundos, e só rejeita
+    // cookie emitido ANTES desse segundo (quem entra de novo logo depois da revogação não é derrubado).
+    public static void Revogar(int usuarioId) =>
+        Revogadas[usuarioId] = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+
+    public static bool Invalida(ClaimsPrincipal? user, DateTimeOffset? emitidoEm)
+    {
+        if (!int.TryParse(user?.FindFirstValue(ClaimTypes.NameIdentifier), out var id)) return false;
+        return Revogadas.TryGetValue(id, out var quando) && (emitidoEm == null || emitidoEm.Value < quando);
     }
 }

@@ -19,7 +19,7 @@ public class IndexModel : PageModel
         Perfil = Enum.TryParse<Perfil>(User.FindFirstValue(ClaimTypes.Role), out var p) ? p : Perfil.Aluno;
 
         // Números reais só para quem pode ver matrículas
-        if (Perfil == Perfil.Funcionario)
+        if (User.TemArea(Area.Matriculas))
         {
             Total = await _db.Matriculas.CountAsync();
             Pendentes = await _db.Matriculas.CountAsync(m => m.Status == StatusMatricula.Pendente);

@@ -1,4 +1,5 @@
 @page "{id:int}"
+@using SistemaEscolar.Data
 @model SistemaEscolar.Pages.Matriculas.EditModel
 @{
     ViewData["Title"] = "Editar matrícula";
@@ -10,7 +11,7 @@
     <div class="campo largo">
         <label>Aluno</label>
         <input value="@ViewData["AlunoNome"]" disabled />
-        <small><a asp-page="/Alunos/Edit" asp-route-id="@Model.Matricula.AlunoId">Editar dados do aluno e responsáveis</a></small>
+        @if (User.TemArea(SistemaEscolar.Data.Area.Alunos)) { <small><a asp-page="/Alunos/Edit" asp-route-id="@Model.Matricula.AlunoId">Editar dados do aluno e responsáveis</a></small> }
     </div>
 
     <partial name="_Form" model="Model.Matricula" view-data="ViewData" />

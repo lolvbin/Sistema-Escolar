@@ -9,7 +9,7 @@
     var prox = Model.Primeiro.AddMonths(1);
     var inicioGrade = Model.Primeiro.AddDays(-(int)Model.Primeiro.DayOfWeek);
     var dias = (int)Math.Ceiling(((int)Model.Primeiro.DayOfWeek + DateTime.DaysInMonth(Model.Primeiro.Year, Model.Primeiro.Month)) / 7.0) * 7;
-    var func = User.IsInRole("Funcionario");
+    var func = User.TemArea(Area.Calendario);
     var nomeMes = pt.TextInfo.ToTitleCase(Model.Primeiro.ToString("MMMM", pt)) + " de " + Model.Primeiro.Year;
 }
 

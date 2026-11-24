@@ -1,0 +1,30 @@
+@page
+@model SistemaEscolar.Pages.PrimeiroAcessoModel
+@{ ViewData["Title"] = "Primeiro acesso"; }
+
+<h1>Primeiro acesso</h1>
+<p class="suave">O sistema ainda não tem nenhum administrador. Crie o primeiro: ele poderá cadastrar os demais funcionários, com os respectivos cargos.</p>
+
+<form method="post" class="card" novalidate style="max-width:520px">
+    <div class="campo">
+        <label for="Nome">Nome</label>
+        <input id="Nome" name="Nome" value="@Model.Nome" data-mask="nome" maxlength="120" autocomplete="off" />
+        @if (Model.Erros.TryGetValue("Nome", out var e1)) { <span class="erro">@e1</span> }
+    </div>
+    <div class="campo">
+        <label for="Email">E-mail (será o login)</label>
+        <input id="Email" name="Email" value="@Model.Email" maxlength="120" autocomplete="off" />
+        @if (Model.Erros.TryGetValue("Email", out var e2)) { <span class="erro">@e2</span> }
+    </div>
+    <div class="campo">
+        <label for="Senha">Senha (8 ou mais caracteres, com letras e números)</label>
+        <input id="Senha" name="Senha" type="password" autocomplete="new-password" />
+        @if (Model.Erros.TryGetValue("Senha", out var e3)) { <span class="erro">@e3</span> }
+    </div>
+    <div class="campo">
+        <label for="Confirmar">Confirmar senha</label>
+        <input id="Confirmar" name="Confirmar" type="password" autocomplete="new-password" />
+        @if (Model.Erros.TryGetValue("Confirmar", out var e4)) { <span class="erro">@e4</span> }
+    </div>
+    <div class="rodape-form"><button class="btn">Criar administrador</button></div>
+</form>

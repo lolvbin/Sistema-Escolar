@@ -1,10 +1,11 @@
 @page
+@using SistemaEscolar.Data
 @model SistemaEscolar.Pages.Alunos.IndexModel
 @{ ViewData["Title"] = "Alunos"; }
 
 <div class="barra">
     <h1>Alunos</h1>
-    <a class="btn" asp-page="/Matriculas/Create">Nova matrícula</a>
+    @if (User.TemArea(SistemaEscolar.Data.Area.Matriculas)) { <a class="btn" asp-page="/Matriculas/Create">Nova matrícula</a> }
 </div>
 
 <p class="suave">O aluno é cadastrado ao fazer a matrícula. Aqui você consulta e corrige os dados.</p>

@@ -25,6 +25,8 @@ public class Usuario
     public Perfil Perfil { get; set; }
     public bool Ativo { get; set; } = true;
     public bool DeveTrocarSenha { get; set; }  // senha provisória: obriga a trocar no primeiro acesso
+    public Cargo? Cargo { get; set; }          // só funcionário
+    public Area Areas { get; set; }            // só funcionário: o que ele pode acessar
 }
 
 // Hash de senha com PBKDF2 (nativo do .NET, sem bibliotecas extras). Formato: iterações.salt.hash (base64)
@@ -72,14 +74,17 @@ public static class UsuarioSeed
         var testes = new[]
         {
             Novo("Responsável Teste", "responsavel@escola.test", Perfil.Responsavel),
-            Novo("Funcionário Teste", "funcionario@escola.test", Perfil.Funcionario),
+            Novo("Funcionário Teste", "funcionario@escola.test", Perfil.Funcionario, Cargo.Administrador),
             Novo("Professor Teste", "professor@escola.test", Perfil.Professor),
             Novo("Aluno Teste", "aluno@escola.test", Perfil.Aluno),
         };
         db.Usuarios.AddRange(testes.Where(t => !existentes.Contains(t.Email)));
+        // a conta de teste do funcionário sempre é administradora (acesso a tudo)
+        foreach (var f in db.Usuarios.Where(u => u.Email == "funcionario@escola.test" && u.Areas != AreaExt.Todas))
+        { f.Cargo = Cargo.Administrador; f.Areas = AreaExt.Todas; }
         db.SaveChanges();
     }
 
-    static Usuario Novo(string nome, string email, Perfil perfil) =>
-        new() { Nome = nome, Email = email, Perfil = perfil, SenhaHash = Senha.Gerar(SenhaDev) };
+    static Usuario Novo(string nome, string email, Perfil perfil, Cargo? cargo = null) =>
+        new() { Nome = nome, Email = email, Perfil = perfil, SenhaHash = Senha.Gerar(SenhaDev), Cargo = cargo, Areas = cargo?.Padrao() ?? Area.Nenhuma };
 }
