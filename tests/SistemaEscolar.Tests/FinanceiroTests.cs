@@ -124,3 +124,21 @@ public class FinanceiroTests : IDisposable
         Assert.Equal(status, m.Status);
     }
 }
+
+public class ExtensoTests
+{
+    [Theory]
+    [InlineData(1, "um real")]
+    [InlineData(0.5, "cinquenta centavos")]
+    [InlineData(300, "trezentos reais")]
+    [InlineData(100, "cem reais")]
+    [InlineData(101.01, "cento e um reais e um centavo")]
+    [InlineData(780, "setecentos e oitenta reais")]
+    [InlineData(1000, "mil reais")]
+    [InlineData(1250.5, "mil duzentos e cinquenta reais e cinquenta centavos")]
+    [InlineData(2001, "dois mil e um reais")]
+    [InlineData(21500, "vinte e um mil e quinhentos reais")]
+    [InlineData(0, "zero real")]
+    public void Valor_por_extenso(double valor, string esperado) =>
+        Assert.Equal(esperado, SistemaEscolar.Data.Extenso.Reais((decimal)valor));
+}

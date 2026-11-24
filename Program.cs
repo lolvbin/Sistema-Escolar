@@ -68,6 +68,15 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
     UsuarioSeed.Semear(db, app.Environment.IsDevelopment());
     TabelaConfiguracoes.Carregar(db);
+
+    // Dados fictícios para prints e vídeos (só em Development): dotnet run -- --demo | --demo-limpar
+    if (args.Contains("--demo") || args.Contains("--demo-limpar"))
+    {
+        Console.WriteLine(app.Environment.IsDevelopment()
+            ? DadosDemo.Executar(db, args.Contains("--demo-limpar"))
+            : "Os dados de demonstração só podem ser criados em Development.");
+        return;
+    }
 }
 
 if (!app.Environment.IsDevelopment())

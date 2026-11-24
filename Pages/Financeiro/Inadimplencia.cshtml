@@ -1,0 +1,64 @@
+@page
+@model SistemaEscolar.Pages.Financeiro.InadimplenciaModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Inadimplência"; var total = Model.Faixa30 + Model.Faixa60 + Model.FaixaMais; }
+
+<div class="barra">
+    <h1>Inadimplência</h1>
+    <span class="no-print">
+        <button type="button" class="btn btn-sec" onclick="window.print()">Imprimir</button>
+        <a class="btn btn-sec" asp-page="Index">Voltar</a>
+    </span>
+</div>
+<p class="suave">Parcelas vencidas e não pagas, com multa e juros de hoje (@DateTime.Today.ToString("dd/MM/yyyy")). Uma linha por aluno.</p>
+
+<form method="get" class="filtro no-print">
+    <select name="Ano">
+        <option value="">Todos os anos</option>
+        @foreach (var a in Matricula.AnosPermitidos) { <option value="@a" selected="@(Model.Ano == a)">@a</option> }
+    </select>
+    <select name="Faixa">
+        <option value="">Todas as faixas de atraso</option>
+        <option value="ate30" selected="@(Model.Faixa == "ate30")">Até 30 dias</option>
+        <option value="31a60" selected="@(Model.Faixa == "31a60")">31 a 60 dias</option>
+        <option value="mais60" selected="@(Model.Faixa == "mais60")">Mais de 60 dias</option>
+    </select>
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="grade resumo">
+    <div class="card"><span class="suave">Total em atraso</span><br /><strong class="grande">@Model.TotalGeral.ToString("C")</strong><br /><small class="suave">principal @Model.TotalPrincipal.ToString("C")</small></div>
+    <div class="card"><span class="suave">Alunos inadimplentes</span><br /><strong class="grande">@total</strong><br /><small class="suave">de @Model.MatriculasComCobranca matrículas com cobrança</small></div>
+    <div class="card"><span class="suave">Até 30 dias</span><br /><strong class="grande">@Model.Faixa30</strong></div>
+    <div class="card"><span class="suave">31 a 60 dias</span><br /><strong class="grande">@Model.Faixa60</strong></div>
+    <div class="card"><span class="suave">Mais de 60 dias</span><br /><strong class="grande">@Model.FaixaMais</strong></div>
+</div>
+
+<div class="card tabela">
+    @if (Model.Itens.Count == 0)
+    {
+        <div class="vazio">Nenhum aluno inadimplente.</div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Aluno</th><th>Responsável financeiro</th><th>Contato</th><th>Parcelas</th><th>Atraso</th><th>Principal</th><th>Multa e juros</th><th>Total</th><th class="no-print"></th></tr></thead>
+            <tbody>
+            @foreach (var i in Model.Itens)
+            {
+                <tr>
+                    <td>@i.Aluno<br /><small class="suave">@i.Serie, @i.Ano</small></td>
+                    <td>@i.Responsavel</td>
+                    <td>@i.Telefone<br /><small class="suave">@i.Email</small></td>
+                    <td>@i.Parcelas</td>
+                    <td>@i.DiasAtraso dias<br /><small class="suave">desde @i.MaisAntiga.ToString("dd/MM/yyyy")</small></td>
+                    <td>@i.Principal.ToString("C")</td>
+                    <td>@i.Encargos.ToString("C")</td>
+                    <td><strong>@i.Total.ToString("C")</strong></td>
+                    <td class="acoes no-print"><a asp-page="Detalhe" asp-route-id="@i.MatriculaId">Abrir</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

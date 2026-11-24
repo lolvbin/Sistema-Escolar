@@ -27,7 +27,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   Em produção: variável `ConnectionStrings__Escola`. Nunca commitar a senha
 - **Banco com EF Migrations** (`Migrations/`): `Program.cs` chama `Migrate()` na partida (cria/atualiza o banco). Mudou o modelo? `dotnet ef migrations add NomeDaMudanca` e commitar a pasta `Migrations/`. `Data/EscolaContextFactory.cs` deixa o `dotnet ef` funcionar sem subir a aplicação (lê user-secrets ou `ConnectionStrings__Escola`). Ferramenta: `dotnet tool install --global dotnet-ef --version 10.*`
 - O banco de dev compartilhado foi criado antes das migrations: ele foi "baselinado" (linha `InitialCreate` inserida em `__EFMigrationsHistory`). Banco novo = `Migrate()` cria tudo. As menções abaixo a "tabela criada por SQL em ...Preparar" são HISTÓRICAS: esses métodos foram removidos e o esquema vem das migrations
-- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 74 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
+- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 85 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
 - `docker compose up -d` sobe um PostgreSQL local (usuário/senha/banco `escola`/`escola_dev`/`escola`)
 - Ao rodar a DLL direto (sem `dotnet run`) a porta é 5000 e o ambiente é Production, sem user-secrets: definir `ASPNETCORE_ENVIRONMENT=Development`
 
@@ -127,7 +127,15 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Matrícula com pagamento registrado não pode ser excluída (cancelar em vez disso); sem pagamento, excluir leva as cobranças junto
 - `Pages/Mensalidades` (política `Responsavel`, menu "Mensalidades"): responsável vê as cobranças dos alunos ligados ao e-mail dele (acadêmico ou financeiro), só leitura
 - Atrasada = não paga e vencida antes de hoje. **Multa e juros** (`Cobranca.Encargos`): multa única de X% do valor + juros simples de Y% ao mês proporcionais aos dias (padrão 2% e 1%, configuráveis em Configurações, colunas `Configuracoes.MultaPercentual/JurosMensal`). Calculados na hora para cobranças em aberto; na baixa o valor recebido é gravado em `Cobranca.ValorPago` (histórico não muda se as taxas mudarem). Checkbox "Isentar multa e juros" na baixa. Sem desconto, sem boleto/Pix real (baixa é manual)
-- Falta: descontos/bolsas, recibo para imprimir, relatório de inadimplência, integração com pagamento online
+- **Inadimplência** (`Pages/Financeiro/Inadimplencia`, botão no Financeiro): uma linha por aluno com parcelas vencidas e não pagas, com multa e juros de hoje; filtros por ano e faixa de atraso (até 30, 31 a 60, mais de 60 dias), resumo no topo, botão Imprimir (CSS `@media print` esconde o topo e `.no-print`)
+- **Recibo** (`Pages/Financeiro/Recibo/{cobrançaId}`, link "Recibo" nas cobranças pagas do Detalhe): só de cobrança paga (senão 404), com valor por extenso (`Extenso.Reais` em `Data/Financeiro.cs`), multa e juros separados, para imprimir. Só funcionário por enquanto (responsável ainda não emite o próprio recibo)
+- Falta: descontos/bolsas, integração com pagamento online, recibo no acesso do responsável
+
+### Dados de demonstração (para prints e vídeos)
+- `dotnet run -- --demo` (só Development) cria 30 alunos fictícios (27 com matrícula Ativa em 4 turmas do ano atual: 5º A, 5º B, 8º A, 1ª série A; 3 Pendentes do ano seguinte), 6 professores (`<nome>.demo@demo.test`, senha de dev), notas dos 4 bimestres, recuperação, faltas, aulas dadas, taxa + 12 mensalidades (a maioria em dia, ~1/3 com atraso) e eventos no calendário. Código em `Data/DadosDemo.cs`
+- `dotnet run -- --demo-limpar` remove só o que o `--demo` criou (alunos com `Observacoes = "[demo]"`, professores `@demo.test`, eventos com descrição `[demo]`, turmas que ficaram vazias). Não mexe em turma que já existia
+- A primeira família usa `responsavel@escola.test` e o primeiro aluno `aluno@escola.test`, para os usuários de dev verem boletim e mensalidades
+- **Esses dados FICAM no banco de dev de propósito**: no "fim do dia" apagar só os dados de teste manuais e os usuários `@escola.test`, NÃO rodar `--demo-limpar` a menos que o usuário peça. Cobranças dependem da data de hoje: para atualizar, rodar `--demo-limpar` e `--demo`
 
 ### Pendências conhecidas
 - Alunos antigos sem matrícula (criados no fluxo anterior) ficam órfãos: matricular de novo pelo CPF ou apagar no banco

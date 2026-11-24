@@ -1,0 +1,39 @@
+@page "{id:int}"
+@model SistemaEscolar.Pages.Financeiro.ReciboModel
+@using SistemaEscolar.Data
+@{
+    ViewData["Title"] = "Recibo";
+    var c = Model.Cobranca;
+    var pago = c.ValorPago ?? c.Valor;
+    var encargos = pago - c.Valor;
+    var resp = Model.Aluno.Financeiro;
+}
+
+<div class="barra no-print">
+    <h1>Recibo</h1>
+    <span>
+        <button type="button" class="btn" onclick="window.print()">Imprimir</button>
+        <a class="btn btn-sec" asp-page="Detalhe" asp-route-id="@Model.Matricula.Id">Voltar</a>
+    </span>
+</div>
+
+<div class="card recibo">
+    <div class="recibo-topo">
+        <strong class="grande">Sistema Escolar</strong>
+        <span>Recibo nº @c.Id.ToString("000000")</span>
+    </div>
+    <p class="recibo-valor">@pago.ToString("C")</p>
+    <p>Recebemos de <strong>@resp.Nome</strong> (CPF @resp.Cpf) a quantia de <strong>@Extenso.Reais(pago)</strong>,
+        referente a <strong>@c.Descricao</strong> do(a) aluno(a) <strong>@Model.Aluno.Nome</strong>,
+        @Html.DisplayFor(_ => Model.Matricula.Serie), ano letivo @Model.Matricula.AnoLetivo.</p>
+    <table class="recibo-tab">
+        <tr><td>Vencimento</td><td>@c.Vencimento.ToString("dd/MM/yyyy")</td></tr>
+        <tr><td>Valor da cobrança</td><td>@c.Valor.ToString("C")</td></tr>
+        @if (encargos > 0) { <tr><td>Multa e juros</td><td>@encargos.ToString("C")</td></tr> }
+        <tr><td>Total recebido</td><td><strong>@pago.ToString("C")</strong></td></tr>
+        <tr><td>Data do pagamento</td><td>@c.PagoEm!.Value.ToString("dd/MM/yyyy")</td></tr>
+        <tr><td>Forma de pagamento</td><td>@Html.DisplayFor(_ => c.Forma)</td></tr>
+    </table>
+    <p class="suave">Para maior clareza, firmo o presente recibo, dando plena quitação do valor acima.</p>
+    <div class="recibo-ass"><span>Emitido em @DateTime.Today.ToString("dd/MM/yyyy")</span><span class="linha-ass">Assinatura / carimbo da escola</span></div>
+</div>

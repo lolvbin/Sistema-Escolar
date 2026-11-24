@@ -30,7 +30,7 @@ Feito para ser **leve**: HTML renderizado no servidor, quase nenhum JavaScript (
 | **Desempenho** | Consulta de notas, frequência e situação por turma e por aluno (só leitura) | Funcionário |
 | **Boletim** | Notas, recuperação, frequência e situação (aprovado, recuperação, reprovado) | Aluno e responsável |
 | **Calendário** | Grade mensal com feriados, recessos, provas e reuniões | Todos veem, funcionário cadastra |
-| **Financeiro** | Contrato, taxa e mensalidades, multa e juros, baixa de pagamentos; libera a matrícula pendente | Funcionário (responsável consulta) |
+| **Financeiro** | Contrato, taxa e mensalidades, multa e juros, baixa de pagamentos, recibo para imprimir e relatório de inadimplência; libera a matrícula pendente | Funcionário (responsável consulta) |
 | **Configurações** | Médias de aprovação e recuperação, modelo da média final, frequência mínima, multa e juros | Funcionário |
 
 ### Algumas regras de negócio
@@ -69,13 +69,22 @@ Em **Development** são criados 4 usuários de teste, todos com a senha `Escola@
 `funcionario@escola.test`, `professor@escola.test`, `aluno@escola.test` e `responsavel@escola.test`.
 Em produção eles não existem: defina a conexão pela variável `ConnectionStrings__Escola` e crie os usuários reais por outro meio.
 
+### Dados de demonstração
+
+Para ver o sistema cheio (30 alunos, turmas, notas, cobranças em dia e atrasadas), só em Development:
+
+```bash
+dotnet run -- --demo          # cria os dados fictícios
+dotnet run -- --demo-limpar   # remove só o que ele criou
+```
+
 ## ✅ Testes
 
 ```bash
 dotnet test tests/SistemaEscolar.Tests
 ```
 
-São 74 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 3 testes de integração aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
+São 85 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 3 testes de integração aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
 
 ```bash
 ESCOLA_TEST_DB="Host=localhost;Port=5432;Database=postgres;Username=escola;Password=escola_dev" dotnet test tests/SistemaEscolar.Tests
@@ -104,7 +113,7 @@ Este projeto foi desenvolvido em parceria com o **Claude Code** (IA da Anthropic
 
 ## 🗺️ Próximos passos
 
-Sala de aula real, testes de interface (páginas), recibos e relatório de inadimplência.
+Sala de aula real, recibo no acesso do responsável e testes de interface (páginas).
 
 ## 📄 Licença
 

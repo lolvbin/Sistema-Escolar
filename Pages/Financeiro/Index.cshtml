@@ -3,7 +3,10 @@
 @using SistemaEscolar.Data
 @{ ViewData["Title"] = "Financeiro"; }
 
-<div class="barra"><h1>Financeiro</h1></div>
+<div class="barra">
+    <h1>Financeiro</h1>
+    <a class="btn btn-sec" asp-page="Inadimplencia">Inadimplência</a>
+</div>
 
 <form method="get" class="filtro">
     <input name="Busca" value="@Model.Busca" placeholder="Buscar aluno ou responsável financeiro" />

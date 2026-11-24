@@ -111,6 +111,7 @@ else
                     <td>
                         @if (c.Paga)
                         {
+                            <a asp-page="Recibo" asp-route-id="@c.Id">Recibo</a>
                             <form method="post" asp-page-handler="Estornar" asp-route-id="@m.Id" asp-route-cobId="@c.Id" class="inline" onsubmit="return confirm('Desfazer este pagamento?')"><button class="link">Desfazer</button></form>
                         }
                         else

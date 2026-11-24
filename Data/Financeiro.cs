@@ -88,3 +88,47 @@ public static class RegrasFinanceiro
         return true;
     }
 }
+
+// Valor por extenso para o recibo (pt-BR), até 999.999,99.
+public static class Extenso
+{
+    static readonly string[] Centenas = { "", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos" };
+    static readonly string[] Ate19 = { "", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove" };
+    static readonly string[] Dezenas = { "", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa" };
+
+    static string Ate999(int n)
+    {
+        if (n == 0) return "";
+        if (n == 100) return "cem";
+        var partes = new List<string>();
+        int c = n / 100, r = n % 100;
+        if (c > 0) partes.Add(Centenas[c]);
+        if (r > 0)
+        {
+            if (r < 20) partes.Add(Ate19[r]);
+            else { partes.Add(Dezenas[r / 10]); if (r % 10 > 0) partes.Add(Ate19[r % 10]); }
+        }
+        return string.Join(" e ", partes);
+    }
+
+    static string Inteiro(int n)
+    {
+        if (n < 1000) return Ate999(n);
+        int mil = n / 1000, resto = n % 1000;
+        var m = mil == 1 ? "mil" : Ate999(mil) + " mil";
+        if (resto == 0) return m;
+        return m + (resto < 100 || resto % 100 == 0 ? " e " : " ") + Ate999(resto);
+    }
+
+    /// <summary>Ex.: 1250,50 → "mil duzentos e cinquenta reais e cinquenta centavos". Vazio se passar de 999.999,99.</summary>
+    public static string Reais(decimal valor)
+    {
+        valor = Math.Round(valor, 2, MidpointRounding.AwayFromZero);
+        if (valor < 0 || valor >= 1_000_000) return "";
+        int reais = (int)valor, cent = (int)((valor - reais) * 100);
+        var partes = new List<string>();
+        if (reais > 0) partes.Add(Inteiro(reais) + (reais == 1 ? " real" : " reais"));
+        if (cent > 0) partes.Add(Inteiro(cent) + (cent == 1 ? " centavo" : " centavos"));
+        return partes.Count == 0 ? "zero real" : string.Join(" e ", partes);
+    }
+}
