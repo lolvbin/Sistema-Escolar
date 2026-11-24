@@ -134,6 +134,11 @@ namespace SistemaEscolar.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Endereco")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
                     b.Property<decimal>("FrequenciaMinima")
                         .HasPrecision(4, 1)
                         .HasColumnType("numeric(4,1)");
@@ -157,6 +162,16 @@ namespace SistemaEscolar.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)");
 
+                    b.Property<string>("NomeEscola")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("Telefone")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Configuracoes", (string)null);
@@ -165,12 +180,15 @@ namespace SistemaEscolar.Migrations
                         new
                         {
                             Id = 1,
+                            Endereco = "",
                             FrequenciaMinima = 75.0m,
                             JurosMensal = 1.0m,
                             MediaMinima = 6.0m,
                             MediaRecuperacao = 4.0m,
                             ModoRecuperacao = 0,
-                            MultaPercentual = 2.0m
+                            MultaPercentual = 2.0m,
+                            NomeEscola = "Sistema Escolar",
+                            Telefone = ""
                         });
                 });
 

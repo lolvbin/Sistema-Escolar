@@ -8,7 +8,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Sistema Escolar</title>
+    <title>@ViewData["Title"] - @SistemaEscolar.Data.Escola.Nome</title>
     <script>
         // Aplica o tema antes de renderizar (evita piscar)
         (function () {
@@ -23,7 +23,7 @@
 <body>
     <header class="topo">
         <div class="wrap topo-in">
-            <a class="marca" asp-page="/Index">@if (logo != null) { <img src="@logo" alt="" /> }<span>Sistema Escolar</span></a>
+            <a class="marca" asp-page="/Index">@if (logo != null) { <img src="@logo" alt="" /> }<span>@SistemaEscolar.Data.Escola.Nome</span></a>
             <span class="menu"></span>
             @if (User.Identity?.IsAuthenticated == true)
             {

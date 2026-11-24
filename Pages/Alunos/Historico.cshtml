@@ -12,7 +12,8 @@
 </div>
 
 <div class="doc">
-    <div class="doc-topo"><strong class="grande">Sistema Escolar</strong><span>Histórico escolar</span></div>
+    <div class="doc-topo"><strong class="grande">@Escola.Nome</strong><span>Histórico escolar</span></div>
+@if (Escola.Contato != "") { <p class="suave doc-contato">@Escola.Contato</p> }
     <p>Aluno(a): <strong>@a.Nome</strong> &middot; CPF @a.Cpf &middot; Nascimento @a.DataNascimento?.ToString("dd/MM/yyyy")</p>
 
     @foreach (var an in Model.Anos)

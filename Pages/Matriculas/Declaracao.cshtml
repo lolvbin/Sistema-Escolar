@@ -24,7 +24,8 @@
 else
 {
     <div class="doc">
-        <div class="doc-topo"><strong class="grande">Sistema Escolar</strong><span>Declaração nº @m.Id.ToString("000000")</span></div>
+        <div class="doc-topo"><strong class="grande">@Escola.Nome</strong><span>Declaração nº @m.Id.ToString("000000")</span></div>
+@if (Escola.Contato != "") { <p class="suave doc-contato">@Escola.Contato</p> }
         <h2 class="doc-titulo">DECLARAÇÃO DE MATRÍCULA</h2>
         <p class="doc-texto">Declaramos, para os devidos fins, que <strong>@a.Nome</strong>, nascido(a) em @a.DataNascimento?.ToString("dd/MM/yyyy"),
             CPF @a.Cpf, encontra-se regularmente matriculado(a) nesta instituição no ano letivo de <strong>@m.AnoLetivo</strong>,

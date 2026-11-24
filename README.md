@@ -87,7 +87,7 @@ dotnet run -- --demo-limpar   # remove só o que ele criou
 dotnet test tests/SistemaEscolar.Tests
 ```
 
-São 108 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 6 testes de integração (3 conferem, página a página, o que cada perfil e cargo pode abrir) aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
+São 115 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 6 testes de integração (3 conferem, página a página, o que cada perfil e cargo pode abrir) aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
 
 ```bash
 ESCOLA_TEST_DB="Host=localhost;Port=5432;Database=postgres;Username=escola;Password=escola_dev" dotnet test tests/SistemaEscolar.Tests

@@ -23,10 +23,17 @@ public class ConfiguracoesModel : PageModel
     public string? ErroFrequencia { get; set; }
     public string? ErroMinima { get; set; }
     public string? ErroRecuperacao { get; set; }
+    [BindProperty] public string? NomeEscola { get; set; }
+    [BindProperty] public string? Endereco { get; set; }
+    [BindProperty] public string? Telefone { get; set; }
+    public string? ErroNome { get; set; }
+    public string? ErroEndereco { get; set; }
+    public string? ErroTelefone { get; set; }
     [TempData] public string? Aviso { get; set; }
 
     public void OnGet()
     {
+        NomeEscola = Escola.Nome; Endereco = Escola.Endereco; Telefone = Escola.Telefone;
         Minima = Aprovacao.MediaMinima.ToString("0.0", CultureInfo.CurrentCulture);
         Recuperacao = Aprovacao.MediaRecuperacao.ToString("0.0", CultureInfo.CurrentCulture);
         Frequencia = Aprovacao.FrequenciaMinima.ToString("0.0", CultureInfo.CurrentCulture);
@@ -57,7 +64,10 @@ public class ConfiguracoesModel : PageModel
             rec = Math.Round(rec, 1, MidpointRounding.AwayFromZero);
             if (rec >= min) ErroRecuperacao = "Deve ser menor que a média de aprovação";
         }
-        if (ErroMinima != null || ErroRecuperacao != null || ErroFrequencia != null || ErroMulta != null || ErroJuros != null) return Page();
+        ErroNome = Escola.ValidarNome(NomeEscola);
+        if ((Endereco ?? "").Trim().Length > 150) ErroEndereco = "Use no máximo 150 caracteres";
+        if ((Telefone ?? "").Trim().Length > 30) ErroTelefone = "Use no máximo 30 caracteres";
+        if (ErroNome != null || ErroEndereco != null || ErroTelefone != null || ErroMinima != null || ErroRecuperacao != null || ErroFrequencia != null || ErroMulta != null || ErroJuros != null) return Page();
         multa = Math.Round(multa, 2, MidpointRounding.AwayFromZero);
         juros = Math.Round(juros, 2, MidpointRounding.AwayFromZero);
         freq = Math.Round(freq, 1, MidpointRounding.AwayFromZero);
@@ -72,6 +82,11 @@ public class ConfiguracoesModel : PageModel
         Dif("modelo de recuperação", c.ModoRecuperacao, Modo);
         Dif("multa %", c.MultaPercentual.ToString("0.##", cult), multa.ToString("0.##", cult));
         Dif("juros %/mês", c.JurosMensal.ToString("0.##", cult), juros.ToString("0.##", cult));
+        var nome = NomeEscola!.Trim(); var end = (Endereco ?? "").Trim(); var tel = (Telefone ?? "").Trim();
+        Dif("nome da escola", c.NomeEscola, nome);
+        Dif("endereço", c.Endereco, end);
+        Dif("telefone", c.Telefone, tel);
+        c.NomeEscola = nome; c.Endereco = end; c.Telefone = tel;
         if (mud.Count > 0) _db.Registrar(User, Auditoria.Configuracoes, string.Join("; ", mud));
         c.MediaMinima = min;
         c.MediaRecuperacao = rec;
@@ -86,6 +101,7 @@ public class ConfiguracoesModel : PageModel
         Aprovacao.Modo = (ModoRecuperacao)Modo;
         RegrasFinanceiro.MultaPercentual = multa;
         RegrasFinanceiro.JurosMensalPercentual = juros;
+        Escola.Nome = nome; Escola.Endereco = end; Escola.Telefone = tel;
 
         Aviso = "Configurações salvas. A nova regra vale para todos os boletins.";
         return RedirectToPage();

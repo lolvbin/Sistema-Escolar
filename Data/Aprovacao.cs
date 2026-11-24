@@ -86,6 +86,28 @@ public class Configuracao
     public int ModoRecuperacao { get; set; }
     public decimal MultaPercentual { get; set; } = 2.0m;
     public decimal JurosMensal { get; set; } = 1.0m;
+    [System.ComponentModel.DataAnnotations.MaxLength(80)] public string NomeEscola { get; set; } = "Sistema Escolar";
+    [System.ComponentModel.DataAnnotations.MaxLength(150)] public string Endereco { get; set; } = "";
+    [System.ComponentModel.DataAnnotations.MaxLength(30)] public string Telefone { get; set; } = "";
+}
+
+/// <summary>Identificação da escola (topo, recibo, declaração, histórico). Carregada na partida e atualizada ao salvar.</summary>
+public static class Escola
+{
+    public static string Nome { get; set; } = "Sistema Escolar";
+    public static string Endereco { get; set; } = "";
+    public static string Telefone { get; set; } = "";
+    /// <summary>"Rua X, 10 · (31) 3333-4444" ou vazio.</summary>
+    public static string Contato => string.Join(" · ", new[] { Endereco, Telefone }.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+    /// <summary>Nome válido: 2 a 80 caracteres (sem espaços nas pontas). Devolve a mensagem de erro ou null.</summary>
+    public static string? ValidarNome(string? nome)
+    {
+        var n = (nome ?? "").Trim();
+        if (n.Length < 2) return "Informe o nome da escola";
+        if (n.Length > 80) return "Use no máximo 80 caracteres";
+        return null;
+    }
 }
 
 public static class TabelaConfiguracoes
@@ -100,5 +122,8 @@ public static class TabelaConfiguracoes
         Aprovacao.Modo = (ModoRecuperacao)c.ModoRecuperacao;
         RegrasFinanceiro.MultaPercentual = c.MultaPercentual;
         RegrasFinanceiro.JurosMensalPercentual = c.JurosMensal;
+        Escola.Nome = c.NomeEscola;
+        Escola.Endereco = c.Endereco;
+        Escola.Telefone = c.Telefone;
     }
 }

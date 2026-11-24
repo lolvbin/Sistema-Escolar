@@ -184,3 +184,5 @@ button.link { background: none; border: 0; padding: 0; margin-right: 10px; font:
     .doc { border: 0; padding: 0; max-width: none; }
     .tabela table, .tabela th, .tabela td { color: #000; }
 }
+
+.doc-contato { margin: -8px 0 12px; }

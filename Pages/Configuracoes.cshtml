@@ -7,6 +7,25 @@
 @if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
 
 <form method="post" class="card" novalidate>
+    <h2>Escola</h2>
+    <p class="suave">Aparece no topo do sistema e nos documentos impressos (recibo, declaração, histórico, boletim).</p>
+    <div class="grade">
+        <div class="campo">
+            <label for="NomeEscola">Nome da escola</label>
+            <input id="NomeEscola" name="NomeEscola" value="@Model.NomeEscola" maxlength="80" autocomplete="off" />
+            @if (Model.ErroNome != null) { <span class="erro">@Model.ErroNome</span> }
+        </div>
+        <div class="campo">
+            <label for="Endereco">Endereço (opcional)</label>
+            <input id="Endereco" name="Endereco" value="@Model.Endereco" maxlength="150" autocomplete="off" />
+            @if (Model.ErroEndereco != null) { <span class="erro">@Model.ErroEndereco</span> }
+        </div>
+        <div class="campo">
+            <label for="Telefone">Telefone (opcional)</label>
+            <input id="Telefone" name="Telefone" value="@Model.Telefone" maxlength="30" autocomplete="off" />
+            @if (Model.ErroTelefone != null) { <span class="erro">@Model.ErroTelefone</span> }
+        </div>
+    </div>
     <h2>Aprovação</h2>
     <div class="grade">
         <div class="campo">
