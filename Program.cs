@@ -121,3 +121,4 @@ app.MapStaticAssets().AllowAnonymous(); // css/js precisam carregar na tela de l
 app.MapRazorPages().WithStaticAssets();
 
 app.Run();
+public partial class Program { }

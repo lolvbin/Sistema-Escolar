@@ -27,7 +27,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   Em produção: variável `ConnectionStrings__Escola`. Nunca commitar a senha
 - **Banco com EF Migrations** (`Migrations/`): `Program.cs` chama `Migrate()` na partida (cria/atualiza o banco). Mudou o modelo? `dotnet ef migrations add NomeDaMudanca` e commitar a pasta `Migrations/`. `Data/EscolaContextFactory.cs` deixa o `dotnet ef` funcionar sem subir a aplicação (lê user-secrets ou `ConnectionStrings__Escola`). Ferramenta: `dotnet tool install --global dotnet-ef --version 10.*`
 - O banco de dev compartilhado foi criado antes das migrations: ele foi "baselinado" (linha `InitialCreate` inserida em `__EFMigrationsHistory`). Banco novo = `Migrate()` cria tudo. As menções abaixo a "tabela criada por SQL em ...Preparar" são HISTÓRICAS: esses métodos foram removidos e o esquema vem das migrations
-- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 108 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
+- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 108 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 6 testes de integração usam PostgreSQL real (criam e apagam um banco temporário; 3 de migrations/modelo e 3 de **permissão por HTTP** em `PermissaoTests`, que sobem o app com `WebApplicationFactory` e conferem página × perfil/cargo, POST barrado e sessão revogada) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
 - `docker compose up -d` sobe um PostgreSQL local (usuário/senha/banco `escola`/`escola_dev`/`escola`)
 - Ao rodar a DLL direto (sem `dotnet run`) a porta é 5000 e o ambiente é Production, sem user-secrets: definir `ASPNETCORE_ENVIRONMENT=Development`
 
@@ -172,7 +172,7 @@ Lista viva: acrescentar aqui todo limite novo que aparecer e riscar o que for re
 - Funcionários: sem permissão de só leitura dentro de uma área; cargos fixos no código (não há cadastro de cargos); lista de sessões revogadas fica em memória; log de ações só cobre as operações listadas em "Registro de ações"
 - Financeiro: baixa manual (sem boleto/Pix real), sem descontos/bolsas, sem integração de pagamento online; recibo só no acesso do funcionário (responsável não emite o próprio); nome da escola fixo "Sistema Escolar" no recibo
 - Dados de demonstração: cobranças dependem da data de hoje (refazer com `--demo-limpar` e `--demo`)
-- Testes: não há testes de páginas (integração das telas); só regras puras e 3 de banco
+- Testes: a matriz de permissões está em `PermissaoTests.Matriz`: página nova = acrescentar a linha lá. Não há testes do conteúdo/fluxo das telas (só quem pode abrir)
 - Publicação: logo atual provisória (fundo branco no tema escuro); prints com a barra do navegador; e-mail pessoal visível no histórico de commits (avaliar noreply do GitHub)
 - Sala de aula: sem editar publicação (só excluir e refazer), sem anexos/upload, sem entrega de atividade pelo aluno, sem comentários, sem aviso de nova publicação, sem horário/grade semanal; o aluno vê só a turma da matrícula mais recente; mural limitado às 100 publicações mais novas
 
