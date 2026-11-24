@@ -97,7 +97,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - `Pages/Boletim` para Aluno e Responsável (política `Boletim`, menu "Boletim"): disciplinas da turma × 4 bimestres + média das notas já lançadas (sem regra de aprovação ainda). Mostra a matrícula mais recente com turma
 - Ligação: aluno por `Aluno.UsuarioId` (coluna criada em `TabelaNotas.Preparar`); responsável pelo **e-mail** (acadêmico ou financeiro) igual ao do login. Só vê os próprios alunos
 - Funcionário cria os acessos em `Alunos/Edit` ("Acessos ao sistema"): aluno (informa e-mail) e responsável (e-mail já cadastrado); senha provisória mostrada uma vez
-- Falta: visão do funcionário/professor, trocar a própria senha
+- (Visão do funcionário e troca de senha: feitos, ver Desempenho e Login e perfis)
 
 ### Desempenho (visão do funcionário, testado no navegador)
 - `Pages/Desempenho/` só Funcionário (cartão "Notas e frequência"), só leitura: `Index` (turmas com filtro ano/série), `Turma/{id}` (alunos × disciplinas com média final, frequência geral e situação) e `Aluno/{matrículaId}` (boletim completo do aluno)
@@ -179,10 +179,11 @@ Lista viva: acrescentar aqui todo limite novo que aparecer e riscar o que for re
 - Acesso: sem "esqueci minha senha" por e-mail (só o funcionário gera outra provisória); limite de tentativas de login fica em memória (reiniciar zera)
 - Configurações (aprovação, frequência, multa e juros) ficam em propriedades estáticas: serve a uma instância só
 - Notas e frequência: sem abono/justificativa de faltas, sem chamada diária (só total de faltas por bimestre), sem regra de recuperação por bimestre
-- Desempenho (funcionário): sem exportação/impressão; professor só vê o que lança
+- Desempenho (funcionário): impressão do boletim feita, sem exportação para planilha; professor só vê o que lança
 - Calendário: sem eventos por turma/série, sem ligar provas às turmas, sem início/fim dos bimestres
 - Funcionários: sem permissão de só leitura dentro de uma área; cargos fixos no código (não há cadastro de cargos); lista de sessões revogadas fica em memória; log de ações só cobre as operações listadas em "Registro de ações"
 - Financeiro: baixa manual (sem boleto/Pix real), sem descontos/bolsas, sem integração de pagamento online; recibo só no acesso do funcionário (responsável não emite o próprio); logo só por arquivo; sem CNPJ nos documentos
+- Deploy: sem CI (build/testes no push), sem monitoramento além do log; uma instância só (estado em memória); guia em `docs/DEPLOY.md`
 - Dados de demonstração: cobranças dependem da data de hoje (refazer com `--demo-limpar` e `--demo`)
 - Testes: a matriz de permissões está em `PermissaoTests.Matriz`: página nova = acrescentar a linha lá. Não há testes do conteúdo/fluxo das telas (só quem pode abrir)
 - Publicação: logo atual provisória (fundo branco no tema escuro); prints com a barra do navegador; e-mail pessoal visível no histórico de commits (avaliar noreply do GitHub)
