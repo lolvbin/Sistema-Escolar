@@ -63,6 +63,7 @@ public class DetalheModel : PageModel
             lista.Add(new Cobranca { MatriculaId = id, Tipo = TipoCobranca.Mensalidade, Numero = i, Descricao = $"Mensalidade {i:00}/{Parcelas:00} ({v:MM/yyyy})", Vencimento = v, Valor = mens });
         }
         _db.Cobrancas.AddRange(lista);
+        _db.Registrar(User, Auditoria.Cobrancas, $"Gerou {lista.Count} cobranças (mensalidade {mens:C}, taxa {taxa:C}) para {Matricula.Aluno?.Nome} (matrícula {id})");
         await _db.SaveChangesAsync();
         Aviso = $"{lista.Count} cobranças geradas.";
         return RedirectToPage(new { id });
@@ -73,6 +74,7 @@ public class DetalheModel : PageModel
     {
         var abertas = await _db.Cobrancas.Where(c => c.MatriculaId == id && c.PagoEm == null).ToListAsync();
         _db.Cobrancas.RemoveRange(abertas);
+        _db.Registrar(User, Auditoria.Cobrancas, $"Apagou {abertas.Count} cobranças em aberto da matrícula {id}");
         await _db.SaveChangesAsync();
         Aviso = $"{abertas.Count} cobranças em aberto apagadas.";
         return RedirectToPage(new { id });
@@ -90,6 +92,7 @@ public class DetalheModel : PageModel
         c.PagoEm = data.Date;
         c.Forma = forma;
         c.ValorPago = isentar ? c.Valor : c.ValorAtualizado(data);
+        _db.Registrar(User, Auditoria.Pagamento, $"Baixa: {c.Descricao} (matrícula {id}), recebido {c.ValorPago:C} em {data:dd/MM/yyyy} por {forma}{(isentar ? ", multa e juros isentos" : "")}");
         await _db.SaveChangesAsync();
         Aviso = $"Pagamento registrado: {c.Descricao}, recebido {c.ValorPago:C}.";
         await Liberar(id);
@@ -102,7 +105,9 @@ public class DetalheModel : PageModel
         if (c == null) return NotFound();
         c.PagoEm = null;
         c.Forma = null;
+        var valorAntes = c.ValorPago;
         c.ValorPago = null;
+        _db.Registrar(User, Auditoria.Pagamento, $"Estorno: {c.Descricao} (matrícula {id}), valor {valorAntes:C} voltou para em aberto");
         await _db.SaveChangesAsync();
         Aviso = "Pagamento desfeito. (Se a matrícula já tinha sido liberada, o status não volta sozinho.)";
         return RedirectToPage(new { id });
@@ -115,6 +120,7 @@ public class DetalheModel : PageModel
         if (string.IsNullOrWhiteSpace(assinadoEm)) { m.ContratoAssinadoEm = null; Aviso = "Assinatura do contrato removida."; }
         else if (RegrasFinanceiro.LerData(assinadoEm, out var d) && d.Date <= DateTime.Today) { m.ContratoAssinadoEm = d.Date; Aviso = "Contrato registrado como assinado."; }
         else { Erro = "Data do contrato inválida (dd/mm/aaaa, não pode ser no futuro)."; return RedirectToPage(new { id }); }
+        _db.Registrar(User, Auditoria.Contrato, m.ContratoAssinadoEm == null ? $"Removeu a assinatura do contrato (matrícula {id})" : $"Contrato assinado em {m.ContratoAssinadoEm:dd/MM/yyyy} (matrícula {id})");
         await _db.SaveChangesAsync();
         await Liberar(id);
         return RedirectToPage(new { id });
@@ -125,7 +131,7 @@ public class DetalheModel : PageModel
     {
         var m = await _db.Matriculas.FindAsync(id);
         if (m == null) return NotFound();
-        if (m.Status == StatusMatricula.Pendente) { m.Status = StatusMatricula.Ativa; await _db.SaveChangesAsync(); Aviso = "Matrícula liberada manualmente (Ativa)."; }
+        if (m.Status == StatusMatricula.Pendente) { m.Status = StatusMatricula.Ativa; _db.Registrar(User, Auditoria.Matricula, $"Liberou manualmente a matrícula {id} (Pendente → Ativa)"); await _db.SaveChangesAsync(); Aviso = "Matrícula liberada manualmente (Ativa)."; }
         return RedirectToPage(new { id });
     }
 
@@ -136,6 +142,7 @@ public class DetalheModel : PageModel
         var cobs = await _db.Cobrancas.AsNoTracking().Where(c => c.MatriculaId == id).ToListAsync();
         if (m != null && RegrasFinanceiro.TentarLiberar(m, cobs))
         {
+            _db.Registrar(User, Auditoria.Matricula, $"Matrícula {id} liberada automaticamente (contrato assinado e taxa paga)");
             await _db.SaveChangesAsync();
             Aviso += " Contrato assinado e taxa paga: matrícula liberada (Ativa).";
         }

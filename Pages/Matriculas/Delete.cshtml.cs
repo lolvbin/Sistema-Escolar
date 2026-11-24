@@ -33,6 +33,7 @@ public class DeleteModel : PageModel
         if (m != null)
         {
             _db.Matriculas.Remove(m);
+            _db.Registrar(User, Auditoria.Matricula, $"Excluiu a matrícula {id} de {m.Aluno?.Nome} ({m.Serie}, {m.AnoLetivo})");
             await _db.SaveChangesAsync();
 
             // Aluno só existe com matrícula: se não sobrou nenhuma, remove o aluno também.

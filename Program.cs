@@ -17,6 +17,7 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizePage("/Calendario/Evento", "Area:Calendario"); // todos veem o calendário; só quem tem a área cadastra
     o.Conventions.AuthorizePage("/Configuracoes", "Area:Configuracoes");
     o.Conventions.AuthorizeFolder("/Usuarios", "Area:Usuarios");
+    o.Conventions.AuthorizeFolder("/Log", "Area:Configuracoes");
     o.Conventions.AllowAnonymousToPage("/PrimeiroAcesso");
     o.Conventions.AuthorizePage("/Mensalidades", "Responsavel");
     // Notas: lançamento só pelo professor

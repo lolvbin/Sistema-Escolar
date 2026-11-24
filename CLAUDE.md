@@ -27,7 +27,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   Em produção: variável `ConnectionStrings__Escola`. Nunca commitar a senha
 - **Banco com EF Migrations** (`Migrations/`): `Program.cs` chama `Migrate()` na partida (cria/atualiza o banco). Mudou o modelo? `dotnet ef migrations add NomeDaMudanca` e commitar a pasta `Migrations/`. `Data/EscolaContextFactory.cs` deixa o `dotnet ef` funcionar sem subir a aplicação (lê user-secrets ou `ConnectionStrings__Escola`). Ferramenta: `dotnet tool install --global dotnet-ef --version 10.*`
 - O banco de dev compartilhado foi criado antes das migrations: ele foi "baselinado" (linha `InitialCreate` inserida em `__EFMigrationsHistory`). Banco novo = `Migrate()` cria tudo. As menções abaixo a "tabela criada por SQL em ...Preparar" são HISTÓRICAS: esses métodos foram removidos e o esquema vem das migrations
-- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 103 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
+- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 108 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
 - `docker compose up -d` sobe um PostgreSQL local (usuário/senha/banco `escola`/`escola_dev`/`escola`)
 - Ao rodar a DLL direto (sem `dotnet run`) a porta é 5000 e o ambiente é Production, sem user-secrets: definir `ASPNETCORE_ENVIRONMENT=Development`
 
@@ -149,6 +149,12 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Política `SalaDeAula` = Professor, Aluno e Responsável (cartão "Sala de aula" nos três); `/SalaDeAula/Turma` exige Professor. `Acessos.AlunosDoUsuario` (em `Data/Publicacao.cs`) acha os alunos do aluno/responsável logado e o Boletim usa o mesmo
 - Falta: ver limites abaixo
 
+### Registro de ações (log de auditoria, testado no navegador)
+- `Data/Auditoria.cs`: entidade `RegistroLog` (tabela `Registros`, migration `RegistroDeAcoes`: quando, usuário id/nome, ação, detalhe) e extensão `db.Registrar(User, Auditoria.X, "texto")`, que só adiciona ao contexto: grava no mesmo `SaveChanges` da ação (se der erro, nem a ação nem o log). Sem FK para usuário (o registro sobrevive a ele)
+- Registra: baixa/estorno de pagamento, gerar/apagar cobranças, contrato assinado/removido, liberação manual e automática da matrícula, alterar/excluir matrícula, **notas alteradas** (só o que mudou, "aluno: 7,0 → 8,5"), mudanças de Configurações (antes → depois), funcionário criado/editado, nova senha provisória (funcionário e professor), inativar/reativar professor, criar acesso de aluno/responsável
+- `Pages/Log/Index`: só quem tem a área Configurações (administrador); filtros por ação, texto, período; mostra os 200 mais recentes; sem editar/apagar. Cartão "Registro de ações" na tela inicial
+- Falta: registrar frequência/faltas e publicações da sala de aula; login/logout e tentativas bloqueadas; exportar; política de retenção (nunca apaga)
+
 ### Dados de demonstração (para prints e vídeos)
 - `dotnet run -- --demo` (só Development) cria 30 alunos fictícios (27 com matrícula Ativa em 4 turmas do ano atual: 5º A, 5º B, 8º A, 1ª série A; 3 Pendentes do ano seguinte), 6 professores (`<nome>.demo@demo.test`, senha de dev), notas dos 4 bimestres, recuperação, faltas, aulas dadas, taxa + 12 mensalidades (a maioria em dia, ~1/3 com atraso) e eventos no calendário. Código em `Data/DadosDemo.cs`
 - `dotnet run -- --demo-limpar` remove só o que o `--demo` criou (alunos com `Observacoes = "[demo]"`, professores `@demo.test`, eventos com descrição `[demo]`, turmas que ficaram vazias). Não mexe em turma que já existia
@@ -163,7 +169,7 @@ Lista viva: acrescentar aqui todo limite novo que aparecer e riscar o que for re
 - Notas e frequência: sem abono/justificativa de faltas, sem chamada diária (só total de faltas por bimestre), sem regra de recuperação por bimestre
 - Desempenho (funcionário): sem exportação/impressão; professor só vê o que lança
 - Calendário: sem eventos por turma/série, sem ligar provas às turmas, sem início/fim dos bimestres
-- Funcionários: sem permissão de só leitura dentro de uma área; cargos fixos no código (não há cadastro de cargos); lista de sessões revogadas fica em memória; sem log de quem fez o quê (item planejado: registro de ações sensíveis)
+- Funcionários: sem permissão de só leitura dentro de uma área; cargos fixos no código (não há cadastro de cargos); lista de sessões revogadas fica em memória; log de ações só cobre as operações listadas em "Registro de ações"
 - Financeiro: baixa manual (sem boleto/Pix real), sem descontos/bolsas, sem integração de pagamento online; recibo só no acesso do funcionário (responsável não emite o próprio); nome da escola fixo "Sistema Escolar" no recibo
 - Dados de demonstração: cobranças dependem da data de hoje (refazer com `--demo-limpar` e `--demo`)
 - Testes: não há testes de páginas (integração das telas); só regras puras e 3 de banco

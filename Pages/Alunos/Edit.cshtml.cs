@@ -64,7 +64,9 @@ public class EditModel : PageModel
         var u = new Usuario { Nome = nome, Email = email, Perfil = perfil, SenhaHash = Senha.Gerar(senha), DeveTrocarSenha = true };
         _db.Usuarios.Add(u);
         await _db.SaveChangesAsync();
-        if (perfil == Perfil.Aluno) { a.UsuarioId = u.Id; await _db.SaveChangesAsync(); }
+        if (perfil == Perfil.Aluno) a.UsuarioId = u.Id;
+        _db.Registrar(User, Auditoria.Acesso, $"Criou acesso de {perfil} ({email}) para o aluno {a.Nome}");
+        await _db.SaveChangesAsync();
 
         Aviso = $"Acesso criado: {email}. Senha provisória (anote, só aparece agora): {senha}";
         return RedirectToPage(new { id });

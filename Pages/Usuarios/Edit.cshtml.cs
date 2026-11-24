@@ -58,6 +58,8 @@ public class EditModel : PageModel
         if (!ModelState.IsValid) return Page();
 
         var mudouAcesso = u.Areas != Input.Areas || u.Ativo != Input.Ativo || u.Email != Input.Email;
+        _db.Registrar(User, Auditoria.Usuarios,
+            $"Editou {u.Nome} ({u.Email}): áreas {u.Areas.Resumo()} → {Input.Areas.Resumo()}; ativo {u.Ativo} → {Input.Ativo}" + (u.Email != Input.Email ? $"; e-mail → {Input.Email}" : ""));
         u.Nome = Input.Nome!; u.Email = Input.Email!; u.Cargo = Input.Cargo; u.Areas = Input.Areas; u.Ativo = Input.Ativo;
         await _db.SaveChangesAsync();
 
@@ -80,6 +82,7 @@ public class EditModel : PageModel
         var senha = Senha.Provisoria();
         u.SenhaHash = Senha.Gerar(senha);
         u.DeveTrocarSenha = true;
+        _db.Registrar(User, Auditoria.Acesso, $"Gerou nova senha provisória para o funcionário {u.Nome} ({u.Email})");
         await _db.SaveChangesAsync();
         Sessoes.Revogar(u.Id);
         TempData["Aviso"] = $"Nova senha provisória de {u.Nome}: {senha} (mostrada só agora)";

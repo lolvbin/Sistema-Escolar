@@ -129,9 +129,12 @@ public class LancarModel : PageModel
         var atuais = await _db.Notas
             .Where(n => n.DisciplinaId == DisciplinaId && n.Bimestre == Bim && ids.Contains(n.MatriculaId))
             .ToDictionaryAsync(n => n.MatriculaId);
+        var mudancas = new List<string>();
         foreach (var (mid, valor) in novos)
         {
             atuais.TryGetValue(mid, out var n);
+            if (n?.Valor != valor)
+                mudancas.Add(Auditoria.MudancaNota(Alunos.First(a => a.Id == mid).Aluno?.Nome ?? $"matrícula {mid}", n?.Valor, valor));
             if (valor == null) { if (n != null) _db.Notas.Remove(n); }
             else if (n == null) _db.Notas.Add(new Nota { MatriculaId = mid, DisciplinaId = DisciplinaId, Bimestre = Bim, Valor = valor.Value });
             else n.Valor = valor.Value;
@@ -154,6 +157,9 @@ public class LancarModel : PageModel
             else if (a == null) _db.Aulas.Add(new AulasDadas { TurmaId = TurmaId, DisciplinaId = DisciplinaId, Bimestre = Bim, Aulas = aulas });
             else a.Aulas = aulas;
         }
+        if (mudancas.Count > 0)
+            _db.Registrar(User, Auditoria.Notas,
+                $"{Disciplina.Nome}, {(Recup ? "recuperação" : Bim + "º bim.")}: {string.Join("; ", mudancas)}");
         await _db.SaveChangesAsync();
 
         Aviso = Recup ? "Notas de recuperação salvas." : $"Dados do {Bim}º bimestre salvos.";

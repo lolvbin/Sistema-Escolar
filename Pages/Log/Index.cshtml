@@ -1,0 +1,43 @@
+@page
+@model SistemaEscolar.Pages.Log.IndexModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Registro de ações"; }
+
+<div class="barra"><h1>Registro de ações</h1></div>
+<p class="suave">Quem fez o quê nas operações sensíveis (pagamentos, notas, matrículas, configurações, acessos). Só leitura; os registros não podem ser apagados pelo sistema.</p>
+
+<form method="get" class="filtro">
+    <input name="Busca" value="@Model.Busca" placeholder="Buscar (pessoa, aluno, texto)" />
+    <select name="Acao">
+        <option value="">Todas as ações</option>
+        @foreach (var a in Auditoria.Acoes) { <option value="@a" selected="@(Model.Acao == a)">@a</option> }
+    </select>
+    <input name="De" value="@Model.De" placeholder="De (dd/mm/aaaa)" data-mask="data" size="12" />
+    <input name="Ate" value="@Model.Ate" placeholder="Até (dd/mm/aaaa)" data-mask="data" size="12" />
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="card tabela">
+    @if (Model.Itens.Count == 0)
+    {
+        <div class="vazio">Nenhum registro.</div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Detalhe</th></tr></thead>
+            <tbody>
+            @foreach (var r in Model.Itens)
+            {
+                <tr>
+                    <td>@r.Em.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@r.UsuarioNome</td>
+                    <td>@r.Acao</td>
+                    <td>@r.Detalhe</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+@if (Model.Cortou) { <p class="suave">Mostrando os 200 registros mais recentes. Use os filtros para achar os mais antigos.</p> }

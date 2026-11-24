@@ -40,6 +40,9 @@ public class EditModel : PageModel
         if (!ModelState.IsValid) return Page();
 
         // Atualiza só os campos editáveis (o aluno, o Id e a DataMatricula não mudam)
+        var antes = $"{m.Status}, {m.Serie}, {m.Turno}, {m.AnoLetivo}";
+        var depois = $"{Matricula.Status}, {Matricula.Serie}, {Matricula.Turno}, {Matricula.AnoLetivo}";
+        if (antes != depois) _db.Registrar(User, Auditoria.Matricula, $"Alterou matrícula {id} de {m.Aluno?.Nome}: {antes} → {depois}");
         m.Serie = Matricula.Serie;
         m.Turno = Matricula.Turno;
         m.AnoLetivo = Matricula.AnoLetivo;

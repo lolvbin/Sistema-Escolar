@@ -36,6 +36,7 @@ public class IndexModel : PageModel
 
         p.Ativo = !p.Ativo;
         if (p.Usuario != null) p.Usuario.Ativo = p.Ativo;
+        _db.Registrar(User, Auditoria.Usuarios, $"{(p.Ativo ? "Reativou" : "Inativou")} o professor {p.Nome}");
         await _db.SaveChangesAsync();
         if (!p.Ativo && p.Usuario != null) Sessoes.Revogar(p.Usuario.Id); // derruba o login que estiver aberto
 
@@ -52,6 +53,7 @@ public class IndexModel : PageModel
         var senha = Senha.Provisoria();
         p.Usuario.SenhaHash = Senha.Gerar(senha);
         p.Usuario.DeveTrocarSenha = true;
+        _db.Registrar(User, Auditoria.Acesso, $"Gerou nova senha provisória para o professor {p.Nome}");
         await _db.SaveChangesAsync();
         Sessoes.Revogar(p.Usuario.Id);
 

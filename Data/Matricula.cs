@@ -147,9 +147,12 @@ public class EscolaContext : DbContext
     public DbSet<Cobranca> Cobrancas => Set<Cobranca>();
     public DbSet<Configuracao> Configuracoes => Set<Configuracao>();
     public DbSet<Publicacao> Publicacoes => Set<Publicacao>();
+    public DbSet<RegistroLog> Registros => Set<RegistroLog>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        b.Entity<RegistroLog>().ToTable("Registros").HasIndex(r => r.Em);
+        b.Entity<RegistroLog>().Property(r => r.Em).HasColumnType("timestamp without time zone");
         b.Entity<Aluno>().Property(a => a.DataNascimento).HasColumnType("date");
         b.Entity<Aluno>().HasIndex(a => a.Cpf).IsUnique();
         b.Entity<Aluno>().HasOne<Usuario>().WithMany().HasForeignKey(a => a.UsuarioId).OnDelete(DeleteBehavior.Restrict);

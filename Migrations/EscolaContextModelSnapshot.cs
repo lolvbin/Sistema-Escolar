@@ -433,6 +433,42 @@ namespace SistemaEscolar.Migrations
                     b.ToTable("Publicacoes", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaEscolar.Data.RegistroLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Acao")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Detalhe")
+                        .IsRequired()
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)");
+
+                    b.Property<DateTime>("Em")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int?>("UsuarioId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UsuarioNome")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Em");
+
+                    b.ToTable("Registros", (string)null);
+                });
+
             modelBuilder.Entity("SistemaEscolar.Data.Turma", b =>
                 {
                     b.Property<int>("Id")

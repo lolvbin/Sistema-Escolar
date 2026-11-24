@@ -14,6 +14,7 @@
     @if (User.TemArea(Area.Desempenho)) { <a class="card atalho" asp-page="/Desempenho/Index"><strong>Notas e frequência</strong><br /><span class="suave">Desempenho dos alunos por turma</span></a> }
     @if (User.TemArea(Area.Financeiro)) { <a class="card atalho" asp-page="/Financeiro/Index"><strong>Financeiro</strong><br /><span class="suave">Contratos, mensalidades e pagamentos</span></a> }
     <a class="card atalho" asp-page="/Calendario/Index"><strong>Calendário</strong><br /><span class="suave">Eventos, provas e feriados</span></a>
+    @if (User.TemArea(Area.Configuracoes)) { <a class="card atalho" asp-page="/Log/Index"><strong>Registro de ações</strong><br /><span class="suave">Quem fez o quê</span></a> }
     @if (User.TemArea(Area.Configuracoes)) { <a class="card atalho" asp-page="/Configuracoes"><strong>Configurações</strong><br /><span class="suave">Médias, frequência, multa e juros</span></a> }
     @if (User.TemArea(Area.Usuarios)) { <a class="card atalho" asp-page="/Usuarios/Index"><strong>Usuários</strong><br /><span class="suave">Funcionários, cargos e acessos</span></a> }
 }

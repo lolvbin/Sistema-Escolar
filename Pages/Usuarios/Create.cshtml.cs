@@ -27,6 +27,7 @@ public class CreateModel : PageModel
             Nome = Input.Nome!, Email = Input.Email!, Perfil = Perfil.Funcionario, Cargo = Input.Cargo, Areas = Input.Areas,
             SenhaHash = Senha.Gerar(senha), DeveTrocarSenha = true, Ativo = true
         });
+        _db.Registrar(User, Auditoria.Usuarios, $"Criou o funcionário {Input.Nome} ({Input.Email}), cargo {Input.Cargo}, áreas {Input.Areas.Resumo()}");
         await _db.SaveChangesAsync();
 
         TempData["Aviso"] = $"Funcionário criado. Login: {Input.Email} · Senha provisória: {senha} (mostrada só agora; será pedida a troca no primeiro acesso)";

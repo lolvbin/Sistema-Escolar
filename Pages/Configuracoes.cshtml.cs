@@ -63,6 +63,16 @@ public class ConfiguracoesModel : PageModel
         freq = Math.Round(freq, 1, MidpointRounding.AwayFromZero);
 
         var c = await _db.Configuracoes.FirstAsync(x => x.Id == 1);
+        var cult = CultureInfo.CurrentCulture;
+        var mud = new List<string>();
+        void Dif(string nome, object antes, object depois) { if (!Equals(antes, depois)) mud.Add($"{nome}: {antes} → {depois}"); }
+        Dif("média aprovação", c.MediaMinima.ToString("0.0", cult), min.ToString("0.0", cult));
+        Dif("média recuperação", c.MediaRecuperacao.ToString("0.0", cult), rec.ToString("0.0", cult));
+        Dif("frequência mínima", c.FrequenciaMinima.ToString("0.0", cult), freq.ToString("0.0", cult));
+        Dif("modelo de recuperação", c.ModoRecuperacao, Modo);
+        Dif("multa %", c.MultaPercentual.ToString("0.##", cult), multa.ToString("0.##", cult));
+        Dif("juros %/mês", c.JurosMensal.ToString("0.##", cult), juros.ToString("0.##", cult));
+        if (mud.Count > 0) _db.Registrar(User, Auditoria.Configuracoes, string.Join("; ", mud));
         c.MediaMinima = min;
         c.MediaRecuperacao = rec;
         c.FrequenciaMinima = freq;
