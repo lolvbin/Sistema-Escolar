@@ -27,7 +27,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   Em produção: variável `ConnectionStrings__Escola`. Nunca commitar a senha
 - **Banco com EF Migrations** (`Migrations/`): `Program.cs` chama `Migrate()` na partida (cria/atualiza o banco). Mudou o modelo? `dotnet ef migrations add NomeDaMudanca` e commitar a pasta `Migrations/`. `Data/EscolaContextFactory.cs` deixa o `dotnet ef` funcionar sem subir a aplicação (lê user-secrets ou `ConnectionStrings__Escola`). Ferramenta: `dotnet tool install --global dotnet-ef --version 10.*`
 - O banco de dev compartilhado foi criado antes das migrations: ele foi "baselinado" (linha `InitialCreate` inserida em `__EFMigrationsHistory`). Banco novo = `Migrate()` cria tudo. As menções abaixo a "tabela criada por SQL em ...Preparar" são HISTÓRICAS: esses métodos foram removidos e o esquema vem das migrations
-- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 115 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 6 testes de integração usam PostgreSQL real (criam e apagam um banco temporário; 3 de migrations/modelo e 3 de **permissão por HTTP** em `PermissaoTests`, que sobem o app com `WebApplicationFactory` e conferem página × perfil/cargo, POST barrado e sessão revogada) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
+- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 128 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 6 testes de integração usam PostgreSQL real (criam e apagam um banco temporário; 3 de migrations/modelo e 3 de **permissão por HTTP** em `PermissaoTests`, que sobem o app com `WebApplicationFactory` e conferem página × perfil/cargo, POST barrado e sessão revogada) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
 - `docker compose up -d` sobe um PostgreSQL local (usuário/senha/banco `escola`/`escola_dev`/`escola`)
 - Ao rodar a DLL direto (sem `dotnet run`) a porta é 5000 e o ambiente é Production, sem user-secrets: definir `ASPNETCORE_ENVIRONMENT=Development`
 
@@ -117,7 +117,8 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - Recuperação deve ser menor que a aprovação (0 a 10, vírgula ou ponto). Mudar vale na hora para todos os boletins
 - **Recuperação**: nota guardada em `Notas` como bimestre 5 (`TabelaNotas.BimRecuperacao`). Só quem tem as 4 notas e média entre a de recuperação e a de aprovação entra (aba "Recuperação" em `Notas/Lancar`). A média final depende do **modelo escolhido pela escola** em Configurações (`ModoRecuperacao`, coluna `Configuracoes.ModoRecuperacao`): 0 média das duas (padrão), 1 maior das duas, 2 recuperação substitui a média. Em todos precisa atingir a média de aprovação; senão Reprovado. Novo modelo = novo valor no enum + um caso em `Aprovacao.MediaFinal`
 - **Frequência**: professor lança as **aulas dadas** por turma/disciplina/bimestre (`AulasDadas`) e as **faltas** por aluno (`Frequencias`) na mesma tela de notas. Faltas não passam das aulas dadas. Frequência % = 1 - faltas/aulas. Mínimo configurável (padrão 75%, coluna `Configuracoes.FrequenciaMinima`): frequência **geral** abaixo disso reprova o aluno (só depois de todas as disciplinas definidas). Boletim mostra Rec., Média final, Freq. por disciplina e geral
-- Falta: abono/justificativa de faltas, frequência diária (chamada), regra de recuperação por bimestre
+- **Abono de faltas**: `Frequencia.Abonadas` + `MotivoAbono` (migration `AbonoDeFaltas`). Quem tem a área Desempenho (secretaria, coordenação, administrador) abona em `Desempenho/Aluno/{matrículaId}` ("Abono de faltas", por disciplina e bimestre; não passa das faltas lançadas; com abono o motivo é obrigatório). A frequência usa `Frequencia.Contadas` = faltas - abonadas (`ResultadoAluno.Calcular`); o Boletim mostra "N falta(s) abonada(s)" e o professor vê "N abonada(s)" ao lado das faltas em `Notas/Lancar`. Se o professor reduzir as faltas abaixo do abono, o abono desce junto. Registrado no log (ação Frequência)
+- Falta: frequência diária (chamada), regra de recuperação por bimestre, abono sem ligar a anexo/atestado
 - Cuidado nos testes: se `dotnet run` falhar em silêncio, pode haver servidor antigo na porta 5006 (`ss -ltnp | grep 5006`): encerrar pelo PID
 
 ### Módulo Financeiro (testado no navegador)
@@ -153,7 +154,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - `Data/Auditoria.cs`: entidade `RegistroLog` (tabela `Registros`, migration `RegistroDeAcoes`: quando, usuário id/nome, ação, detalhe) e extensão `db.Registrar(User, Auditoria.X, "texto")`, que só adiciona ao contexto: grava no mesmo `SaveChanges` da ação (se der erro, nem a ação nem o log). Sem FK para usuário (o registro sobrevive a ele)
 - Registra: baixa/estorno de pagamento, gerar/apagar cobranças, contrato assinado/removido, liberação manual e automática da matrícula, alterar/excluir matrícula, **notas alteradas** (só o que mudou, "aluno: 7,0 → 8,5"), mudanças de Configurações (antes → depois), funcionário criado/editado, nova senha provisória (funcionário e professor), inativar/reativar professor, criar acesso de aluno/responsável
 - `Pages/Log/Index`: só quem tem a área Configurações (administrador); filtros por ação, texto, período; mostra os 200 mais recentes; sem editar/apagar. Cartão "Registro de ações" na tela inicial
-- Falta: registrar frequência/faltas e publicações da sala de aula; login/logout e tentativas bloqueadas; exportar; política de retenção (nunca apaga)
+- Falta: registrar faltas lançadas pelo professor (abono já é registrado) e publicações da sala de aula; login/logout e tentativas bloqueadas; exportar; política de retenção (nunca apaga)
 
 ### Documentos para imprimir (testado no navegador)
 - Todos usam `window.print()` + CSS `@media print` (`.no-print` some, `.so-print` só aparece impresso, `.doc*` em `site.css`); sem PDF no servidor
@@ -178,7 +179,7 @@ Lista viva: acrescentar aqui todo limite novo que aparecer e riscar o que for re
 - (resolvido) aluno órfão "Alberto da Silva" removido do banco de dev
 - Acesso: sem "esqueci minha senha" por e-mail (só o funcionário gera outra provisória); limite de tentativas de login fica em memória (reiniciar zera)
 - Configurações (aprovação, frequência, multa e juros) ficam em propriedades estáticas: serve a uma instância só
-- Notas e frequência: sem abono/justificativa de faltas, sem chamada diária (só total de faltas por bimestre), sem regra de recuperação por bimestre
+- Notas e frequência: abono por total de faltas (feito), sem chamada diária (só total de faltas por bimestre), sem regra de recuperação por bimestre
 - Desempenho (funcionário): impressão do boletim feita, sem exportação para planilha; professor só vê o que lança
 - Calendário: sem eventos por turma/série, sem ligar provas às turmas, sem início/fim dos bimestres
 - Funcionários: sem permissão de só leitura dentro de uma área; cargos fixos no código (não há cadastro de cargos); lista de sessões revogadas fica em memória; log de ações só cobre as operações listadas em "Registro de ações"

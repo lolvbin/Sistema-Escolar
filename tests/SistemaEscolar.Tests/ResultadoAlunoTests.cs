@@ -33,4 +33,37 @@ public class ResultadoAlunoTests
         Assert.Empty(r.Linhas);
         Assert.Null(r.FreqGeral);
     }
+
+    static ResultadoAluno ComFaltas(int faltas, int abonadas)
+    {
+        var f = new List<Frequencia> { new() { MatriculaId = 1, DisciplinaId = 1, Bimestre = 1, Faltas = faltas, Abonadas = abonadas } };
+        var a = new List<AulasDadas> { new() { TurmaId = 1, DisciplinaId = 1, Bimestre = 1, Aulas = 20 } };
+        return ResultadoAluno.Calcular(new[] { (1, "Português") }, new List<Nota>(), f, a);
+    }
+
+    [Fact] public void Falta_abonada_nao_conta_na_frequencia()
+    {
+        Assert.Equal(75.0m, ComFaltas(5, 0).FreqGeral);
+        var r = ComFaltas(5, 3);
+        Assert.Equal(90.0m, r.FreqGeral);       // só 2 faltas contam
+        Assert.Equal(90.0m, r.Linhas[0].Freq);
+        Assert.Equal(3, r.FaltasAbonadas);
+    }
+
+    [Fact] public void Abono_maior_que_as_faltas_nunca_deixa_frequencia_acima_de_100()
+    {
+        var r = ComFaltas(2, 9);
+        Assert.Equal(100.0m, r.FreqGeral);
+        Assert.Equal(2, r.FaltasAbonadas);
+    }
+
+    [Fact] public void Abono_pode_tirar_o_aluno_da_reprovacao_por_frequencia()
+    {
+        var notas = Enumerable.Range(1, 4).Select(b => N(1, b, 8)).ToList();
+        var aulas = new List<AulasDadas> { new() { TurmaId = 1, DisciplinaId = 1, Bimestre = 1, Aulas = 20 } };
+        var sem = ResultadoAluno.Calcular(new[] { (1, "P") }, notas, new List<Frequencia> { new() { MatriculaId = 1, DisciplinaId = 1, Bimestre = 1, Faltas = 8 } }, aulas);
+        var com = ResultadoAluno.Calcular(new[] { (1, "P") }, notas, new List<Frequencia> { new() { MatriculaId = 1, DisciplinaId = 1, Bimestre = 1, Faltas = 8, Abonadas = 4 } }, aulas);
+        Assert.Equal(Situacao.Reprovado, sem.Geral);   // 60% < 75%
+        Assert.Equal(Situacao.Aprovado, com.Geral);    // 80%
+    }
 }

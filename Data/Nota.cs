@@ -22,6 +22,12 @@ public class Frequencia
     public int DisciplinaId { get; set; }
     public int Bimestre { get; set; }
     public int Faltas { get; set; }
+    /// <summary>Faltas justificadas pela escola (atestado etc.): não entram no cálculo da frequência. Registradas pela secretaria/coordenação.</summary>
+    public int Abonadas { get; set; }
+    [System.ComponentModel.DataAnnotations.MaxLength(200)] public string MotivoAbono { get; set; } = "";
+    /// <summary>Faltas que contam contra o aluno (nunca negativo).</summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidateNever]
+    public int Contadas => Math.Max(0, Faltas - Abonadas);
 }
 
 // Aulas dadas pela turma em uma disciplina, em um bimestre (base para o % de frequência).

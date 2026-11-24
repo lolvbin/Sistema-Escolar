@@ -18,6 +18,7 @@ public class LancarModel : PageModel
 
     // Textos digitados por matrícula (aceita vírgula ou ponto nas notas)
     [BindProperty] public Dictionary<int, string?> Valores { get; set; } = new();
+    public Dictionary<int, int> Abonos { get; set; } = new();
     [BindProperty] public Dictionary<int, string?> Faltas { get; set; } = new();
     [BindProperty] public string? Aulas { get; set; }
 
@@ -84,6 +85,7 @@ public class LancarModel : PageModel
             var f = await _db.Frequencias.AsNoTracking()
                 .Where(x => x.DisciplinaId == DisciplinaId && x.Bimestre == Bim && ids.Contains(x.MatriculaId)).ToListAsync();
             Faltas = f.ToDictionary(x => x.MatriculaId, x => x.Faltas.ToString());
+            Abonos = f.Where(x => x.Abonadas > 0).ToDictionary(x => x.MatriculaId, x => x.Abonadas);
         }
         return Page();
     }
@@ -150,7 +152,7 @@ public class LancarModel : PageModel
                 fAtuais.TryGetValue(mid, out var x);
                 if (f == null) { if (x != null) _db.Frequencias.Remove(x); }
                 else if (x == null) _db.Frequencias.Add(new Frequencia { MatriculaId = mid, DisciplinaId = DisciplinaId, Bimestre = Bim, Faltas = f.Value });
-                else x.Faltas = f.Value;
+                else { x.Faltas = f.Value; if (x.Abonadas > f.Value) x.Abonadas = f.Value; } // abono nunca passa das faltas
             }
             var a = await _db.Aulas.FirstOrDefaultAsync(x => x.TurmaId == TurmaId && x.DisciplinaId == DisciplinaId && x.Bimestre == Bim);
             if (aulas == 0) { if (a != null) _db.Aulas.Remove(a); }

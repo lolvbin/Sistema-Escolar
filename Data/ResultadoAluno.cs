@@ -7,6 +7,9 @@ public record LinhaDisciplina(string Disciplina, decimal?[] Notas, decimal? Rec,
 
 public record ResultadoAluno(List<LinhaDisciplina> Linhas, decimal? FreqGeral, Situacao Geral)
 {
+    /// <summary>Total de faltas abonadas no ano (já descontadas da frequência).</summary>
+    public int FaltasAbonadas { get; init; }
+
     public static ResultadoAluno Calcular(
         IEnumerable<(int Id, string Nome)> disciplinas,
         IReadOnlyCollection<Nota> notas, IReadOnlyCollection<Frequencia> faltas, IReadOnlyCollection<AulasDadas> aulas)
@@ -18,12 +21,12 @@ public record ResultadoAluno(List<LinhaDisciplina> Linhas, decimal? FreqGeral, S
             foreach (var n in notas.Where(n => n.DisciplinaId == d.Id && n.Bimestre >= 1 && n.Bimestre <= v.Length))
                 v[n.Bimestre - 1] = n.Valor;
             var rec = notas.FirstOrDefault(n => n.DisciplinaId == d.Id && n.Bimestre == TabelaNotas.BimRecuperacao)?.Valor;
-            var nf = faltas.Where(f => f.DisciplinaId == d.Id).Sum(f => f.Faltas);
+            var nf = faltas.Where(f => f.DisciplinaId == d.Id).Sum(f => f.Contadas);
             var na = aulas.Where(a => a.DisciplinaId == d.Id).Sum(a => a.Aulas);
             linhas.Add(new LinhaDisciplina(d.Nome, v, rec, Aprovacao.MediaFinal(v, rec), Aprovacao.Frequencia(nf, na), Aprovacao.DaDisciplina(v, rec)));
         }
-        var freq = Aprovacao.Frequencia(faltas.Sum(f => f.Faltas), aulas.Sum(a => a.Aulas));
-        return new ResultadoAluno(linhas, freq, Aprovacao.Geral(linhas.Select(l => l.Situacao), freq));
+        var freq = Aprovacao.Frequencia(faltas.Sum(f => f.Contadas), aulas.Sum(a => a.Aulas));
+        return new ResultadoAluno(linhas, freq, Aprovacao.Geral(linhas.Select(l => l.Situacao), freq)) { FaltasAbonadas = faltas.Sum(f => Math.Min(f.Abonadas, f.Faltas)) };
     }
 }
 

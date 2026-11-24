@@ -63,7 +63,8 @@ else
                         </td>
                         @if (!Model.Recup)
                         {
-                            <td><input name="Faltas[@m.Id]" value="@Model.Faltas.GetValueOrDefault(m.Id)" inputmode="numeric" maxlength="3" autocomplete="off" /></td>
+                            <td><input name="Faltas[@m.Id]" value="@Model.Faltas.GetValueOrDefault(m.Id)" inputmode="numeric" maxlength="3" autocomplete="off" />
+                                @if (Model.Abonos.TryGetValue(m.Id, out var ab)) { <small class="suave">@ab abonada(s)</small> }</td>
                         }
                         <td>@(Aprovacao.MediaFinal(Model.Anual[m.Id], rec)?.ToString("0.0") ?? "-")</td>
                         <td><span class="badge sit-@sit">@sit.Nome()</span></td>

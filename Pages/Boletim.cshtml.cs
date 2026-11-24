@@ -19,6 +19,7 @@ public class BoletimModel : PageModel
 
     public Situacao Geral { get; set; }
     public decimal? FreqGeral { get; set; }
+    public int FaltasAbonadas { get; set; }
     public List<LinhaDisciplina> Linhas { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync()
@@ -44,6 +45,7 @@ public class BoletimModel : PageModel
         var r = ResultadoAluno.Calcular(discs.Select(d => (d.DisciplinaId, d.Nome)), notas, faltas, aulas);
         Linhas = r.Linhas;
         FreqGeral = r.FreqGeral;
+        FaltasAbonadas = r.FaltasAbonadas;
         Geral = r.Geral;
         return Page();
     }

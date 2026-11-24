@@ -49,5 +49,32 @@ else
         {
             <span class="suave"> &middot; Frequência geral: @Model.Resultado.FreqGeral.Value.ToString("0.#")% (mínimo @Aprovacao.FrequenciaMinima.ToString("0.#")%)</span>
         }
+        @if (Model.Resultado.FaltasAbonadas > 0) { <span class="suave"> &middot; @Model.Resultado.FaltasAbonadas falta(s) abonada(s)</span> }
     </p>
+}
+
+@if (Model.Aviso != null) { <div class="card aviso no-print">@Model.Aviso</div> }
+@if (Model.Faltas.Count > 0)
+{
+    <form method="post" asp-page-handler="Abonar" asp-route-id="@Model.Matricula.Id" class="card tabela no-print">
+        <h2>Abono de faltas</h2>
+        <p class="suave">Falta justificada (atestado, por exemplo) não conta na frequência. Informe quantas faltas abonar em cada disciplina e bimestre e o motivo.</p>
+        <table>
+            <thead><tr><th>Disciplina</th><th>Bimestre</th><th>Faltas</th><th>Abonar</th><th>Motivo</th></tr></thead>
+            <tbody>
+            @foreach (var f in Model.Faltas)
+            {
+                <tr>
+                    <td>@f.Disciplina</td><td>@(f.Bimestre)º</td><td>@f.Faltas</td>
+                    <td><input name="Abono[@f.Chave]" value="@Model.Abono.GetValueOrDefault(f.Chave)" inputmode="numeric" maxlength="3" size="3" autocomplete="off" /></td>
+                    <td>
+                        <input name="Motivo[@f.Chave]" value="@Model.Motivo.GetValueOrDefault(f.Chave)" maxlength="200" autocomplete="off" />
+                        @if (Model.Erros.TryGetValue(f.Chave, out var e)) { <span class="erro">@e</span> }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <div class="rodape-form"><button class="btn">Salvar abonos</button></div>
+    </form>
 }

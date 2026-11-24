@@ -271,8 +271,16 @@ namespace SistemaEscolar.Migrations
                     b.Property<int>("Bimestre")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Abonadas")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Faltas")
                         .HasColumnType("integer");
+
+                    b.Property<string>("MotivoAbono")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("MatriculaId", "DisciplinaId", "Bimestre");
 
