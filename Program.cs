@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using SistemaEscolar.Data;
@@ -40,6 +41,9 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
         o.Cookie.Name = "escola.auth";
         o.Cookie.HttpOnly = true;
         o.Cookie.SameSite = SameSiteMode.Lax;
+        // Em produção o cookie só trafega por HTTPS. Para testar em http local: Escola__CookieSeguro=false
+        o.Cookie.SecurePolicy = builder.Configuration.GetValue("Escola:CookieSeguro", !builder.Environment.IsDevelopment())
+            ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
         // Usuário inativado ou com acesso alterado perde a sessão na hora
         o.Events.OnValidatePrincipal = async ctx =>
         {
@@ -61,6 +65,10 @@ foreach (var area in AreaExt.Individuais)
 // Connection string vem do user-secrets (dev) ou de variável de ambiente (ConnectionStrings__Escola).
 var cs = builder.Configuration.GetConnectionString("Escola")
     ?? throw new InvalidOperationException("Defina ConnectionStrings:Escola (user-secrets).");
+// Chaves do login/antiforgery: em contêiner, aponte DATAPROTECTION_DIR para uma pasta persistente
+// (senão cada reinício derruba todas as sessões)
+if (Environment.GetEnvironmentVariable("DATAPROTECTION_DIR") is { Length: > 0 } dpDir)
+    builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dpDir)).SetApplicationName("SistemaEscolar");
 builder.Services.AddDbContext<EscolaContext>(o => o.UseNpgsql(cs));
 
 var app = builder.Build();
@@ -96,6 +104,7 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
+    app.UseHsts();
 }
 
 app.UseRouting();
@@ -116,6 +125,10 @@ app.Use(async (ctx, next) =>
     }
     await next();
 });
+
+// Verificação de saúde para proxy/monitoramento: 200 se o banco responde, 503 se não
+app.MapGet("/saude", async (EscolaContext db) =>
+    await db.Database.CanConnectAsync() ? Results.Ok("ok") : Results.StatusCode(503)).AllowAnonymous();
 
 app.MapStaticAssets().AllowAnonymous(); // css/js precisam carregar na tela de login
 app.MapRazorPages().WithStaticAssets();

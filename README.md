@@ -121,3 +121,7 @@ Entrega de atividades, anexos, recibo no acesso do responsável e testes de inte
 ## 📄 Licença
 
 [MIT](LICENSE)
+
+## Deploy e backup
+
+Guia em [docs/DEPLOY.md](docs/DEPLOY.md): variáveis de ambiente, Docker, HTTPS por proxy reverso, primeiro acesso, backup/restauração do PostgreSQL e lista de segurança.

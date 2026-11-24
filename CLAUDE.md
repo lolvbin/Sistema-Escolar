@@ -162,6 +162,11 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - **Identificação da escola**: nome, endereço e telefone em `Pages/Configuracoes` (seção "Escola"), colunas `Configuracoes.NomeEscola/Endereco/Telefone` (migration `DadosDaEscola`) e estático `Escola.*` (`Data/Aprovacao.cs`, carregado na partida, como as outras configurações). Aparece no topo, no título da aba, no recibo, declaração, histórico e boletim impresso. Mudanças vão para o registro de ações
 - Falta: logo configurável pela tela (continua `wwwroot/img/logo.*`), CNPJ, número de série/autenticidade, assinatura digital, declaração de frequência, impressão do histórico por série completa com carga horária
 
+### Deploy e backup (testado)
+- `docs/DEPLOY.md` (guia completo), `Dockerfile` (imagem de produção, testada com PostgreSQL em contêiner), `.dockerignore`, `scripts/backup.sh` (pg_dump custom + verificação + rotação; restauração testada num banco temporário)
+- `Program.cs`: cookie de login `Secure` fora de Development (desligar para teste http local: `Escola__CookieSeguro=false`; **rodar a DLL em Production por http sem isso impede o login**), `UseHsts` em produção, `DATAPROTECTION_DIR` persiste as chaves (senão reiniciar desloga todos), `/saude` anônimo (200 se o banco responde, 503 se não)
+- Faltam: CI (build + testes no push), proxy/HTTPS são por conta de quem hospeda, sem monitoramento de erros além do log do contêiner
+
 ### Dados de demonstração (para prints e vídeos)
 - `dotnet run -- --demo` (só Development) cria 30 alunos fictícios (27 com matrícula Ativa em 4 turmas do ano atual: 5º A, 5º B, 8º A, 1ª série A; 3 Pendentes do ano seguinte), 6 professores (`<nome>.demo@demo.test`, senha de dev), notas dos 4 bimestres, recuperação, faltas, aulas dadas, taxa + 12 mensalidades (a maioria em dia, ~1/3 com atraso) e eventos no calendário. Código em `Data/DadosDemo.cs`
 - `dotnet run -- --demo-limpar` remove só o que o `--demo` criou (alunos com `Observacoes = "[demo]"`, professores `@demo.test`, eventos com descrição `[demo]`, turmas que ficaram vazias). Não mexe em turma que já existia
