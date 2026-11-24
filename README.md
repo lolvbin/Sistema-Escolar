@@ -9,9 +9,13 @@ Feito para ser **leve**: HTML renderizado no servidor, quase nenhum JavaScript (
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-EF_Core-336791?logo=postgresql&logoColor=white)
 ![Modo escuro](https://img.shields.io/badge/tema-claro_%2F_escuro-222)
 
-<!-- Telas: coloque os prints em docs/img/ e descomente
-![Boletim](docs/img/boletim.png)
--->
+## 🖼️ Telas
+
+| Matrículas | Financeiro |
+|---|---|
+| ![Matrículas](docs/img/matriculas.png) | ![Financeiro](docs/img/financeiro.png) |
+
+![Calendário](docs/img/calendario.png)
 
 ## ✨ O que o sistema faz
 
