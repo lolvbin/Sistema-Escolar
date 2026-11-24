@@ -17,10 +17,9 @@ public class BoletimModel : PageModel
     public Aluno? Aluno { get; set; }
     public Matricula? Matricula { get; set; }
 
-    public record Linha(string Disciplina, decimal?[] Notas, decimal? Rec, decimal? Media, decimal? Freq, Situacao Situacao);
     public Situacao Geral { get; set; }
     public decimal? FreqGeral { get; set; }
-    public List<Linha> Linhas { get; set; } = new();
+    public List<LinhaDisciplina> Linhas { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync()
     {
@@ -52,18 +51,10 @@ public class BoletimModel : PageModel
         var faltas = await _db.Frequencias.AsNoTracking().Where(f => f.MatriculaId == Matricula.Id).ToListAsync();
         var aulas = await _db.Aulas.AsNoTracking().Where(a => a.TurmaId == Matricula.TurmaId).ToListAsync();
 
-        foreach (var d in discs)
-        {
-            var v = new decimal?[TabelaNotas.Bimestres];
-            foreach (var n in notas.Where(n => n.DisciplinaId == d.DisciplinaId && n.Bimestre >= 1 && n.Bimestre <= v.Length))
-                v[n.Bimestre - 1] = n.Valor;
-            var rec = notas.FirstOrDefault(n => n.DisciplinaId == d.DisciplinaId && n.Bimestre == TabelaNotas.BimRecuperacao)?.Valor;
-            var nf = faltas.Where(f => f.DisciplinaId == d.DisciplinaId).Sum(f => f.Faltas);
-            var na = aulas.Where(a => a.DisciplinaId == d.DisciplinaId).Sum(a => a.Aulas);
-            Linhas.Add(new Linha(d.Nome, v, rec, Aprovacao.MediaFinal(v, rec), Aprovacao.Frequencia(nf, na), Aprovacao.DaDisciplina(v, rec)));
-        }
-        FreqGeral = Aprovacao.Frequencia(faltas.Sum(f => f.Faltas), aulas.Sum(a => a.Aulas));
-        Geral = Aprovacao.Geral(Linhas.Select(l => l.Situacao), FreqGeral);
+        var r = ResultadoAluno.Calcular(discs.Select(d => (d.DisciplinaId, d.Nome)), notas, faltas, aulas);
+        Linhas = r.Linhas;
+        FreqGeral = r.FreqGeral;
+        Geral = r.Geral;
         return Page();
     }
 }

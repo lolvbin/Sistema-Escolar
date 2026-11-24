@@ -27,6 +27,7 @@ Feito para ser **leve**: HTML renderizado no servidor, quase nenhum JavaScript (
 | **Disciplinas** | Catálogo por série, com disciplinas padrão | Funcionário |
 | **Turmas** | Série + ano + letra, enturmação de alunos ativos e professor por disciplina | Funcionário |
 | **Notas e frequência** | Notas por bimestre, recuperação, aulas dadas e faltas | Professor |
+| **Desempenho** | Consulta de notas, frequência e situação por turma e por aluno (só leitura) | Funcionário |
 | **Boletim** | Notas, recuperação, frequência e situação (aprovado, recuperação, reprovado) | Aluno e responsável |
 | **Calendário** | Grade mensal com feriados, recessos, provas e reuniões | Todos veem, funcionário cadastra |
 | **Financeiro** | Contrato, taxa e mensalidades, multa e juros, baixa de pagamentos; libera a matrícula pendente | Funcionário (responsável consulta) |
@@ -74,7 +75,7 @@ Em produção eles não existem: defina a conexão pela variável `ConnectionStr
 dotnet test tests/SistemaEscolar.Tests
 ```
 
-São 72 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 3 testes de integração aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
+São 74 testes automatizados das regras de negócio (validação de CPF e telefone, média, recuperação e situação do aluno, frequência, multa e juros, liberação da matrícula, limite de tentativas de login). Outros 3 testes de integração aplicam as migrations num PostgreSQL real, em um banco temporário que o próprio teste cria e apaga:
 
 ```bash
 ESCOLA_TEST_DB="Host=localhost;Port=5432;Database=postgres;Username=escola;Password=escola_dev" dotnet test tests/SistemaEscolar.Tests
@@ -87,7 +88,7 @@ Data/            Entidades, regras (aprovação, financeiro, validações) e o c
 Migrations/      Migrations do EF Core (esquema do banco)
 tests/           Testes automatizados (xUnit)
 Pages/           Telas por módulo (Matriculas, Alunos, Professores, Disciplinas, Turmas, Notas,
-                 Boletim, Calendario, Financeiro, Mensalidades, Conta, Configuracoes)
+                 Desempenho, Boletim, Calendario, Financeiro, Mensalidades, Conta, Configuracoes)
 Pages/Shared/    Layout e partials compartilhados
 wwwroot/         site.css e site.js
 ```

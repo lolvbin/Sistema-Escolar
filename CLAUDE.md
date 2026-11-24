@@ -27,7 +27,7 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
   Em produção: variável `ConnectionStrings__Escola`. Nunca commitar a senha
 - **Banco com EF Migrations** (`Migrations/`): `Program.cs` chama `Migrate()` na partida (cria/atualiza o banco). Mudou o modelo? `dotnet ef migrations add NomeDaMudanca` e commitar a pasta `Migrations/`. `Data/EscolaContextFactory.cs` deixa o `dotnet ef` funcionar sem subir a aplicação (lê user-secrets ou `ConnectionStrings__Escola`). Ferramenta: `dotnet tool install --global dotnet-ef --version 10.*`
 - O banco de dev compartilhado foi criado antes das migrations: ele foi "baselinado" (linha `InitialCreate` inserida em `__EFMigrationsHistory`). Banco novo = `Migrate()` cria tudo. As menções abaixo a "tabela criada por SQL em ...Preparar" são HISTÓRICAS: esses métodos foram removidos e o esquema vem das migrations
-- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 72 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
+- Testes: `dotnet test tests/SistemaEscolar.Tests` (xUnit, 74 de regras puras: validações, aprovação/média/recuperação, frequência, multa e juros, liberação da matrícula, limite de login). 3 testes de integração usam PostgreSQL real (criam e apagam um banco temporário) e só rodam com `ESCOLA_TEST_DB="Host=...;Database=postgres;Username=...;Password=..."`; sem a variável são ignorados
 - `docker compose up -d` sobe um PostgreSQL local (usuário/senha/banco `escola`/`escola_dev`/`escola`)
 - Ao rodar a DLL direto (sem `dotnet run`) a porta é 5000 e o ambiente é Production, sem user-secrets: definir `ASPNETCORE_ENVIRONMENT=Development`
 
@@ -91,13 +91,18 @@ Quatro perfis de acesso: responsáveis, funcionários, professores e alunos. Cad
 - `Data/Nota.cs` (chave composta MatriculaId + DisciplinaId + Bimestre, valor 0 a 10 com 1 casa) e `TabelaNotas.Preparar` (SQL, depois de Turmas). 4 bimestres fixos (`TabelaNotas.Bimestres`)
 - `Pages/Notas/` só Professor (política `Professor`): Index lista as disciplinas/turmas ativas atribuídas a ele (`TurmaDisciplina.ProfessorId`, ligado pelo `Professor.UsuarioId` = claim NameIdentifier); `Lancar` = notas de uma turma/disciplina/bimestre, só alunos com matrícula Ativa na turma
 - Aceita vírgula ou ponto, arredonda para 1 casa; campo vazio apaga a nota; se um valor for inválido nada é salvo. Professor que não é o da disciplina: Acesso negado
-- Falta: visão do funcionário sobre as notas
+- Visão do funcionário: ver "Desempenho" abaixo
 
 ### Boletim e acessos (testado no navegador)
 - `Pages/Boletim` para Aluno e Responsável (política `Boletim`, menu "Boletim"): disciplinas da turma × 4 bimestres + média das notas já lançadas (sem regra de aprovação ainda). Mostra a matrícula mais recente com turma
 - Ligação: aluno por `Aluno.UsuarioId` (coluna criada em `TabelaNotas.Preparar`); responsável pelo **e-mail** (acadêmico ou financeiro) igual ao do login. Só vê os próprios alunos
 - Funcionário cria os acessos em `Alunos/Edit` ("Acessos ao sistema"): aluno (informa e-mail) e responsável (e-mail já cadastrado); senha provisória mostrada uma vez
 - Falta: visão do funcionário/professor, trocar a própria senha
+
+### Desempenho (visão do funcionário, testado no navegador)
+- `Pages/Desempenho/` só Funcionário (cartão "Notas e frequência"), só leitura: `Index` (turmas com filtro ano/série), `Turma/{id}` (alunos × disciplinas com média final, frequência geral e situação) e `Aluno/{matrículaId}` (boletim completo do aluno)
+- Cálculo compartilhado em `Data/ResultadoAluno.cs` (`ResultadoAluno.Calcular`), usado também pelo `Boletim`. NÃO chamar de `Desempenho` (o namespace `Pages.Desempenho` esconde a classe)
+- Falta: visão do professor sobre as próprias turmas além do lançamento, exportação/impressão
 
 ### Módulo Calendário (testado no navegador)
 - `Data/Evento.cs` (título, tipo, início, fim opcional, descrição; vale para a escola toda) e `TabelaEventos.Preparar` (SQL). Tipos: Evento, Feriado, Recesso, Prova, Reunião

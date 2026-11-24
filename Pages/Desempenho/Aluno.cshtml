@@ -1,0 +1,48 @@
+@page "{id:int}"
+@using SistemaEscolar.Data
+@model SistemaEscolar.Pages.Desempenho.AlunoModel
+@{ ViewData["Title"] = "Desempenho do aluno"; }
+
+<div class="barra">
+    <h1>@Model.Matricula.Aluno!.Nome</h1>
+    <a class="btn btn-sec" asp-page="Turma" asp-route-id="@Model.Matricula.TurmaId">Voltar</a>
+</div>
+<p class="suave">@Model.Matricula.Turma!.Nome, @Model.Matricula.AnoLetivo</p>
+
+@if (Model.Resultado.Linhas.Count == 0)
+{
+    <div class="card vazio">A turma ainda não tem disciplinas definidas.</div>
+}
+else
+{
+    <div class="card tabela">
+        <table>
+            <thead>
+                <tr>
+                    <th>Disciplina</th>
+                    @for (int b = 1; b <= TabelaNotas.Bimestres; b++) { <th>@(b)º bim.</th> }
+                    <th>Rec.</th><th>Média</th><th>Freq.</th><th>Situação</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var l in Model.Resultado.Linhas)
+            {
+                <tr>
+                    <td>@l.Disciplina</td>
+                    @foreach (var n in l.Notas) { <td>@(n?.ToString("0.0") ?? "-")</td> }
+                    <td>@(l.Rec?.ToString("0.0") ?? "-")</td>
+                    <td><strong>@(l.Media?.ToString("0.0") ?? "-")</strong></td>
+                    <td>@(l.Freq?.ToString("0.#") is { } f ? f + "%" : "-")</td>
+                    <td><span class="badge sit-@l.Situacao">@l.Situacao.Nome()</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <p>Situação geral: <span class="badge sit-@Model.Resultado.Geral">@Model.Resultado.Geral.Nome()</span>
+        @if (Model.Resultado.FreqGeral != null)
+        {
+            <span class="suave"> &middot; Frequência geral: @Model.Resultado.FreqGeral.Value.ToString("0.#")% (mínimo @Aprovacao.FrequenciaMinima.ToString("0.#")%)</span>
+        }
+    </p>
+}

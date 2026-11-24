@@ -1,0 +1,48 @@
+@page "{id:int}"
+@using SistemaEscolar.Data
+@model SistemaEscolar.Pages.Desempenho.TurmaModel
+@{ ViewData["Title"] = "Desempenho da turma"; }
+
+<div class="barra">
+    <h1>@Model.Turma.Nome, @Model.Turma.AnoLetivo</h1>
+    <a class="btn btn-sec" asp-page="Index" asp-route-ano="@Model.Turma.AnoLetivo">Voltar</a>
+</div>
+<p class="suave">Média final por disciplina (média anual, com a recuperação quando houver). "-" = ainda faltam notas.</p>
+
+@if (Model.Alunos.Count == 0)
+{
+    <div class="card vazio">Nenhum aluno enturmado.</div>
+}
+else if (Model.Disciplinas.Count == 0)
+{
+    <div class="card vazio">A turma ainda não tem disciplinas definidas.</div>
+}
+else
+{
+    <div class="card tabela">
+        <table>
+            <thead>
+                <tr>
+                    <th>Aluno</th>
+                    @foreach (var d in Model.Disciplinas) { <th>@d</th> }
+                    <th>Freq.</th><th>Situação</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var a in Model.Alunos)
+            {
+                <tr>
+                    <td><a asp-page="Aluno" asp-route-id="@a.MatriculaId">@a.Aluno</a></td>
+                    @foreach (var l in a.Resultado.Linhas)
+                    {
+                        <td class="@(l.Situacao is Situacao.Reprovado or Situacao.Recuperacao ? "sit-" + l.Situacao : "")">@(l.Media?.ToString("0.0") ?? "-")</td>
+                    }
+                    <td>@(a.Resultado.FreqGeral?.ToString("0.#") is { } f ? f + "%" : "-")</td>
+                    <td><span class="badge sit-@a.Resultado.Geral">@a.Resultado.Geral.Nome()</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <p class="suave">Frequência mínima: @Aprovacao.FrequenciaMinima.ToString("0.#")%. Clique no nome do aluno para ver o boletim completo.</p>
+}

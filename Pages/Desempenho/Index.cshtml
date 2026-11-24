@@ -1,0 +1,43 @@
+@page
+@using SistemaEscolar.Data
+@model SistemaEscolar.Pages.Desempenho.IndexModel
+@{ ViewData["Title"] = "Notas e frequência"; }
+
+<div class="barra"><h1>Notas e frequência</h1></div>
+<p class="suave">Consulta do desempenho dos alunos por turma. Só leitura: as notas são lançadas pelos professores.</p>
+
+<form method="get" class="filtro">
+    <select asp-for="Ano">
+        <option value="">Todos os anos</option>
+        @foreach (var a in Matricula.AnosPermitidos) { <option value="@a" selected="@(Model.Ano == a)">@a</option> }
+    </select>
+    <select asp-for="Serie" asp-items="Html.GetEnumSelectList<Serie>()">
+        <option value="">Todas as séries</option>
+    </select>
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="card tabela">
+    @if (Model.Itens.Count == 0)
+    {
+        <div class="vazio">Nenhuma turma encontrada.</div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Turma</th><th>Ano</th><th>Turno</th><th>Alunos</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var i in Model.Itens)
+            {
+                <tr>
+                    <td>@i.Turma.Nome</td>
+                    <td>@i.Turma.AnoLetivo</td>
+                    <td>@Html.DisplayFor(_ => i.Turma.Turno)</td>
+                    <td>@i.Alunos</td>
+                    <td class="acoes"><a asp-page="Turma" asp-route-id="@i.Turma.Id">Ver desempenho</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

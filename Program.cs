@@ -11,6 +11,7 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Professores", "Funcionario");
     o.Conventions.AuthorizeFolder("/Disciplinas", "Funcionario");
     o.Conventions.AuthorizeFolder("/Turmas", "Funcionario");
+    o.Conventions.AuthorizeFolder("/Desempenho", "Funcionario");
     // Calendário: todos veem; só o funcionário cadastra
     o.Conventions.AuthorizePage("/Calendario/Evento", "Funcionario");
     o.Conventions.AuthorizePage("/Configuracoes", "Funcionario");
