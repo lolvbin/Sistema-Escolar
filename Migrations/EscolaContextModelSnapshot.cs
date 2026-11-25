@@ -226,6 +226,12 @@ namespace SistemaEscolar.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)");
 
+                    b.Property<int>("MaxAulasDisciplinaDia")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxAulasSeguidas")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("MediaMinima")
                         .HasPrecision(3, 1)
                         .HasColumnType("numeric(3,1)");
@@ -262,6 +268,8 @@ namespace SistemaEscolar.Migrations
                             Endereco = "",
                             FrequenciaMinima = 75.0m,
                             JurosMensal = 1.0m,
+                            MaxAulasDisciplinaDia = 2,
+                            MaxAulasSeguidas = 3,
                             MediaMinima = 6.0m,
                             MediaRecuperacao = 4.0m,
                             ModoRecuperacao = 0,

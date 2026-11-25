@@ -28,7 +28,7 @@ public class DisponibilidadeModel : PageModel
         // aulas que o professor já tem (não dá para marcar indisponível sem ajustar a grade)
         var aulas = await (from g in _db.Grade.AsNoTracking()
                            join td in _db.Set<TurmaDisciplina>().AsNoTracking() on new { g.TurmaId, g.DisciplinaId } equals new { td.TurmaId, td.DisciplinaId }
-                           where td.ProfessorId == id
+                           where td.ProfessorId == id && g.Turma!.Ativa && g.Turma.AnoLetivo >= DateTime.Today.Year
                            select new { g.DiaSemana, g.HorarioAulaId, g.Turma!.Serie, g.Turma.Letra }).ToListAsync();
         foreach (var a in aulas) ComAula[(a.DiaSemana, a.HorarioAulaId)] = $"{a.Serie?.Nome()} {a.Letra}";
         return true;

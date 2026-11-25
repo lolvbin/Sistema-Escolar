@@ -89,6 +89,10 @@ public class Configuracao
     [System.ComponentModel.DataAnnotations.MaxLength(80)] public string NomeEscola { get; set; } = "Sistema Escolar";
     [System.ComponentModel.DataAnnotations.MaxLength(150)] public string Endereco { get; set; } = "";
     [System.ComponentModel.DataAnnotations.MaxLength(30)] public string Telefone { get; set; } = "";
+    /// <summary>Gerador de horário: máximo de aulas seguidas do professor (o intervalo quebra a sequência).</summary>
+    public int MaxAulasSeguidas { get; set; } = 3;
+    /// <summary>Gerador de horário: máximo de aulas da mesma disciplina no mesmo dia, na turma.</summary>
+    public int MaxAulasDisciplinaDia { get; set; } = 2;
 }
 
 /// <summary>Identificação da escola (topo, recibo, declaração, histórico). Carregada na partida e atualizada ao salvar.</summary>
@@ -128,6 +132,8 @@ public static class TabelaConfiguracoes
         Escola.Nome = c.NomeEscola;
         Escola.Endereco = c.Endereco;
         Escola.Telefone = c.Telefone;
+        RegrasHorario.MaxSeguidas = c.MaxAulasSeguidas;
+        RegrasHorario.MaxPorDia = c.MaxAulasDisciplinaDia;
         var logo = db.Logos.AsNoTracking().Select(l => new { l.AtualizadoEm }).FirstOrDefault();
         Escola.LogoVersao = logo == null ? 0 : new DateTimeOffset(DateTime.SpecifyKind(logo.AtualizadoEm, DateTimeKind.Utc)).ToUnixTimeSeconds();
     }

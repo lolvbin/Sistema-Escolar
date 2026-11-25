@@ -12,6 +12,7 @@ public class ProfessorModel : PageModel
     public ProfessorModel(EscolaContext db) => _db = db;
 
     public Data.Professor Professor { get; set; } = null!;
+    [BindProperty(SupportsGet = true)] public int? Ano { get; set; }
     public List<(Turno Turno, GradeView Grade)> Grades { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -19,7 +20,8 @@ public class ProfessorModel : PageModel
         var p = await _db.Professores.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (p == null) return NotFound();
         Professor = p;
-        Grades = await GradesDoProfessor.MontarAsync(_db, id);
+        Ano ??= DateTime.Today.Year;
+        Grades = await GradesDoProfessor.MontarAsync(_db, id, Ano);
         return Page();
     }
 }

@@ -1,0 +1,101 @@
+@page
+@model SistemaEscolar.Pages.Horarios.GeradorModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Gerar horário"; }
+
+<div class="barra">
+    <h1>Gerar horário automático</h1>
+    <a class="btn btn-sec" asp-page="Index" asp-route-ano="@Model.Ano">Voltar</a>
+</div>
+<p class="suave">O sistema monta uma <strong>sugestão</strong> de grade para as turmas marcadas. Nada é gravado até você clicar em "Aplicar", e depois dá para ajustar na grade de cada turma.</p>
+
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+@if (Model.Erro != null) { <div class="card erro-caixa">@Model.Erro</div> }
+
+<div class="card">
+    <h2>O que o gerador respeita</h2>
+    <ul>
+        <li>Cada disciplina recebe as <strong>aulas por semana</strong> definidas na turma (campo "Aulas/semana" da grade da turma).</li>
+        <li>O professor nunca fica em duas turmas ao mesmo tempo (também conta as turmas que não entram na geração).</li>
+        <li>Os horários marcados como <strong>indisponíveis</strong> do professor ficam livres (<a asp-page="Index">Horários › Por professor › Disponibilidade</a>).</li>
+        <li>Limite de <strong>aulas seguidas</strong> do professor (o intervalo quebra a sequência) e de aulas da mesma disciplina no dia. Duas aulas no mesmo dia ficam coladas (aula dupla).</li>
+        <li>Sem professor definido para a disciplina, a aula é colocada sem conferir conflito.</li>
+    </ul>
+    <form method="post" asp-page-handler="Regras" novalidate class="form-linha">
+        <input type="hidden" name="Ano" value="@Model.Ano" />
+        <label for="Seguidas">Máx. aulas seguidas do professor</label>
+        <input id="Seguidas" name="Seguidas" value="@Model.Seguidas" size="2" maxlength="1" inputmode="numeric" autocomplete="off" />
+        <label for="PorDia">Máx. aulas da disciplina por dia</label>
+        <input id="PorDia" name="PorDia" value="@Model.PorDia" size="2" maxlength="1" inputmode="numeric" autocomplete="off" />
+        <button class="btn btn-sec">Salvar limites</button>
+        @if (Model.ErroRegras != null) { <span class="erro">@Model.ErroRegras</span> }
+    </form>
+</div>
+
+<form method="get" class="filtro" style="margin-top:16px">
+    <select name="Ano">
+        @foreach (var a in Matricula.AnosPermitidos) { <option value="@a" selected="@(Model.Ano == a)">@a</option> }
+    </select>
+    <button class="btn btn-sec">Trocar ano</button>
+</form>
+
+<form method="post" asp-page-handler="Gerar" novalidate>
+    <input type="hidden" name="Ano" value="@Model.Ano" />
+    <div class="card tabela">
+        @if (Model.Linhas.Count == 0) { <div class="vazio">Nenhuma turma ativa neste ano.</div> }
+        else
+        {
+            <table>
+                <thead><tr><th></th><th>Turma</th><th>Turno</th><th>Aulas/semana previstas</th><th>Horários da semana</th><th>Grade atual</th></tr></thead>
+                <tbody>
+                @foreach (var l in Model.Linhas)
+                {
+                    <tr>
+                        <td><input type="checkbox" name="Selecionadas" value="@l.Turma.Id" checked="@(Model.Selecionadas.Contains(l.Turma.Id) && l.Carga > 0)" disabled="@(l.Carga == 0)" /></td>
+                        <td>@l.Turma.Nome</td>
+                        <td>@l.Turma.Turno!.Value.Nome()</td>
+                        <td>@(l.Carga > 0 ? l.Carga.ToString() : "não definidas")</td>
+                        <td>@(l.Horarios > 0 ? l.Horarios.ToString() : "sem horários de aula")</td>
+                        <td>@(l.NaGrade > 0 ? l.NaGrade + " aulas (será substituída se aplicar)" : "vazia")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+    <div class="rodape-form"><button class="btn">Gerar sugestão</button></div>
+</form>
+
+@if (Model.Previa != null)
+{
+    <h2 style="margin-top:24px">Sugestão</h2>
+    @if (Model.Completo)
+    {
+        <div class="card aviso">Todas as aulas couberam: @Model.TotalColocadas de @Model.TotalPedidas. Confira abaixo e aplique, ou gere outra opção.</div>
+    }
+    else
+    {
+        <div class="card erro-caixa">Couberam @Model.TotalColocadas de @Model.TotalPedidas aulas. O que faltou está explicado em cada turma; dá para aplicar assim e completar na grade manual, ou ajustar (indisponibilidades, carga, limites) e gerar de novo.</div>
+    }
+    @foreach (var p in Model.Problemas) { <div class="card erro-caixa">@p</div> }
+    @foreach (var pv in Model.Previa)
+    {
+        <h3 style="margin-top:16px">@pv.Turma.Nome <span class="suave">@pv.Turma.AnoLetivo, @pv.Turma.Turno!.Value.Nome() · @pv.Colocadas de @pv.Pedidas aulas</span></h3>
+        @foreach (var f in pv.Faltas) { <div class="erro">Faltaram @f.Faltam aula(s) de @f.Disciplina: @f.Motivo.</div> }
+        <partial name="_Grade" model="pv.Grade" />
+    }
+    <form method="post" asp-page-handler="Aplicar" novalidate class="rodape-form">
+        <input type="hidden" name="Ano" value="@Model.Ano" />
+        @foreach (var pv in Model.Previa) { <input type="hidden" name="Plano[@pv.Turma.Id]" value="@Model.Plano[pv.Turma.Id]" /> }
+        <button class="btn">Aplicar sugestão (substitui a grade das turmas acima)</button>
+    </form>
+    <form method="post" asp-page-handler="Gerar" novalidate class="rodape-form">
+        <input type="hidden" name="Ano" value="@Model.Ano" />
+        @foreach (var pv in Model.Previa) { <input type="hidden" name="Selecionadas" value="@pv.Turma.Id" /> }
+        <button class="btn btn-sec">Gerar outra opção</button>
+    </form>
+}
+@if (Model.SemCarga.Count > 0)
+{
+    <div class="card aviso" style="margin-top:16px">Sem "aulas/semana" definidas (ficaram de fora): @string.Join(", ", Model.SemCarga.Select(t => t.Nome)).</div>
+}

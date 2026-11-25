@@ -46,6 +46,9 @@ public static class RegrasHorario
 {
     public static readonly string[] Dias = { "Segunda", "Terça", "Quarta", "Quinta", "Sexta" };
     public const int MaxAulasSemanais = 30;
+    /// <summary>Limites do gerador (Configuracao): aulas seguidas do professor e aulas da mesma disciplina por dia na turma.</summary>
+    public static int MaxSeguidas { get; set; } = 3;
+    public static int MaxPorDia { get; set; } = 2;
 
     /// <summary>Hora "7:30" ou "07:30". </summary>
     public static bool LerHora(string? txt, out TimeOnly hora) =>
@@ -105,11 +108,12 @@ public class GradeView
 public static class GradesDoProfessor
 {
     /// <summary>Uma grade por turno em que o professor tem aula. Cada célula: disciplina e turma.</summary>
-    public static async Task<List<(Turno Turno, GradeView Grade)>> MontarAsync(EscolaContext db, int professorId)
+    public static async Task<List<(Turno Turno, GradeView Grade)>> MontarAsync(EscolaContext db, int professorId, int? ano = null)
     {
+        int anoGrade = ano ?? DateTime.Today.Year;   // turmas de anos diferentes usam os mesmos horários: mostra um ano por vez
         var aulas = await (from g in db.Grade.AsNoTracking()
                            join td in db.Set<TurmaDisciplina>().AsNoTracking() on new { g.TurmaId, g.DisciplinaId } equals new { td.TurmaId, td.DisciplinaId }
-                           where td.ProfessorId == professorId
+                           where td.ProfessorId == professorId && g.Turma!.AnoLetivo == anoGrade && g.Turma.Ativa
                            select new { g.DiaSemana, g.HorarioAulaId, Disciplina = g.Disciplina!.Nome, g.Turma!.Serie, g.Turma.Letra, g.Turma.AnoLetivo }).ToListAsync();
         var ids = aulas.Select(a => a.HorarioAulaId).Distinct().ToList();
         var horarios = await db.HorariosAula.AsNoTracking().Where(h => ids.Contains(h.Id)).ToListAsync();

@@ -22,6 +22,7 @@ public class TurmaModel : PageModel
     public Dictionary<string, string> Erros { get; set; } = new();
     public Dictionary<int, string> ErrosCarga { get; set; } = new();
     public List<string> AvisosConflito { get; set; } = new();
+    public List<string> AvisosRegras { get; set; } = new();     // limites do gerador (seguidas, aulas por dia): só avisam, não bloqueiam
     [TempData] public string? Aviso { get; set; }
 
     static string Chave(int dia, int horarioId) => $"{dia}-{horarioId}";
@@ -50,7 +51,7 @@ public class TurmaModel : PageModel
         var profs = professores.Distinct().ToList();
         var q = await (from g in _db.Grade.AsNoTracking()
                        join td in _db.Set<TurmaDisciplina>().AsNoTracking() on new { g.TurmaId, g.DisciplinaId } equals new { td.TurmaId, td.DisciplinaId }
-                       where g.TurmaId != turmaId && td.ProfessorId != null && profs.Contains(td.ProfessorId.Value)
+                       where g.TurmaId != turmaId && g.Turma!.AnoLetivo == Turma.AnoLetivo && g.Turma.Ativa && td.ProfessorId != null && profs.Contains(td.ProfessorId.Value)
                        select new { g.DiaSemana, g.HorarioAulaId, g.TurmaId, ProfessorId = td.ProfessorId!.Value }).ToListAsync();
         return q.Select(x => (x.DiaSemana, x.HorarioAulaId, x.TurmaId, x.ProfessorId)).ToList();
     }
@@ -81,8 +82,24 @@ public class TurmaModel : PageModel
         var indis = RegrasHorario.EmHorarioIndisponivel(salvas.Select(g => (g.DiaSemana, g.HorarioAulaId, g.DisciplinaId)), d => porDisc.GetValueOrDefault(d),
             await Indisponiveis(porDisc.Values.Where(p => p != null).Select(p => p!.Value)));
         foreach (var (dia, slot, prof) in indis) Erros[Chave(dia, slot)] = $"{NomeProfessor(prof)} está indisponível neste horário";
+        await AvisarLimites(id, salvas, porDisc);
         if (conf.Count + indis.Count > 0) AvisosConflito.Add($"{conf.Count + indis.Count} problema(s) nesta grade (professor em dois lugares ou indisponível). Ajuste as células marcadas.");
         return Page();
+    }
+
+    // Confere a grade salva contra os limites de aulas seguidas e de aulas da disciplina por dia (avisos, a grade manual continua livre)
+    private async Task AvisarLimites(int id, List<AulaGrade> salvas, Dictionary<int, int?> porDisc)
+    {
+        var profs = porDisc.Values.Where(p => p != null).Select(p => p!.Value).ToList();
+        var outras = (await OcupadasEmOutrasTurmas(id, profs)).Select(x => (x.ProfessorId, x.Dia, x.SlotId)).ToHashSet();
+        var slots = GeradorHorario.SlotsDe(await _db.HorariosAula.AsNoTracking().ToListAsync());
+        var aulas = salvas.Select(g => new AulaProposta(id, g.DiaSemana, g.HorarioAulaId, g.DisciplinaId, porDisc.GetValueOrDefault(g.DisciplinaId))).ToList();
+        var v = GeradorHorario.Verificar(aulas, slots, new HashSet<(int, int, int)>(), outras, RegrasHorario.MaxSeguidas, RegrasHorario.MaxPorDia);
+        string Dia(int d) => RegrasHorario.Dias[d - 1];
+        foreach (var x in v.Where(x => x.Tipo == TipoViolacao.Seguidas).Select(x => (x.ProfessorId, x.Dia)).Distinct())
+            AvisosRegras.Add($"{NomeProfessor(x.ProfessorId!.Value)} tem mais de {RegrasHorario.MaxSeguidas} aula(s) seguida(s) na {Dia(x.Dia).ToLower()}.");
+        foreach (var x in v.Where(x => x.Tipo == TipoViolacao.DisciplinaDia))
+            AvisosRegras.Add($"{Disciplinas.FirstOrDefault(d => d.Id == x.DisciplinaId)?.Nome ?? "Disciplina"}: mais de {RegrasHorario.MaxPorDia} aula(s) na {Dia(x.Dia).ToLower()} ou aulas separadas no mesmo dia.");
     }
 
     private async Task<string> MensagemConflito(ConflitoHorario c)

@@ -11,6 +11,7 @@
 </div>
 @if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
 @foreach (var a in Model.AvisosConflito) { <div class="card erro-caixa">@a</div> }
+@foreach (var a in Model.AvisosRegras) { <div class="card aviso">@a</div> }
 
 @if (Model.Horarios.Count(h => !h.Intervalo) == 0)
 {

@@ -5,7 +5,7 @@
 
 <div class="barra">
     <h1>Horários</h1>
-    <a class="btn btn-sec" asp-page="Aulas">Horários de aula (turnos)</a>
+    <span><a class="btn" asp-page="Gerador" asp-route-ano="@Model.Ano">Gerar automático</a> <a class="btn btn-sec" asp-page="Aulas">Horários de aula (turnos)</a></span>
 </div>
 <p class="suave">Grade semanal de cada turma. O sistema avisa se um professor ficar em duas turmas ao mesmo tempo.</p>
 
