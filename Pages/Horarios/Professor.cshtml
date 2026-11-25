@@ -5,6 +5,6 @@
 
 <div class="barra no-print">
     <h1>Horário: @Model.Professor.Nome</h1>
-    <span><button type="button" class="btn" onclick="window.print()">Imprimir</button> <a class="btn btn-sec" asp-page="Index">Voltar</a></span>
+    <span><a class="btn btn-sec" asp-page="Disponibilidade" asp-route-id="@Model.Professor.Id">Disponibilidade</a> <button type="button" class="btn" onclick="window.print()">Imprimir</button> <a class="btn btn-sec" asp-page="Index">Voltar</a></span>
 </div>
 <partial name="_GradesDoProfessor" model="Model.Grades" />

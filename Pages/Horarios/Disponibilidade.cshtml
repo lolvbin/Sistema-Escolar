@@ -1,0 +1,47 @@
+@page "{id:int}"
+@model SistemaEscolar.Pages.Horarios.DisponibilidadeModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Disponibilidade do professor"; }
+
+<div class="barra">
+    <h1>Disponibilidade: @Model.Professor.Nome</h1>
+    <a class="btn btn-sec" asp-page="Professor" asp-route-id="@Model.Professor.Id">Voltar</a>
+</div>
+<p class="suave">Marque os horários em que o professor <strong>não pode</strong> dar aula. Por padrão ele está disponível em todos. A grade das turmas não deixa colocar aula nos horários marcados.</p>
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+@foreach (var e in Model.Erros) { <div class="card erro-caixa">@e</div> }
+
+@if (Model.Turnos.Count == 0)
+{
+    <div class="card vazio">Cadastre os <a asp-page="Aulas">horários de aula</a> primeiro.</div>
+}
+else
+{
+<form method="post">
+    @foreach (var (turno, horarios) in Model.Turnos)
+    {
+        <h2>@turno.Nome()</h2>
+        <div class="card tabela grade-horario" style="margin-bottom:16px">
+            <table>
+                <thead><tr><th>Horário</th>@foreach (var d in RegrasHorario.Dias) { <th>@d</th> }</tr></thead>
+                <tbody>
+                @foreach (var h in horarios)
+                {
+                    <tr>
+                        <td>@h.Rotulo</td>
+                        @for (int d = 1; d <= 5; d++)
+                        {
+                            <td>
+                                <label><input type="checkbox" name="ind_@(d)_@h.Id" value="1" checked="@Model.Marcados.Contains((d, h.Id))" /> indisponível</label>
+                                @if (Model.ComAula.TryGetValue((d, h.Id), out var t)) { <br /><small class="suave">aula: @t</small> }
+                            </td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    <div class="rodape-form"><button class="btn">Salvar disponibilidade</button></div>
+</form>
+}

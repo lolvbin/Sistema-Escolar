@@ -42,6 +42,7 @@ public class PermissaoTests : IDisposable
         ("/Horarios/Aulas",        "adm sec coord"),
         ("/Horarios/Turma/1",      "adm sec coord"),
         ("/Horarios/Professor/1",  "adm sec coord"),
+        ("/Horarios/Disponibilidade/1", "adm sec coord"),
         ("/MeuHorario",            "prof"),
         ("/Horario",               "aluno resp"),
         ("/Comunicados/Editar",    "adm sec coord"),

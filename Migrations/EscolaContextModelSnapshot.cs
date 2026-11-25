@@ -536,6 +536,24 @@ namespace SistemaEscolar.Migrations
                     b.ToTable("Professores");
                 });
 
+            modelBuilder.Entity("SistemaEscolar.Data.ProfessorIndisponivel", b =>
+                {
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("HorarioAulaId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProfessorId", "DiaSemana", "HorarioAulaId");
+
+                    b.HasIndex("HorarioAulaId");
+
+                    b.ToTable("ProfessorIndisponibilidades", (string)null);
+                });
+
             modelBuilder.Entity("SistemaEscolar.Data.Publicacao", b =>
                 {
                     b.Property<int>("Id")
@@ -936,6 +954,21 @@ namespace SistemaEscolar.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("SistemaEscolar.Data.ProfessorIndisponivel", b =>
+                {
+                    b.HasOne("SistemaEscolar.Data.HorarioAula", null)
+                        .WithMany()
+                        .HasForeignKey("HorarioAulaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemaEscolar.Data.Professor", null)
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SistemaEscolar.Data.Publicacao", b =>

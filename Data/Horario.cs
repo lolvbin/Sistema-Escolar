@@ -32,6 +32,14 @@ public static class HorarioExt
     public static string Nome(this Turno t) => t switch { Turno.Manha => "Manhã", Turno.Tarde => "Tarde", _ => "Noite" };
 }
 
+// Horário em que o professor NÃO pode dar aula (padrão: disponível em todos). A grade da turma respeita isso.
+public class ProfessorIndisponivel
+{
+    public int ProfessorId { get; set; }
+    public int DiaSemana { get; set; }
+    public int HorarioAulaId { get; set; }
+}
+
 public record ConflitoHorario(int Dia, int SlotId, int OutraTurmaId, int ProfessorId);
 
 public static class RegrasHorario
@@ -54,6 +62,17 @@ public static class RegrasHorario
         for (int k = 1; k < ordem.Count; k++)
             if (horarios[ordem[k]].Ini < horarios[ordem[k - 1]].Fim) ruins.Add(ordem[k]);
         return ruins;
+    }
+
+    /// <summary>Aulas propostas em horário que o professor marcou como indisponível. Devolve (dia, horário, professor).</summary>
+    public static List<(int Dia, int SlotId, int ProfessorId)> EmHorarioIndisponivel(
+        IEnumerable<(int Dia, int SlotId, int DisciplinaId)> propostas, Func<int, int?> professorDaDisciplina,
+        IReadOnlySet<(int ProfessorId, int Dia, int SlotId)> indisponiveis)
+    {
+        var r = new List<(int, int, int)>();
+        foreach (var (dia, slot, disc) in propostas)
+            if (professorDaDisciplina(disc) is int prof && indisponiveis.Contains((prof, dia, slot))) r.Add((dia, slot, prof));
+        return r;
     }
 
     /// <summary>

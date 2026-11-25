@@ -152,10 +152,14 @@ public class EscolaContext : DbContext
     public DbSet<Comunicado> Comunicados => Set<Comunicado>();
     public DbSet<HorarioAula> HorariosAula => Set<HorarioAula>();
     public DbSet<AulaGrade> Grade => Set<AulaGrade>();
+    public DbSet<ProfessorIndisponivel> Indisponibilidades => Set<ProfessorIndisponivel>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.Entity<HorarioAula>().ToTable("HorariosAula").HasIndex(x => new { x.Turno, x.Inicio });
+        b.Entity<ProfessorIndisponivel>().ToTable("ProfessorIndisponibilidades").HasKey(x => new { x.ProfessorId, x.DiaSemana, x.HorarioAulaId });
+        b.Entity<ProfessorIndisponivel>().HasOne<Professor>().WithMany().HasForeignKey(x => x.ProfessorId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<ProfessorIndisponivel>().HasOne<HorarioAula>().WithMany().HasForeignKey(x => x.HorarioAulaId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<AulaGrade>().ToTable("GradeAulas").HasKey(x => new { x.TurmaId, x.DiaSemana, x.HorarioAulaId });
         b.Entity<AulaGrade>().HasOne(x => x.Turma).WithMany().HasForeignKey(x => x.TurmaId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<AulaGrade>().HasOne(x => x.Horario).WithMany().HasForeignKey(x => x.HorarioAulaId).OnDelete(DeleteBehavior.Restrict);

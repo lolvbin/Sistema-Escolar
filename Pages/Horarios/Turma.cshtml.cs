@@ -55,6 +55,15 @@ public class TurmaModel : PageModel
         return q.Select(x => (x.DiaSemana, x.HorarioAulaId, x.TurmaId, x.ProfessorId)).ToList();
     }
 
+    private async Task<HashSet<(int ProfessorId, int Dia, int SlotId)>> Indisponiveis(IEnumerable<int> professores)
+    {
+        var profs = professores.Distinct().ToList();
+        var l = await _db.Indisponibilidades.AsNoTracking().Where(x => profs.Contains(x.ProfessorId)).ToListAsync();
+        return l.Select(x => (x.ProfessorId, x.DiaSemana, x.HorarioAulaId)).ToHashSet();
+    }
+
+    private string NomeProfessor(int id) => Disciplinas.FirstOrDefault(d => d.ProfessorId == id)?.Professor ?? "Professor";
+
     public async Task<string> NomeTurma(int id) => (await _db.Turmas.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id)) is { } t ? $"{t.Nome} {t.AnoLetivo}" : $"turma {id}";
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -69,7 +78,10 @@ public class TurmaModel : PageModel
         var conf = RegrasHorario.Conflitos(salvas.Select(g => (g.DiaSemana, g.HorarioAulaId, g.DisciplinaId)), id,
             d => porDisc.GetValueOrDefault(d), await OcupadasEmOutrasTurmas(id, porDisc.Values.Where(p => p != null).Select(p => p!.Value)));
         foreach (var c in conf) Erros[Chave(c.Dia, c.SlotId)] = await MensagemConflito(c);
-        if (conf.Count > 0) AvisosConflito.Add($"{conf.Count} conflito(s) de professor nesta grade. Ajuste as células marcadas.");
+        var indis = RegrasHorario.EmHorarioIndisponivel(salvas.Select(g => (g.DiaSemana, g.HorarioAulaId, g.DisciplinaId)), d => porDisc.GetValueOrDefault(d),
+            await Indisponiveis(porDisc.Values.Where(p => p != null).Select(p => p!.Value)));
+        foreach (var (dia, slot, prof) in indis) Erros[Chave(dia, slot)] = $"{NomeProfessor(prof)} está indisponível neste horário";
+        if (conf.Count + indis.Count > 0) AvisosConflito.Add($"{conf.Count + indis.Count} problema(s) nesta grade (professor em dois lugares ou indisponível). Ajuste as células marcadas.");
         return Page();
     }
 
@@ -111,6 +123,9 @@ public class TurmaModel : PageModel
         var conf = RegrasHorario.Conflitos(propostas, id, d => porDisc.GetValueOrDefault(d),
             await OcupadasEmOutrasTurmas(id, porDisc.Values.Where(p => p != null).Select(p => p!.Value)));
         foreach (var c in conf) Erros[Chave(c.Dia, c.SlotId)] = await MensagemConflito(c);
+        foreach (var (dia, slot, prof) in RegrasHorario.EmHorarioIndisponivel(propostas, d => porDisc.GetValueOrDefault(d),
+                     await Indisponiveis(porDisc.Values.Where(p => p != null).Select(p => p!.Value))))
+            Erros[Chave(dia, slot)] = $"{NomeProfessor(prof)} está indisponível neste horário";
 
         if (Erros.Count > 0 || ErrosCarga.Count > 0) return Page();
 
