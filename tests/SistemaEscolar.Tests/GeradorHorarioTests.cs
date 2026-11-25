@@ -264,11 +264,51 @@ public class GeradorHorarioTests
     [Fact] public void Professor_em_turnos_diferentes_nao_gera_conflito_nem_seguidas()
     {
         var e = Nova(maxSeg: 3); Turma(e, 1); Turma(e, 2, tarde: true);
-        Pede(e, 1, 1, 1, 15); Pede(e, 2, 1, 1, 15);   // professor 1 dá 15 de manhã e 15 à tarde
-        e.MaxPorDia = 3;
+        Pede(e, 1, 1, 1, 10); Pede(e, 1, 2, 2, 5); Pede(e, 2, 1, 1, 10); Pede(e, 2, 2, 2, 5);   // professor 1 dá 10 de manhã e 10 à tarde
         var r = GeradorHorario.Gerar(e);
         Assert.True(r.Completo);
         Assert.Empty(Confere(e, r));
+    }
+
+    // ---------- lacunas (horário vago no meio do dia) ----------
+
+    [Theory]
+    [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)] [InlineData(6)]
+    public void Carga_menor_que_os_horarios_nao_deixa_lacuna(int semente)
+    {
+        var e = Nova(semente: semente); Turma(e, 1); Turma(e, 2);
+        // 17 aulas em 25 horários; professores compartilhados entre as duas turmas
+        Pede(e, 1, 1, 1, 4); Pede(e, 1, 2, 2, 4); Pede(e, 1, 3, 3, 5); Pede(e, 1, 4, 4, 4);
+        Pede(e, 2, 1, 2, 4); Pede(e, 2, 2, 1, 4); Pede(e, 2, 3, 4, 5); Pede(e, 2, 4, 3, 4);
+        var r = GeradorHorario.Gerar(e);
+        Assert.True(r.Completo);
+        Assert.Equal(34, r.Aulas.Count);
+        Assert.Empty(GeradorHorario.Lacunas(r.Aulas, e.Slots));
+        Assert.Empty(Confere(e, r));
+    }
+
+    [Theory]
+    [InlineData(1)] [InlineData(2)] [InlineData(3)]
+    public void Professor_indisponivel_no_fim_do_dia_encurta_o_dia_sem_lacuna(int semente)
+    {
+        var e = Nova(semente: semente); Turma(e, 1);
+        for (int d = 1; d <= 5; d++) Pede(e, 1, d, d, 4);   // 20 aulas, 25 horários
+        // o professor 5 não pode nos dois últimos horários de quarta a sexta; os dias dele têm de acabar antes
+        foreach (var dia in new[] { 3, 4, 5 }) { e.Indisponiveis.Add((5, dia, 4)); e.Indisponiveis.Add((5, dia, 5)); }
+        var r = GeradorHorario.Gerar(e);
+        Assert.True(r.Completo);
+        Assert.Empty(GeradorHorario.Lacunas(r.Aulas, e.Slots));
+        Assert.Empty(Confere(e, r));
+    }
+
+    [Fact] public void Verificador_de_lacunas()
+    {
+        var slots = Manha;   // posições 0..4 = ids 1..5 (intervalo entre 2 e 3 não conta)
+        AulaProposta A(int dia, int slot) => new(1, dia, slot, 1, null);
+        Assert.Empty(GeradorHorario.Lacunas(new[] { A(1, 1), A(1, 2), A(1, 3) }, slots));          // 1º, 2º e 3º: sem lacuna (o intervalo não é horário)
+        Assert.Equal(new[] { (1, 1) }, GeradorHorario.Lacunas(new[] { A(1, 1), A(1, 3) }, slots));  // 2º horário vago no meio
+        Assert.Equal(new[] { (1, 2) }, GeradorHorario.Lacunas(new[] { A(2, 2) }, slots));            // dia começa no 2º horário
+        Assert.Empty(GeradorHorario.Lacunas(new[] { A(1, 1), A(3, 1), A(3, 2) }, slots));            // dias diferentes, cada um colado ao início
     }
 
     // ---------- verificador ----------

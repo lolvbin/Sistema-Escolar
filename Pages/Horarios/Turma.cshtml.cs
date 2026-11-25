@@ -100,6 +100,8 @@ public class TurmaModel : PageModel
             AvisosRegras.Add($"{NomeProfessor(x.ProfessorId!.Value)} tem mais de {RegrasHorario.MaxSeguidas} aula(s) seguida(s) na {Dia(x.Dia).ToLower()}.");
         foreach (var x in v.Where(x => x.Tipo == TipoViolacao.DisciplinaDia))
             AvisosRegras.Add($"{Disciplinas.FirstOrDefault(d => d.Id == x.DisciplinaId)?.Nome ?? "Disciplina"}: mais de {RegrasHorario.MaxPorDia} aula(s) na {Dia(x.Dia).ToLower()} ou aulas separadas no mesmo dia.");
+        foreach (var l in GeradorHorario.Lacunas(aulas, slots))
+            AvisosRegras.Add($"Lacuna na {Dia(l.Dia).ToLower()}: a turma tem horário vago antes da última aula do dia.");
     }
 
     private async Task<string> MensagemConflito(ConflitoHorario c)

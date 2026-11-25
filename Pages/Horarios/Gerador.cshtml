@@ -19,6 +19,7 @@
         <li>O professor nunca fica em duas turmas ao mesmo tempo (também conta as turmas que não entram na geração).</li>
         <li>Os horários marcados como <strong>indisponíveis</strong> do professor ficam livres (<a asp-page="Index">Horários › Por professor › Disponibilidade</a>).</li>
         <li>Limite de <strong>aulas seguidas</strong> do professor (o intervalo quebra a sequência) e de aulas da mesma disciplina no dia. Duas aulas no mesmo dia ficam coladas (aula dupla).</li>
+        <li>A turma <strong>não fica com lacunas</strong>: cada dia começa no 1º horário e não tem horário vago entre duas aulas (se a carga é menor que os horários, o vazio fica no fim do dia).</li>
         <li>Sem professor definido para a disciplina, a aula é colocada sem conferir conflito.</li>
     </ul>
     <form method="post" asp-page-handler="Regras" novalidate class="form-linha">
@@ -81,6 +82,7 @@
     @foreach (var pv in Model.Previa)
     {
         <h3 style="margin-top:16px">@pv.Turma.Nome <span class="suave">@pv.Turma.AnoLetivo, @pv.Turma.Turno!.Value.Nome() · @pv.Colocadas de @pv.Pedidas aulas</span></h3>
+        @foreach (var d in pv.DiasComLacuna) { <div class="erro">Lacuna na @RegrasHorario.Dias[d - 1].ToLower(): sobrou horário vago no meio do dia (acontece quando faltam aulas). Ajuste na grade da turma.</div> }
         @foreach (var f in pv.Faltas) { <div class="erro">Faltaram @f.Faltam aula(s) de @f.Disciplina: @f.Motivo.</div> }
         <partial name="_Grade" model="pv.Grade" />
     }

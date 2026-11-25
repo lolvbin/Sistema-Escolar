@@ -32,6 +32,7 @@ public class GeradorModel : PageModel
         public int Colocadas { get; set; }
         public int Pedidas { get; set; }
         public List<Falta> Faltas { get; set; } = new();
+        public List<int> DiasComLacuna { get; set; } = new();
     }
     public List<PreviaTurma>? Previa { get; set; }
     public List<string> Problemas { get; set; } = new();
@@ -117,6 +118,7 @@ public class GeradorModel : PageModel
                 pv.Grade.Celulas[(a.Dia, a.SlotId)] = new[] { ctx.Disciplinas.GetValueOrDefault(a.DisciplinaId) ?? "?", NomeProf(a.ProfessorId) };
             foreach (var n in res.NaoColocadas.Where(n => n.TurmaId == t.Id))
                 pv.Faltas.Add(new Falta(ctx.Disciplinas.GetValueOrDefault(n.DisciplinaId) ?? "?", n.Faltam, n.Motivo));
+            foreach (var l in res.Lacunas.Where(l => l.TurmaId == t.Id)) pv.DiasComLacuna.Add(l.Dia);
             Previa.Add(pv);
             Plano[t.Id] = Montar(doTurma);
         }

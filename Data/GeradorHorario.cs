@@ -13,8 +13,9 @@ namespace SistemaEscolar.Data;
 //  3. professor não vai nos horários marcados como indisponível
 //  4. professor com no máximo N aulas SEGUIDAS (o intervalo quebra a sequência)
 //  5. disciplina com no máximo M aulas por dia na turma, e se houver mais de uma no dia, elas ficam coladas (aula dupla)
-//  6. cada disciplina recebe exatamente a carga semanal pedida; se não couber, o gerador diz o que faltou
-// Regras MOLES (preferências): espalhar a disciplina pelos dias, equilibrar os dias e não deixar buracos.
+//  6. a turma não tem lacuna: cada dia começa no 1º horário e não deixa horário vago entre duas aulas
+//  7. cada disciplina recebe exatamente a carga semanal pedida; se não couber, o gerador diz o que faltou
+// Regras MOLES (preferências): espalhar a disciplina pelos dias e equilibrar os dias.
 // ---------------------------------------------------------------------------------------------
 
 /// <summary>Um horário de aula (não intervalo). Ordem = posição no turno contando os intervalos (o intervalo quebra a sequência de aulas seguidas).</summary>
@@ -48,7 +49,8 @@ public class ResultadoGerador
     public List<AulaProposta> Aulas { get; } = new();
     public List<NaoColocada> NaoColocadas { get; } = new();
     public List<ProblemaGerador> Problemas { get; } = new();
-    public bool Completo => NaoColocadas.Count == 0;
+    public List<(int TurmaId, int Dia)> Lacunas { get; } = new();   // turma/dia com horário vago no meio (só acontece em grade parcial)
+    public bool Completo => NaoColocadas.Count == 0 && Lacunas.Count == 0;
     public int Nos { get; set; }
     public int Tentativas { get; set; }
 }
@@ -77,6 +79,24 @@ public static class GeradorHorario
     }
 
     public static ResultadoGerador Gerar(EntradaGerador e) => new Busca(e).Executar();
+
+    /// <summary>Lacunas: dias da turma em que a grade não começa no 1º horário ou tem horário vago entre duas aulas. (O intervalo não conta como horário.)</summary>
+    public static List<(int TurmaId, int Dia)> Lacunas(IEnumerable<AulaProposta> aulas, IReadOnlyCollection<SlotAula> slots)
+    {
+        var porSlot = slots.ToDictionary(s => s.Id);
+        var r = new List<(int, int)>();
+        foreach (var tg in aulas.Where(a => porSlot.ContainsKey(a.SlotId)).GroupBy(a => a.TurmaId))
+        {
+            var turno = porSlot[tg.First().SlotId].Turno;
+            var pos = slots.Where(s => s.Turno == turno).OrderBy(s => s.Ordem).Select((s, i) => (s.Id, i)).ToDictionary(x => x.Id, x => x.i);
+            foreach (var dg in tg.Where(a => pos.ContainsKey(a.SlotId)).GroupBy(a => a.Dia))
+            {
+                var usados = dg.Select(a => pos[a.SlotId]).Distinct().ToList();
+                if (usados.Max() + 1 != usados.Count) r.Add((tg.Key, dg.Key));
+            }
+        }
+        return r.OrderBy(x => x.Item1).ThenBy(x => x.Item2).ToList();
+    }
 
     // ----------------------------------------------------------------------------------------
     // Verificador independente: confere uma grade pronta contra TODAS as regras duras.
@@ -331,6 +351,77 @@ public static class GeradorHorario
             return estrito;
         }
 
+        /// <summary>Horários vagos antes da última aula do dia (lacunas), somando todas as turmas. A grade ideal começa no 1º horário e não tem vazio no meio.</summary>
+        int ContarBuracos()
+        {
+            int h = 0;
+            foreach (var t in Ts)
+                for (int d = 0; d < Dias; d++) h += BuracosDoDia(t, d);
+            return h;
+        }
+
+        static int BuracosDoDia(TurmaEst t, int d)
+        {
+            int max = -1, n = 0;
+            for (int p = 0; p < t.N; p++) if (t.Grade[d * t.N + p] != 0) { max = p; n++; }
+            return max < 0 ? 0 : max + 1 - n;
+        }
+
+        Grupo GrupoDe(TurmaEst t, int disciplinaId) { int ti = Ts.IndexOf(t); return Gs.First(x => x.T == ti && x.DisciplinaId == disciplinaId); }
+
+        void Tira(Grupo g, int cell)
+        {
+            var t = Ts[g.T]; int dia = cell / t.N, ord = t.Ordem[cell % t.N];
+            t.Grade[cell] = 0; t.CargaDia[dia]--; g.PorDia[dia]--; g.Ordens[dia] &= ~(1L << ord);
+            if (g.Prof >= 0) mascara[(g.Prof * Dias + dia) * NT + t.TurnoInt] &= ~(1L << ord);
+        }
+
+        void Poe(Grupo g, int cell)
+        {
+            var t = Ts[g.T]; int dia = cell / t.N, ord = t.Ordem[cell % t.N];
+            t.Grade[cell] = g.DisciplinaId; t.CargaDia[dia]++; g.PorDia[dia]++; g.Ordens[dia] |= 1L << ord;
+            if (g.Prof >= 0) mascara[(g.Prof * Dias + dia) * NT + t.TurnoInt] |= 1L << ord;
+        }
+
+        /// <summary>Última chance quando sobrou lacuna (grade parcial): puxa aulas para os horários vagos sem quebrar nenhuma regra dura.</summary>
+        void Compactar()
+        {
+            bool mudou = true;
+            for (int volta = 0; mudou && volta < 50; volta++)
+            {
+                mudou = false;
+                foreach (var t in Ts)
+                {
+                    int antes = 0;
+                    for (int d = 0; d < Dias; d++) antes += BuracosDoDia(t, d);
+                    if (antes == 0) continue;
+                    for (int h = 0; h < t.N * Dias && !mudou; h++)
+                    {
+                        if (t.Grade[h] != 0 || BuracosDoDia(t, h / t.N) == 0) continue;
+                        // só interessa preencher um vazio que está antes da última aula do dia
+                        int dh = h / t.N, ultimo = -1;
+                        for (int p = 0; p < t.N; p++) if (t.Grade[dh * t.N + p] != 0) ultimo = p;
+                        if (h % t.N > ultimo) continue;
+                        for (int c = 0; c < t.N * Dias && !mudou; c++)
+                        {
+                            if (t.Grade[c] == 0 || c == h) continue;
+                            var g = GrupoDe(t, t.Grade[c]);
+                            Tira(g, c);
+                            if (Checar(g, h, true) == Causa.Livre)
+                            {
+                                Poe(g, h);
+                                int depois = 0;
+                                for (int d = 0; d < Dias; d++) depois += BuracosDoDia(t, d);
+                                if (depois < antes) { mudou = true; break; }
+                                Tira(g, h);
+                            }
+                            Poe(g, c);
+                        }
+                    }
+                }
+            }
+        }
+
         int PrimeiroVazio(TurmaEst t, int dia)
         {
             for (int p = 0; p < t.N; p++) if (t.Grade[dia * t.N + p] == 0) return p;
@@ -391,10 +482,13 @@ public static class GeradorHorario
             {
                 // tudo resolvido: achou uma solução melhor que a anterior
                 int pulados = skipped;
-                bestSkipped = pulados;
+                // grade completa mas com horário vago no meio do dia (lacuna) não é perfeita: vale como "falta 1" e a busca segue
+                int custo = pulados == 0 && ContarBuracos() > 0 ? 1 : pulados;
+                if (custo >= bestSkipped) { DesfazForcados(); return false; }
+                bestSkipped = custo;
                 melhor = pilha.Select(x => (x.g, x.cell)).ToArray();
                 DesfazForcados();
-                if (pulados == 0) { perfeito = true; return true; }
+                if (custo == 0) { perfeito = true; return true; }
                 return false;
             }
 
@@ -476,7 +570,7 @@ public static class GeradorHorario
             if (gi < 0) return;
             var g = Gs[gi]; var T = Ts[t];
             int dia = cell / T.N, pos = cell % T.N, ord = T.Ordem[pos];
-            var a = PenGD(g, dia); hard -= a.h; soft -= a.s; soft -= Buracos(t, dia);
+            var a = PenGD(g, dia); hard -= a.h; soft -= a.s; hard -= Buracos(t, dia);
             if (g.Prof >= 0) hard -= PenSeg(g.Prof, dia, T.TurnoInt);
             cel[t][cell] = gi; g.PorDia[dia]++; g.Ordens[dia] |= 1L << ord; tmask[t][dia] |= 1L << pos;
             if (g.Prof >= 0)
@@ -488,7 +582,7 @@ public static class GeradorHorario
                 if (indis[(g.Prof * Dias + dia) * S + T.SlotDenso[pos]]) hard++;
                 hard += PenSeg(g.Prof, dia, T.TurnoInt);
             }
-            a = PenGD(g, dia); hard += a.h; soft += a.s; soft += Buracos(t, dia);
+            a = PenGD(g, dia); hard += a.h; soft += a.s; hard += Buracos(t, dia);
         }
 
         void Tirar(int t, int cell)
@@ -497,7 +591,7 @@ public static class GeradorHorario
             if (gi < 0) return;
             var g = Gs[gi]; var T = Ts[t];
             int dia = cell / T.N, pos = cell % T.N, ord = T.Ordem[pos];
-            var a = PenGD(g, dia); hard -= a.h; soft -= a.s; soft -= Buracos(t, dia);
+            var a = PenGD(g, dia); hard -= a.h; soft -= a.s; hard -= Buracos(t, dia);
             if (g.Prof >= 0) hard -= PenSeg(g.Prof, dia, T.TurnoInt);
             cel[t][cell] = -1; g.PorDia[dia]--; g.Ordens[dia] &= ~(1L << ord); tmask[t][dia] &= ~(1L << pos);
             if (g.Prof >= 0)
@@ -508,7 +602,7 @@ public static class GeradorHorario
                 if (indis[(g.Prof * Dias + dia) * S + T.SlotDenso[pos]]) hard--;
                 hard += PenSeg(g.Prof, dia, T.TurnoInt);
             }
-            a = PenGD(g, dia); hard += a.h; soft += a.s; soft += Buracos(t, dia);
+            a = PenGD(g, dia); hard += a.h; soft += a.s; hard += Buracos(t, dia);
         }
 
         /// <summary>Uma rodada de recozimento. Devolve true se zerou as violações; deixa a grade em cel[][].</summary>
@@ -605,20 +699,23 @@ public static class GeradorHorario
             if (!perfeito && cabe && (abortou || bestSkipped > 0) && E.Recozimentos > 0)
             {
                 var partida = melhor;
-                for (int k = 0; k < E.Recozimentos; k++)
+                Reiniciar();
+                foreach (var (gi, cell) in melhor) Colocar(gi, cell);
+                long melhorCusto = (totalCarga - pilha.Count) * 1000L + ContarBuracos();
+                for (int k = 0; k < E.Recozimentos && melhorCusto > 0; k++)
                 {
-                    bool ok = Recozer(k, k == 0 ? partida : Array.Empty<(int, int)>());
+                    Recozer(k, k == 0 ? partida : Array.Empty<(int, int)>());
                     ReaplicarDoRecozimento();
-                    int colocadas = pilha.Count;
-                    if (totalCarga - colocadas < bestSkipped) { bestSkipped = totalCarga - colocadas; melhor = pilha.Select(x => (x.g, x.cell)).ToArray(); }
+                    long custo = (totalCarga - pilha.Count) * 1000L + ContarBuracos();
+                    if (custo < melhorCusto) { melhorCusto = custo; melhor = pilha.Select(x => (x.g, x.cell)).ToArray(); }
                     r.Tentativas++;
-                    if (ok && bestSkipped == 0) break;
                 }
             }
 
             // reconstrói o melhor resultado e explica o que faltou
             Reiniciar();
             foreach (var (gi, cell) in melhor) Colocar(gi, cell);
+            Compactar();
             foreach (var t in Ts)
                 for (int c = 0; c < t.N * Dias; c++)
                     if (t.Grade[c] != 0)
@@ -629,6 +726,7 @@ public static class GeradorHorario
                     }
             foreach (var g in Gs.Where(x => x.Falta > 0))
                 r.NaoColocadas.Add(new NaoColocada(g.TurmaId, g.DisciplinaId, g.Falta, Explicar(g)));
+            r.Lacunas.AddRange(GeradorHorario.Lacunas(r.Aulas, E.Slots));
             return r;
         }
 
