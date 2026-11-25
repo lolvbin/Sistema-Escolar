@@ -1,0 +1,11 @@
+@using SistemaEscolar.Data
+@model List<(Turno Turno, GradeView Grade)>
+@if (Model.Count == 0)
+{
+    <div class="card vazio">Nenhuma aula na grade ainda.</div>
+}
+@foreach (var (turno, grade) in Model)
+{
+    <h2>@turno.Nome()</h2>
+    <partial name="_Grade" model="grade" />
+}

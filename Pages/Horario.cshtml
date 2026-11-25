@@ -1,0 +1,25 @@
+@page
+@model SistemaEscolar.Pages.HorarioModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Horário"; }
+
+<div class="barra no-print"><h1>Horário de aulas</h1>@if (Model.Grade != null) { <button type="button" class="btn btn-sec" onclick="window.print()">Imprimir</button> }</div>
+
+@if (Model.Aluno == null)
+{
+    <div class="card vazio">Nenhum aluno ligado ao seu acesso. Fale com a secretaria.</div>
+}
+else
+{
+    @if (Model.Alunos.Count > 1)
+    {
+        <div class="abas no-print">
+            @foreach (var a in Model.Alunos) { <a class="@(a.Id == Model.Aluno.Id ? "ativa" : "")" asp-page="Horario" asp-route-alunoId="@a.Id">@a.Nome</a> }
+        </div>
+    }
+    <div class="so-print doc-topo"><strong class="grande">@Escola.Nome</strong><span>Horário de aulas</span></div>
+    <p><strong>@Model.Aluno.Nome</strong>@if (Model.Turma != null) { <span class="suave"> - @Model.Turma.Nome, @Model.Turma.AnoLetivo (@Model.Turma.Turno!.Value.Nome())</span> }</p>
+    @if (Model.Turma == null) { <div class="card vazio">O aluno ainda não está em uma turma.</div> }
+    else if (Model.Grade == null || Model.Grade.Celulas.Count == 0) { <div class="card vazio">O horário desta turma ainda não foi montado.</div> }
+    else { <partial name="_Grade" model="Model.Grade" /> }
+}

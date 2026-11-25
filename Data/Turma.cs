@@ -41,6 +41,8 @@ public class TurmaDisciplina
     public int TurmaId { get; set; }
     public int DisciplinaId { get; set; }
     public int? ProfessorId { get; set; }
+    /// <summary>Aulas por semana desta disciplina na turma (0 = não definido). Usado só como conferência na grade de horários.</summary>
+    public int AulasSemanais { get; set; }
 
     public Turma? Turma { get; set; }
     public Disciplina? Disciplina { get; set; }

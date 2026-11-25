@@ -19,7 +19,8 @@ public enum Area
     [Display(Name = "Calendário (cadastrar eventos)")] Calendario = 128,
     [Display(Name = "Configurações")] Configuracoes = 256,
     [Display(Name = "Usuários (funcionários)")] Usuarios = 512,
-    [Display(Name = "Comunicados (mural)")] Comunicados = 1024
+    [Display(Name = "Comunicados (mural)")] Comunicados = 1024,
+    [Display(Name = "Horários (grade de aulas)")] Horarios = 2048
 }
 
 // Cargos são atalhos: preenchem as áreas típicas ao criar o funcionário (depois dá para ajustar uma a uma).
@@ -48,9 +49,9 @@ public static class AreaExt
     public static Area Padrao(this Cargo c) => c switch
     {
         Cargo.Administrador => Todas,
-        Cargo.Secretaria => Area.Matriculas | Area.Alunos | Area.Professores | Area.Disciplinas | Area.Turmas | Area.Desempenho | Area.Calendario | Area.Comunicados,
+        Cargo.Secretaria => Area.Matriculas | Area.Alunos | Area.Professores | Area.Disciplinas | Area.Turmas | Area.Desempenho | Area.Calendario | Area.Comunicados | Area.Horarios,
         Cargo.Financeiro => Area.Financeiro | Area.Calendario,
-        _ => Area.Desempenho | Area.Turmas | Area.Disciplinas | Area.Professores | Area.Calendario | Area.Comunicados,
+        _ => Area.Desempenho | Area.Turmas | Area.Disciplinas | Area.Professores | Area.Calendario | Area.Comunicados | Area.Horarios,
     };
 
     /// <summary>"Todas" ou os nomes separados por vírgula.</summary>
@@ -58,7 +59,7 @@ public static class AreaExt
     {
         if (a == Area.Nenhuma) return "nenhuma";
         if ((a & Todas) == Todas) return "Todas";
-        return string.Join(", ", Individuais.Where(x => a.HasFlag(x)).Select(x => x.Nome().Replace(" (consulta)", "").Replace(" (cadastrar eventos)", "").Replace(" (funcionários)", "").Replace(" (mural)", "")));
+        return string.Join(", ", Individuais.Where(x => a.HasFlag(x)).Select(x => x.Nome().Replace(" (consulta)", "").Replace(" (cadastrar eventos)", "").Replace(" (funcionários)", "").Replace(" (mural)", "").Replace(" (grade de aulas)", "")));
     }
 
     /// <summary>Áreas gravadas no cookie de login (só funcionário tem).</summary>

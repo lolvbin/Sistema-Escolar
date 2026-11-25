@@ -192,3 +192,12 @@ button.link { background: none; border: 0; padding: 0; margin-right: 10px; font:
 .mural { margin-bottom: 20px; }
 .mural h2 { margin: 0 0 8px; }
 .pub.fixado { border-left: 4px solid var(--aviso); }
+
+/* Horário escolar (grade) */
+.grade-horario table { width: 100%; }
+.grade-horario th, .grade-horario td { vertical-align: top; }
+.grade-horario select { width: 100%; min-width: 110px; }
+.grade-horario .intervalo td { background: rgba(128, 128, 128, .12); text-align: center; }
+.celula-erro { outline: 2px solid var(--erro, #c0392b); outline-offset: -2px; }
+.erro-caixa { border-color: var(--erro, #c0392b); color: var(--erro, #c0392b); margin-bottom: 12px; }
+@media print { .grade-horario select { border: 0; background: transparent; appearance: none; padding: 0; color: #000; } }

@@ -63,6 +63,29 @@ namespace SistemaEscolar.Migrations
                     b.ToTable("Alunos");
                 });
 
+            modelBuilder.Entity("SistemaEscolar.Data.AulaGrade", b =>
+                {
+                    b.Property<int>("TurmaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("HorarioAulaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DisciplinaId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("TurmaId", "DiaSemana", "HorarioAulaId");
+
+                    b.HasIndex("DisciplinaId");
+
+                    b.HasIndex("HorarioAulaId");
+
+                    b.ToTable("GradeAulas", (string)null);
+                });
+
             modelBuilder.Entity("SistemaEscolar.Data.AulasDadas", b =>
                 {
                     b.Property<int>("TurmaId")
@@ -345,6 +368,33 @@ namespace SistemaEscolar.Migrations
                     b.ToTable("Frequencias", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaEscolar.Data.HorarioAula", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<TimeOnly>("Fim")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("Inicio")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<bool>("Intervalo")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Turno")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Turno", "Inicio");
+
+                    b.ToTable("HorariosAula", (string)null);
+                });
+
             modelBuilder.Entity("SistemaEscolar.Data.LogoEscola", b =>
                 {
                     b.Property<int>("Id")
@@ -616,6 +666,9 @@ namespace SistemaEscolar.Migrations
                     b.Property<int>("DisciplinaId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("AulasSemanais")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("ProfessorId")
                         .HasColumnType("integer");
 
@@ -749,6 +802,33 @@ namespace SistemaEscolar.Migrations
 
                     b.Navigation("Financeiro")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SistemaEscolar.Data.AulaGrade", b =>
+                {
+                    b.HasOne("SistemaEscolar.Data.Disciplina", "Disciplina")
+                        .WithMany()
+                        .HasForeignKey("DisciplinaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaEscolar.Data.HorarioAula", "Horario")
+                        .WithMany()
+                        .HasForeignKey("HorarioAulaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaEscolar.Data.Turma", "Turma")
+                        .WithMany()
+                        .HasForeignKey("TurmaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Disciplina");
+
+                    b.Navigation("Horario");
+
+                    b.Navigation("Turma");
                 });
 
             modelBuilder.Entity("SistemaEscolar.Data.AulasDadas", b =>

@@ -1,0 +1,50 @@
+@page
+@model SistemaEscolar.Pages.Horarios.IndexModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Horários"; }
+
+<div class="barra">
+    <h1>Horários</h1>
+    <a class="btn btn-sec" asp-page="Aulas">Horários de aula (turnos)</a>
+</div>
+<p class="suave">Grade semanal de cada turma. O sistema avisa se um professor ficar em duas turmas ao mesmo tempo.</p>
+
+@if (Model.TotalHorarios == 0)
+{
+    <div class="card aviso">Primeiro cadastre os <a asp-page="Aulas">horários de aula</a> de cada turno (ex.: 07:30 às 08:20).</div>
+}
+
+<form method="get" class="filtro">
+    <select name="Ano">
+        @foreach (var a in Matricula.AnosPermitidos) { <option value="@a" selected="@(Model.Ano == a)">@a</option> }
+    </select>
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="card tabela">
+    @if (Model.Turmas.Count == 0) { <div class="vazio">Nenhuma turma ativa neste ano.</div> }
+    else
+    {
+        <table>
+            <thead><tr><th>Turma</th><th>Turno</th><th>Aulas na grade</th><th>Previstas/semana</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var l in Model.Turmas)
+            {
+                <tr>
+                    <td>@l.Turma.Nome</td>
+                    <td>@l.Turma.Turno!.Value.Nome()</td>
+                    <td>@l.Aulas@(l.Slots > 0 ? " de " + l.Slots + " horários" : "")</td>
+                    <td>@(l.Previstas > 0 ? l.Previstas.ToString() : "-")</td>
+                    <td class="acoes"><a asp-page="Turma" asp-route-id="@l.Turma.Id">Grade</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="card tabela" style="margin-top:16px">
+    <h2>Por professor</h2>
+    <p class="suave">Veja a semana de cada professor (só leitura).</p>
+    @foreach (var p in Model.Professores) { <a class="badge" asp-page="Professor" asp-route-id="@p.Id">@p.Nome</a> }
+</div>

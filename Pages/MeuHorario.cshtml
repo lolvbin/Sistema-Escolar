@@ -1,0 +1,9 @@
+@page
+@model SistemaEscolar.Pages.MeuHorarioModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Meu horário"; }
+
+<div class="barra no-print"><h1>Meu horário</h1><button type="button" class="btn btn-sec" onclick="window.print()">Imprimir</button></div>
+<div class="so-print doc-topo"><strong class="grande">@Escola.Nome</strong><span>Horário do(a) professor(a) @Model.Professor?.Nome</span></div>
+@if (Model.Professor == null) { <div class="card vazio">Seu cadastro de professor não foi encontrado.</div> }
+else { <partial name="_GradesDoProfessor" model="Model.Grades" /> }

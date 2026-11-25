@@ -44,7 +44,7 @@ public class AreasTests
         var valores = AreaExt.Individuais.Select(a => (int)a).ToList();
         Assert.All(valores, v => Assert.Equal(1, System.Numerics.BitOperations.PopCount((uint)v)));
         Assert.Equal(valores.Count, valores.Distinct().Count());
-        Assert.Equal(2047, (int)AreaExt.Todas); // a migration AreasDoFuncionario usou 1023 (as 10 primeiras); Comunicados (1024) veio depois, com a própria migration
+        Assert.Equal(4095, (int)AreaExt.Todas); // a migration AreasDoFuncionario usou 1023 (as 10 primeiras); Comunicados (1024) e Horários (2048) vieram depois, cada um com a própria migration
     }
 
     [Fact]

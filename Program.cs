@@ -20,6 +20,9 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Usuarios", "Area:Usuarios");
     o.Conventions.AuthorizeFolder("/Log", "Area:Configuracoes");
     o.Conventions.AuthorizeFolder("/Comunicados", "Area:Comunicados");
+    o.Conventions.AuthorizeFolder("/Horarios", "Area:Horarios");
+    o.Conventions.AuthorizePage("/MeuHorario", "Professor");
+    o.Conventions.AuthorizePage("/Horario", "Boletim");
     o.Conventions.AllowAnonymousToPage("/PrimeiroAcesso");
     o.Conventions.AuthorizePage("/Mensalidades", "Responsavel");
     // Notas: lançamento só pelo professor

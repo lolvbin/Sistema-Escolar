@@ -1,0 +1,45 @@
+@page
+@model SistemaEscolar.Pages.Horarios.AulasModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Horários de aula"; var posted = Request.HasFormContentType; }
+
+<div class="barra"><h1>Horários de aula</h1><a class="btn btn-sec" asp-page="Index">Voltar</a></div>
+<p class="suave">Defina os horários de cada turno (aulas e intervalos). Eles viram as linhas da grade de cada turma. Horários não podem se sobrepor dentro do turno.</p>
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+
+<form method="post" novalidate>
+@foreach (var turno in Enum.GetValues<Turno>())
+{
+    <div class="card tabela" style="margin-bottom:16px">
+        <h2>@turno.Nome()</h2>
+        <table>
+            <thead><tr><th>Início</th><th>Fim</th><th>Intervalo</th><th>Remover</th></tr></thead>
+            <tbody>
+            @foreach (var h in Model.Existentes.Where(x => x.Turno == turno))
+            {
+                var k = h.Id.ToString();
+                <tr>
+                    <td><input name="ini_@k" value="@(posted ? Model.V("ini_" + k) : h.Inicio.ToString("HH\\:mm"))" size="6" maxlength="5" autocomplete="off" /></td>
+                    <td><input name="fim_@k" value="@(posted ? Model.V("fim_" + k) : h.Fim.ToString("HH\\:mm"))" size="6" maxlength="5" autocomplete="off" />
+                        @if (Model.Erros.TryGetValue(k, out var e)) { <span class="erro">@e</span> }</td>
+                    <td><input type="checkbox" name="int_@k" value="1" checked="@(posted ? Model.V("int_" + k) != "" : h.Intervalo)" /></td>
+                    <td><input type="checkbox" name="del_@k" value="1" checked="@(posted && Model.V("del_" + k) != "")" /></td>
+                </tr>
+            }
+            @for (int i = 0; i < AulasModel.Novos; i++)
+            {
+                var k = $"n{(int)turno}_{i}";
+                <tr>
+                    <td><input name="ini_@k" value="@Model.V("ini_" + k)" size="6" maxlength="5" placeholder="07:30" autocomplete="off" /></td>
+                    <td><input name="fim_@k" value="@Model.V("fim_" + k)" size="6" maxlength="5" placeholder="08:20" autocomplete="off" />
+                        @if (Model.Erros.TryGetValue(k, out var e2)) { <span class="erro">@e2</span> }</td>
+                    <td><input type="checkbox" name="int_@k" value="1" checked="@(Model.V("int_" + k) != "")" /></td>
+                    <td class="suave">novo</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+    <div class="rodape-form"><button class="btn">Salvar horários</button></div>
+</form>

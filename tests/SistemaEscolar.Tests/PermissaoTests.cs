@@ -38,6 +38,12 @@ public class PermissaoTests : IDisposable
         ("/Usuarios/Create",       "adm"),
         ("/Log",                   "adm"),
         ("/Comunicados",           "adm sec coord"),
+        ("/Horarios",              "adm sec coord"),
+        ("/Horarios/Aulas",        "adm sec coord"),
+        ("/Horarios/Turma/1",      "adm sec coord"),
+        ("/Horarios/Professor/1",  "adm sec coord"),
+        ("/MeuHorario",            "prof"),
+        ("/Horario",               "aluno resp"),
         ("/Comunicados/Editar",    "adm sec coord"),
         // páginas com id: sem dados, quem pode abrir recebe 404 (passou da autorização); quem não pode é barrado
         ("/Matriculas/Declaracao/1", "adm sec"),

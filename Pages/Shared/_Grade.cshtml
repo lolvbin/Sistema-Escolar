@@ -1,0 +1,27 @@
+@using SistemaEscolar.Data
+@model GradeView
+@* Grade semanal só para leitura: horários nas linhas, dias nas colunas. Intervalo ocupa a linha toda. *@
+<div class="card tabela grade-horario">
+    <table>
+        <thead><tr><th>Horário</th>@foreach (var d in RegrasHorario.Dias) { <th>@d</th> }</tr></thead>
+        <tbody>
+        @foreach (var h in Model.Horarios)
+        {
+            @if (h.Intervalo)
+            {
+                <tr class="intervalo"><td>@h.Rotulo</td><td colspan="5" class="suave">Intervalo</td></tr>
+            }
+            else
+            {
+                <tr>
+                    <td>@h.Rotulo</td>
+                    @for (int d = 1; d <= 5; d++)
+                    {
+                        <td>@if (Model.Celulas.TryGetValue((d, h.Id), out var linhas)) { @for (int i = 0; i < linhas.Length; i++) { if (i == 0) { <strong>@linhas[i]</strong> } else { <br /><small class="suave">@linhas[i]</small> } } }</td>
+                    }
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,85 @@
+@page "{id:int}"
+@model SistemaEscolar.Pages.Horarios.TurmaModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Horário da turma"; var t = Model.Turma; }
+
+<div class="barra">
+    <h1>Horário: @t.Nome <span class="suave">@t.AnoLetivo, @t.Turno!.Value.Nome()</span></h1>
+    <span class="no-print">
+        <a class="btn btn-sec" asp-page="Index" asp-route-ano="@t.AnoLetivo">Voltar</a>
+    </span>
+</div>
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+@foreach (var a in Model.AvisosConflito) { <div class="card erro-caixa">@a</div> }
+
+@if (Model.Horarios.Count(h => !h.Intervalo) == 0)
+{
+    <div class="card vazio">O turno da turma (@t.Turno!.Value.Nome()) ainda não tem horários de aula. <a asp-page="Aulas">Cadastre os horários</a> primeiro.</div>
+}
+else if (Model.Disciplinas.Count == 0)
+{
+    <div class="card vazio">A turma ainda não tem disciplinas. Defina as disciplinas e os professores em <a asp-page="/Turmas/Details" asp-route-id="@t.Id">Turmas</a>.</div>
+}
+else
+{
+<form method="post" novalidate>
+    <div class="card tabela grade-horario">
+        <table>
+            <thead><tr><th>Horário</th>@foreach (var d in RegrasHorario.Dias) { <th>@d</th> }</tr></thead>
+            <tbody>
+            @foreach (var h in Model.Horarios)
+            {
+                @if (h.Intervalo)
+                {
+                    <tr class="intervalo"><td>@h.Rotulo</td><td colspan="5" class="suave">Intervalo</td></tr>
+                }
+                else
+                {
+                    <tr>
+                        <td>@h.Rotulo</td>
+                        @for (int d = 1; d <= 5; d++)
+                        {
+                            var k = d + "-" + h.Id;
+                            var sel = Model.Celula.GetValueOrDefault(k);
+                            <td class="@(Model.Erros.ContainsKey(k) ? "celula-erro" : null)">
+                                <select name="Celula[@k]">
+                                    <option value="">-</option>
+                                    @foreach (var disc in Model.Disciplinas)
+                                    {
+                                        <option value="@disc.Id" selected="@(sel == disc.Id.ToString())">@disc.Nome</option>
+                                    }
+                                </select>
+                                @if (Model.Erros.TryGetValue(k, out var e)) { <small class="erro">@e</small> }
+                            </td>
+                        }
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card tabela" style="margin-top:16px">
+        <h2>Disciplinas da turma</h2>
+        <p class="suave">"Aulas/semana" é opcional: serve para conferir se a grade tem a carga prevista.</p>
+        <table>
+            <thead><tr><th>Disciplina</th><th>Professor</th><th>Aulas/semana</th><th>Na grade</th></tr></thead>
+            <tbody>
+            @foreach (var d in Model.Disciplinas)
+            {
+                var aloc = Model.Alocadas(d.Id);
+                int prev = int.TryParse(Model.Carga.GetValueOrDefault(d.Id), out var pv) ? pv : 0;
+                <tr>
+                    <td>@d.Nome</td>
+                    <td>@(d.Professor ?? "sem professor (sem conferência de conflito)")</td>
+                    <td><input name="Carga[@d.Id]" value="@Model.Carga.GetValueOrDefault(d.Id)" size="3" maxlength="2" inputmode="numeric" autocomplete="off" />
+                        @if (Model.ErrosCarga.TryGetValue(d.Id, out var ec)) { <span class="erro">@ec</span> }</td>
+                    <td><span class="@(prev > 0 && aloc != prev ? "erro" : null)">@aloc@(prev > 0 ? " de " + prev : "")</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="rodape-form"><button class="btn">Salvar grade</button></div>
+</form>
+}

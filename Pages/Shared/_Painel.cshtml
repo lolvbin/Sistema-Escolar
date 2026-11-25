@@ -13,6 +13,7 @@
     @if (User.TemArea(Area.Turmas)) { <a class="card atalho" asp-page="/Turmas/Index"><strong>Turmas</strong><br /><span class="suave">Alunos e professores por turma</span></a> }
     @if (User.TemArea(Area.Desempenho)) { <a class="card atalho" asp-page="/Desempenho/Index"><strong>Notas e frequência</strong><br /><span class="suave">Desempenho dos alunos por turma</span></a> }
     @if (User.TemArea(Area.Financeiro)) { <a class="card atalho" asp-page="/Financeiro/Index"><strong>Financeiro</strong><br /><span class="suave">Contratos, mensalidades e pagamentos</span></a> }
+    @if (User.TemArea(Area.Horarios)) { <a class="card atalho" asp-page="/Horarios/Index"><strong>Horários</strong><br /><span class="suave">Grade de aulas por turma e professor</span></a> }
     @if (User.TemArea(Area.Comunicados)) { <a class="card atalho" asp-page="/Comunicados/Index"><strong>Comunicados</strong><br /><span class="suave">Mural de avisos da escola</span></a> }
     <a class="card atalho" asp-page="/Calendario/Index"><strong>Calendário</strong><br /><span class="suave">Eventos, provas e feriados</span></a>
     @if (User.TemArea(Area.Configuracoes)) { <a class="card atalho" asp-page="/Log/Index"><strong>Registro de ações</strong><br /><span class="suave">Quem fez o quê</span></a> }
@@ -21,6 +22,7 @@
 }
 else if (Model == Perfil.Professor)
 {
+    <a class="card atalho" asp-page="/MeuHorario"><strong>Meu horário</strong><br /><span class="suave">Minhas aulas na semana</span></a>
     <a class="card atalho" asp-page="/Notas/Index"><strong>Notas e frequência</strong><br /><span class="suave">Lançar por turma e bimestre</span></a>
     <a class="card atalho" asp-page="/Calendario/Index"><strong>Calendário</strong><br /><span class="suave">Eventos, provas e feriados</span></a>
     <a class="card atalho" asp-page="/SalaDeAula/Index"><strong>Sala de aula</strong><br /><span class="suave">Mural e atividades da turma</span></a>
@@ -28,6 +30,7 @@ else if (Model == Perfil.Professor)
 else if (Model == Perfil.Responsavel)
 {
     <a class="card atalho" asp-page="/Boletim"><strong>Boletim</strong><br /><span class="suave">Notas, frequência e situação</span></a>
+    <a class="card atalho" asp-page="/Horario"><strong>Horário</strong><br /><span class="suave">Aulas da semana</span></a>
     <a class="card atalho" asp-page="/SalaDeAula/Index"><strong>Sala de aula</strong><br /><span class="suave">Mural e atividades da turma</span></a>
     <a class="card atalho" asp-page="/Mensalidades"><strong>Mensalidades</strong><br /><span class="suave">Cobranças e pagamentos</span></a>
     <a class="card atalho" asp-page="/Calendario/Index"><strong>Calendário</strong><br /><span class="suave">Eventos, provas e feriados</span></a>
@@ -35,6 +38,7 @@ else if (Model == Perfil.Responsavel)
 else
 {
     <a class="card atalho" asp-page="/Boletim"><strong>Boletim</strong><br /><span class="suave">Notas, frequência e situação</span></a>
+    <a class="card atalho" asp-page="/Horario"><strong>Horário</strong><br /><span class="suave">Aulas da semana</span></a>
     <a class="card atalho" asp-page="/Calendario/Index"><strong>Calendário</strong><br /><span class="suave">Eventos, provas e feriados</span></a>
     <a class="card atalho" asp-page="/SalaDeAula/Index"><strong>Sala de aula</strong><br /><span class="suave">Mural e atividades da turma</span></a>
 }

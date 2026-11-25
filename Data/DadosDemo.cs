@@ -83,6 +83,7 @@ public static class DadosDemo
         var contaluno = db.Usuarios.FirstOrDefault(u => u.Email == "aluno@escola.test");
         int idx = 0, p = 0;
         var primeiro = true;
+        var criadas = new List<(Turma Turma, List<(Disciplina Disc, Professor Prof)> Atrib)>();
         var existentes = db.Turmas.Where(t => t.AnoLetivo == ano).Select(t => new { t.Serie, t.Letra }).ToList();
 
         foreach (var pl in planos)
@@ -97,6 +98,7 @@ public static class DadosDemo
             var atrib = discs.Select(d => (Disc: d, Prof: profs[p++ % profs.Count])).ToList();
             foreach (var x in atrib)
                 db.Set<TurmaDisciplina>().Add(new TurmaDisciplina { TurmaId = turma.Id, DisciplinaId = x.Disc.Id, ProfessorId = x.Prof.Id });
+            criadas.Add((turma, atrib));
             Mural(db, turma.Id, atrib.Select(x => (x.Disc.Id, x.Disc.Nome, x.Prof.Id)).ToList(), hoje);
             foreach (var d in discs)
                 for (int b = 1; b <= TabelaNotas.Bimestres; b++)
@@ -184,6 +186,8 @@ public static class DadosDemo
         foreach (var e in ev)
             db.Eventos.Add(new Evento { Titulo = e.T, Tipo = e.Tp, Inicio = e.I.Date, Fim = e.F?.Date, Descricao = Marca });
 
+        MontarHorarios(db, criadas);
+
         // Comunicados do mural (autor marcado para a limpeza achar)
         var comunicados = new (string T, string Tx, PublicoComunicado P, int Dias, bool Fix, int Atras)[]
         {
@@ -202,6 +206,47 @@ public static class DadosDemo
     }
 
     // Algumas publicações da Sala de aula por turma (avisos, materiais e atividades, uma já encerrada)
+    // Horários de aula (só se a escola ainda não tem nenhum) e uma grade para cada turma criada, sem professor em dois lugares
+    static void MontarHorarios(EscolaContext db, List<(Turma Turma, List<(Disciplina Disc, Professor Prof)> Atrib)> turmas)
+    {
+        if (!db.HorariosAula.Any())
+        {
+            void Slot(Turno t, string i, string f, bool inter = false)
+            {
+                RegrasHorario.LerHora(i, out var ini); RegrasHorario.LerHora(f, out var fim);
+                db.HorariosAula.Add(new HorarioAula { Turno = t, Inicio = ini, Fim = fim, Intervalo = inter });
+            }
+            Slot(Turno.Manha, "07:30", "08:20"); Slot(Turno.Manha, "08:20", "09:10"); Slot(Turno.Manha, "09:10", "09:30", true);
+            Slot(Turno.Manha, "09:30", "10:20"); Slot(Turno.Manha, "10:20", "11:10"); Slot(Turno.Manha, "11:10", "12:00");
+            Slot(Turno.Tarde, "13:00", "13:50"); Slot(Turno.Tarde, "13:50", "14:40"); Slot(Turno.Tarde, "14:40", "15:00", true);
+            Slot(Turno.Tarde, "15:00", "15:50"); Slot(Turno.Tarde, "15:50", "16:40"); Slot(Turno.Tarde, "16:40", "17:30");
+            db.SaveChanges();
+        }
+        var slots = db.HorariosAula.AsNoTracking().Where(h => !h.Intervalo).ToList();
+        var ocupado = new HashSet<(int Dia, int Slot, int Prof)>();
+        foreach (var (turma, atrib) in turmas)
+        {
+            var doTurno = slots.Where(h => h.Turno == turma.Turno).OrderBy(h => h.Inicio).ToList();
+            if (doTurno.Count == 0 || atrib.Count == 0) continue;
+            var conta = atrib.ToDictionary(a => a.Disc.Id, _ => 0);
+            for (int dia = 1; dia <= 5; dia++)
+            {
+                var hoje = new HashSet<int>();
+                foreach (var h in doTurno)
+                {
+                    var escolha = atrib.Where(a => !ocupado.Contains((dia, h.Id, a.Prof.Id)))
+                        .OrderBy(a => hoje.Contains(a.Disc.Id) ? 1 : 0).ThenBy(a => conta[a.Disc.Id]).ThenBy(a => a.Disc.Nome).FirstOrDefault();
+                    if (escolha.Disc == null) continue;
+                    ocupado.Add((dia, h.Id, escolha.Prof.Id)); hoje.Add(escolha.Disc.Id); conta[escolha.Disc.Id]++;
+                    db.Grade.Add(new AulaGrade { TurmaId = turma.Id, DiaSemana = dia, HorarioAulaId = h.Id, DisciplinaId = escolha.Disc.Id });
+                }
+            }
+            foreach (var td in db.Set<TurmaDisciplina>().Where(x => x.TurmaId == turma.Id).ToList())
+                td.AulasSemanais = conta.GetValueOrDefault(td.DisciplinaId);
+        }
+        db.SaveChanges();
+    }
+
     static void Mural(EscolaContext db, int turmaId, List<(int Id, string Nome, int ProfId)> discs, DateTime hoje)
     {
         DateTime Agora(int diasAtras, int hora) => DateTime.SpecifyKind(hoje.AddDays(-diasAtras).AddHours(hora), DateTimeKind.Unspecified);

@@ -150,9 +150,16 @@ public class EscolaContext : DbContext
     public DbSet<RegistroLog> Registros => Set<RegistroLog>();
     public DbSet<LogoEscola> Logos => Set<LogoEscola>();
     public DbSet<Comunicado> Comunicados => Set<Comunicado>();
+    public DbSet<HorarioAula> HorariosAula => Set<HorarioAula>();
+    public DbSet<AulaGrade> Grade => Set<AulaGrade>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        b.Entity<HorarioAula>().ToTable("HorariosAula").HasIndex(x => new { x.Turno, x.Inicio });
+        b.Entity<AulaGrade>().ToTable("GradeAulas").HasKey(x => new { x.TurmaId, x.DiaSemana, x.HorarioAulaId });
+        b.Entity<AulaGrade>().HasOne(x => x.Turma).WithMany().HasForeignKey(x => x.TurmaId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<AulaGrade>().HasOne(x => x.Horario).WithMany().HasForeignKey(x => x.HorarioAulaId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<AulaGrade>().HasOne(x => x.Disciplina).WithMany().HasForeignKey(x => x.DisciplinaId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<Comunicado>().Property(x => x.ValidoAte).HasColumnType("date");
         b.Entity<Comunicado>().Property(x => x.CriadoEm).HasColumnType("timestamp without time zone");
         b.Entity<Comunicado>().Property(x => x.EditadoEm).HasColumnType("timestamp without time zone");
