@@ -18,7 +18,8 @@ public enum Area
     [Display(Name = "Financeiro")] Financeiro = 64,
     [Display(Name = "Calendário (cadastrar eventos)")] Calendario = 128,
     [Display(Name = "Configurações")] Configuracoes = 256,
-    [Display(Name = "Usuários (funcionários)")] Usuarios = 512
+    [Display(Name = "Usuários (funcionários)")] Usuarios = 512,
+    [Display(Name = "Comunicados (mural)")] Comunicados = 1024
 }
 
 // Cargos são atalhos: preenchem as áreas típicas ao criar o funcionário (depois dá para ajustar uma a uma).
@@ -47,9 +48,9 @@ public static class AreaExt
     public static Area Padrao(this Cargo c) => c switch
     {
         Cargo.Administrador => Todas,
-        Cargo.Secretaria => Area.Matriculas | Area.Alunos | Area.Professores | Area.Disciplinas | Area.Turmas | Area.Desempenho | Area.Calendario,
+        Cargo.Secretaria => Area.Matriculas | Area.Alunos | Area.Professores | Area.Disciplinas | Area.Turmas | Area.Desempenho | Area.Calendario | Area.Comunicados,
         Cargo.Financeiro => Area.Financeiro | Area.Calendario,
-        _ => Area.Desempenho | Area.Turmas | Area.Disciplinas | Area.Professores | Area.Calendario,
+        _ => Area.Desempenho | Area.Turmas | Area.Disciplinas | Area.Professores | Area.Calendario | Area.Comunicados,
     };
 
     /// <summary>"Todas" ou os nomes separados por vírgula.</summary>
@@ -57,7 +58,7 @@ public static class AreaExt
     {
         if (a == Area.Nenhuma) return "nenhuma";
         if ((a & Todas) == Todas) return "Todas";
-        return string.Join(", ", Individuais.Where(x => a.HasFlag(x)).Select(x => x.Nome().Replace(" (consulta)", "").Replace(" (cadastrar eventos)", "").Replace(" (funcionários)", "")));
+        return string.Join(", ", Individuais.Where(x => a.HasFlag(x)).Select(x => x.Nome().Replace(" (consulta)", "").Replace(" (cadastrar eventos)", "").Replace(" (funcionários)", "").Replace(" (mural)", "")));
     }
 
     /// <summary>Áreas gravadas no cookie de login (só funcionário tem).</summary>

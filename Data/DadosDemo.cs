@@ -9,6 +9,7 @@ namespace SistemaEscolar.Data;
 public static class DadosDemo
 {
     const string Marca = "[demo]";
+    const string AutorDemo = "Secretaria (demonstração)";
     const string SenhaDev = "Escola@123";
 
     static readonly string[] Femininos = { "Ana", "Beatriz", "Camila", "Daniela", "Eduarda", "Fernanda", "Gabriela", "Helena", "Isabela", "Julia", "Larissa", "Manuela", "Natalia", "Olivia", "Patricia" };
@@ -182,6 +183,19 @@ public static class DadosDemo
         };
         foreach (var e in ev)
             db.Eventos.Add(new Evento { Titulo = e.T, Tipo = e.Tp, Inicio = e.I.Date, Fim = e.F?.Date, Descricao = Marca });
+
+        // Comunicados do mural (autor marcado para a limpeza achar)
+        var comunicados = new (string T, string Tx, PublicoComunicado P, int Dias, bool Fix, int Atras)[]
+        {
+            ("Reunião de pais no sábado", "A reunião de pais e mestres será no sábado, às 9h, no pátio da escola. Contamos com a presença de todos.", PublicoComunicado.Responsaveis, 6, true, 1),
+            ("Recesso de fim de ano", "As aulas terminam no dia 22 de dezembro e retornam em janeiro. A secretaria funciona normalmente até o dia 20.", PublicoComunicado.Todos, 25, false, 2),
+            ("Entrega de boletins", "Os boletins do 4º bimestre serão entregues na secretaria a partir do dia 10 de dezembro.", PublicoComunicado.Responsaveis, 15, false, 3),
+            ("Planejamento do próximo ano", "Reunião de planejamento com a coordenação na próxima semana. Tragam sugestões de projetos.", PublicoComunicado.Professores, 8, false, 1),
+            ("Campanha do agasalho (encerrada)", "Obrigado a todos que participaram da campanha do agasalho.", PublicoComunicado.Todos, -3, false, 20),
+        };
+        foreach (var c in comunicados)
+            db.Comunicados.Add(new Comunicado { Titulo = c.T, Texto = c.Tx, Publico = c.P, ValidoAte = hoje.AddDays(c.Dias).Date, Fixado = c.Fix, AutorNome = AutorDemo,
+                CriadoEm = DateTime.SpecifyKind(hoje.AddDays(-c.Atras).AddHours(10), DateTimeKind.Unspecified) });
         db.SaveChanges();
 
         return $"Dados de demonstração criados: {db.Alunos.Count(a => a.Observacoes == Marca)} alunos, {profs.Count} professores. Logins (senha {SenhaDev}): professores <nome>.demo@demo.test e funcionários secretaria/financeiro/coordenacao.demo@demo.test. Para remover: dotnet run -- --demo-limpar";
@@ -286,6 +300,7 @@ public static class DadosDemo
         db.Usuarios.RemoveRange(profs.Where(p => p.Usuario != null).Select(p => p.Usuario!));
         db.Usuarios.RemoveRange(db.Usuarios.Where(u => u.Perfil == Perfil.Funcionario && u.Email.EndsWith("@demo.test")));
         db.Eventos.RemoveRange(db.Eventos.Where(e => e.Descricao == Marca));
+        db.Comunicados.RemoveRange(db.Comunicados.Where(c => c.AutorNome == AutorDemo));
         db.SaveChanges();
         return $"Dados de demonstração removidos ({alunos.Count} alunos, {profs.Count} professores).";
     }

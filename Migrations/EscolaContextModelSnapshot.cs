@@ -129,6 +129,62 @@ namespace SistemaEscolar.Migrations
                     b.ToTable("Cobrancas", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaEscolar.Data.Comunicado", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AutorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AutorNome")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("EditadoEm")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("Fixado")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<int>("Publico")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Texto")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("TurmaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ValidoAte")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TurmaId");
+
+                    b.HasIndex("ValidoAte");
+
+                    b.ToTable("Comunicados");
+                });
+
             modelBuilder.Entity("SistemaEscolar.Data.Configuracao", b =>
                 {
                     b.Property<int>("Id")
@@ -719,6 +775,16 @@ namespace SistemaEscolar.Migrations
                         .IsRequired();
 
                     b.Navigation("Matricula");
+                });
+
+            modelBuilder.Entity("SistemaEscolar.Data.Comunicado", b =>
+                {
+                    b.HasOne("SistemaEscolar.Data.Turma", "Turma")
+                        .WithMany()
+                        .HasForeignKey("TurmaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Turma");
                 });
 
             modelBuilder.Entity("SistemaEscolar.Data.DisciplinaSerie", b =>

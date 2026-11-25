@@ -187,3 +187,8 @@ button.link { background: none; border: 0; padding: 0; margin-right: 10px; font:
 
 .doc-contato { margin: -8px 0 12px; }
 .doc-logo { height: 44px; vertical-align: middle; margin-right: 10px; }
+
+/* Mural da tela inicial */
+.mural { margin-bottom: 20px; }
+.mural h2 { margin: 0 0 8px; }
+.pub.fixado { border-left: 4px solid var(--aviso); }

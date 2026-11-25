@@ -1,0 +1,50 @@
+@page
+@model SistemaEscolar.Pages.Comunicados.IndexModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = "Comunicados"; var hoje = DateTime.Today; }
+
+<div class="barra">
+    <h1>Comunicados</h1>
+    <a class="btn" asp-page="Editar">Novo comunicado</a>
+</div>
+<p class="suave">Aparecem no mural da tela inicial de quem for o público, até a data de validade. Depois ficam só aqui, no histórico.</p>
+@if (Model.Aviso != null) { <div class="card aviso">@Model.Aviso</div> }
+
+<form method="get" class="filtro">
+    <input name="Busca" value="@Model.Busca" placeholder="Buscar no título ou texto" />
+    <select name="Situacao">
+        <option value="" selected="@(Model.Situacao != "vencidos" && Model.Situacao != "todos")">Vigentes</option>
+        <option value="vencidos" selected="@(Model.Situacao == "vencidos")">Vencidos</option>
+        <option value="todos" selected="@(Model.Situacao == "todos")">Todos</option>
+    </select>
+    <button class="btn btn-sec">Filtrar</button>
+</form>
+
+<div class="card tabela">
+    @if (Model.Itens.Count == 0)
+    {
+        <div class="vazio">Nenhum comunicado.</div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Título</th><th>Para</th><th>Válido até</th><th>Publicado</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var c in Model.Itens)
+            {
+                var vigente = c.Vigente(hoje);
+                <tr>
+                    <td>@if (c.Fixado && vigente) { <span class="badge">Fixado</span> } <strong>@c.Titulo</strong></td>
+                    <td>@Html.DisplayFor(_ => c.Publico)@(c.Turma != null ? ", turma " + c.Turma.Nome + " " + c.Turma.AnoLetivo : "")</td>
+                    <td>@c.ValidoAte.ToString("dd/MM/yyyy") <span class="badge @(vigente ? "cb-Paga" : "cb-Atrasada")">@(vigente ? "Vigente" : "Vencido")</span></td>
+                    <td>@c.CriadoEm.ToString("dd/MM/yyyy")<br /><small class="suave">@c.AutorNome@(c.EditadoEm != null ? ", editado" : "")</small></td>
+                    <td class="acoes">
+                        <a asp-page="Editar" asp-route-id="@c.Id">Editar</a>
+                        <form method="post" asp-page-handler="Excluir" asp-route-id="@c.Id" asp-route-situacao="@Model.Situacao" asp-route-busca="@Model.Busca" style="display:inline" onsubmit="return confirm('Excluir este comunicado?')"><button class="link">Excluir</button></form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

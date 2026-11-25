@@ -25,9 +25,10 @@ public static class Auditoria
     public const string Configuracoes = "Configurações";
     public const string Usuarios = "Usuários";
     public const string Acesso = "Acesso";
+    public const string Comunicados = "Comunicados";
 
     public static readonly string[] Acoes =
-        { Pagamento, Cobrancas, Contrato, Matricula, Notas, Frequencia, Configuracoes, Usuarios, Acesso };
+        { Pagamento, Cobrancas, Contrato, Matricula, Notas, Frequencia, Configuracoes, Usuarios, Acesso, Comunicados };
 
     /// <summary>Adiciona o registro ao contexto. Quem chama grava no mesmo SaveChanges da ação (ou chama SaveChanges depois).</summary>
     public static void Registrar(this EscolaContext db, ClaimsPrincipal? user, string acao, string detalhe)

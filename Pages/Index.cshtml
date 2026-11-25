@@ -10,4 +10,21 @@
 }
 
 <h1>Olá, @User.Identity?.Name <span class="badge">@Model.Perfil.Nome()</span></h1>
+@if (Model.Mural.Count > 0)
+{
+    <section class="mural" aria-label="Mural de avisos">
+        <h2>Mural</h2>
+        @foreach (var c in Model.Mural)
+        {
+            <div class="card pub@(c.Fixado ? " fixado" : "")">
+                <div class="pub-topo">
+                    <span>@if (c.Fixado) { <span class="badge">Fixado</span> } <strong>@c.Titulo</strong></span>
+                    <small class="suave">@c.CriadoEm.ToString("dd/MM/yyyy")@(c.EditadoEm != null ? " (editado)" : "") &middot; até @c.ValidoAte.ToString("dd/MM/yyyy")</small>
+                </div>
+                @if (!string.IsNullOrEmpty(c.Texto)) { <p class="pub-texto">@c.Texto</p> }
+                @if (c.Link != null) { <p><a href="@c.Link" target="_blank" rel="noopener noreferrer">@c.Link</a></p> }
+            </div>
+        }
+    </section>
+}
 <partial name="_Painel" model="Model.Perfil" />

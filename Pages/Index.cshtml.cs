@@ -13,10 +13,13 @@ public class IndexModel : PageModel
     public Perfil Perfil { get; set; }
     public int Total { get; set; }
     public int Pendentes { get; set; }
+    public List<Comunicado> Mural { get; set; } = new();
 
     public async Task OnGetAsync()
     {
         Perfil = Enum.TryParse<Perfil>(User.FindFirstValue(ClaimTypes.Role), out var p) ? p : Perfil.Aluno;
+
+        Mural = await MuralComunicados.DoUsuarioAsync(_db, User, Perfil);
 
         // Números reais só para quem pode ver matrículas
         if (User.TemArea(Area.Matriculas))

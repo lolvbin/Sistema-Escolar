@@ -149,9 +149,19 @@ public class EscolaContext : DbContext
     public DbSet<Publicacao> Publicacoes => Set<Publicacao>();
     public DbSet<RegistroLog> Registros => Set<RegistroLog>();
     public DbSet<LogoEscola> Logos => Set<LogoEscola>();
+    public DbSet<Comunicado> Comunicados => Set<Comunicado>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        b.Entity<Comunicado>().Property(x => x.ValidoAte).HasColumnType("date");
+        b.Entity<Comunicado>().Property(x => x.CriadoEm).HasColumnType("timestamp without time zone");
+        b.Entity<Comunicado>().Property(x => x.EditadoEm).HasColumnType("timestamp without time zone");
+        b.Entity<Comunicado>().Property(x => x.Titulo).HasMaxLength(100);
+        b.Entity<Comunicado>().Property(x => x.Texto).HasMaxLength(2000);
+        b.Entity<Comunicado>().Property(x => x.Link).HasMaxLength(300);
+        b.Entity<Comunicado>().Property(x => x.AutorNome).HasMaxLength(120);
+        b.Entity<Comunicado>().HasOne(x => x.Turma).WithMany().HasForeignKey(x => x.TurmaId).OnDelete(DeleteBehavior.SetNull);
+        b.Entity<Comunicado>().HasIndex(x => x.ValidoAte);
         b.Entity<LogoEscola>().ToTable("LogosEscola").Property(l => l.Id).ValueGeneratedNever();
         b.Entity<LogoEscola>().Property(l => l.AtualizadoEm).HasColumnType("timestamp without time zone");
         b.Entity<RegistroLog>().ToTable("Registros").HasIndex(r => r.Em);

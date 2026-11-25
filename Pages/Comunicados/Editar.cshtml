@@ -1,0 +1,56 @@
+@page "{id:int?}"
+@model SistemaEscolar.Pages.Comunicados.EditarModel
+@using SistemaEscolar.Data
+@{ ViewData["Title"] = Model.Id == null ? "Novo comunicado" : "Editar comunicado"; }
+
+<div class="barra"><h1>@ViewData["Title"]</h1><a class="btn btn-sec" asp-page="Index">Voltar</a></div>
+
+<form method="post" class="card" novalidate>
+    <div class="campo">
+        <label for="Input_Titulo">Título</label>
+        <input id="Input_Titulo" name="Input.Titulo" value="@Model.Input.Titulo" maxlength="100" autocomplete="off" />
+        <span asp-validation-for="Input.Titulo" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label for="Input_Texto">Texto</label>
+        <textarea id="Input_Texto" name="Input.Texto" rows="5" maxlength="2000">@Model.Input.Texto</textarea>
+        <span asp-validation-for="Input.Texto" class="erro"></span>
+    </div>
+    <div class="campo">
+        <label for="Input_Link">Link (opcional)</label>
+        <input id="Input_Link" name="Input.Link" value="@Model.Input.Link" maxlength="300" placeholder="https://..." autocomplete="off" />
+        <span asp-validation-for="Input.Link" class="erro"></span>
+    </div>
+    <div class="grade">
+        <div class="campo">
+            <label for="Input_Publico">Para quem</label>
+            <select id="Input_Publico" name="Input.Publico">
+                @foreach (var p in Enum.GetValues<PublicoComunicado>())
+                {
+                    <option value="@((int)p)" selected="@(Model.Input.Publico == p)">@p.Nome()</option>
+                }
+            </select>
+            <span asp-validation-for="Input.Publico" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label for="Input_TurmaId">Só uma turma (opcional)</label>
+            <select id="Input_TurmaId" name="Input.TurmaId">
+                <option value="">Escola toda</option>
+                @foreach (var t in Model.Turmas) { <option value="@t.Value" selected="@(Model.Input.TurmaId?.ToString() == t.Value)">@t.Text</option> }
+            </select>
+            <span asp-validation-for="Input.TurmaId" class="erro"></span>
+        </div>
+        <div class="campo">
+            <label for="Input_ValidoAte">Mostrar no mural até</label>
+            <input id="Input_ValidoAte" name="Input.ValidoAte" value="@Model.Input.ValidoAte" data-mask="data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+            <span asp-validation-for="Input.ValidoAte" class="erro"></span>
+        </div>
+    </div>
+    <label><input type="checkbox" name="Input.Fixado" value="true" @(Model.Input.Fixado ? "checked" : null) /> Fixar no topo do mural</label>
+    <input type="hidden" name="Input.Fixado" value="false" />
+    <p class="suave">Com turma escolhida, o comunicado aparece para os alunos, responsáveis e professores daquela turma (conforme o público).</p>
+    <div class="rodape-form">
+        <button class="btn">@(Model.Id == null ? "Publicar" : "Salvar")</button>
+        <a class="btn btn-sec" asp-page="Index">Cancelar</a>
+    </div>
+</form>
